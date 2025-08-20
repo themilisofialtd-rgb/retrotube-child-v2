@@ -106,8 +106,8 @@ add_shortcode('actors_flipboxes', function($atts){
 
     $i++;
 
-    // B) CHANGED: Inject banner after the 6th item (was 8th).
-    if ( $i === 6 ) {
+    // B) CHANGED: Inject banner after the 8th item (was 8th).
+    if ( $i === 8 ) {
       $banner_html = '';
       if ( !empty($a['banner_html']) ) {
         $banner_html = $a['banner_html'];
