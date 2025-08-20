@@ -1,10 +1,5 @@
 /* =========================================================
-   Flipboxes CSS  —  Retrotube Child (Flipbox Edition) v2
-   - Grid + card
-   - 3D flip
-   - Front: actor name + small red arrow
-   - Back: "View profile" in red
-   - Banner + pagination styling
+   Flipboxes CSS — Retrotube Child (Flipbox Edition) v2
    ========================================================= */
 
 /* Theme accent (red) */
@@ -18,8 +13,7 @@
   content-visibility:auto;
   contain-intrinsic-size:1px 1600px;
 }
-
-/* columns helpers (you set tmw-cols-4 in PHP) */
+/* columns helpers (you set tmw-cols-* in PHP) */
 .tmw-cols-2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
 .tmw-cols-3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
 .tmw-cols-4{ grid-template-columns:repeat(4,minmax(0,1fr)); }
@@ -47,10 +41,8 @@
   /* aspect ratio for consistent tiles */
   aspect-ratio:4/5;
 }
-.tmw-flip::before{
-  /* fallback for browsers without aspect-ratio */
-  content:""; float:left; padding-bottom:125%;
-}
+/* fallback for browsers without aspect-ratio */
+.tmw-flip::before{ content:""; float:left; padding-bottom:125%; }
 .tmw-flip::after{ content:""; display:block; clear:both; }
 
 .tmw-flip-inner{
@@ -76,40 +68,42 @@
 }
 
 /* ---------- OVERLAYS ---------- */
-
-/* FRONT: actor name with small red arrow */
+/* FRONT: actor name centered + bigger red arrow */
 .tmw-name{
-  position:absolute; left:12px; bottom:12px;
+  position:absolute; left:50%; bottom:12px;
+  transform:translateX(-50%);
   padding:6px 10px; border-radius:8px;
-  font-weight:800; font-size:1rem;
-  color:#fff; background:rgba(0,0,0,.55);
-  line-height:1;
+  font-weight:800; font-size:1.05rem;
+  color:#fff; background:rgba(0,0,0,.55); line-height:1;
   text-decoration:none;
 }
 .tmw-name::after{
-  content:"›"; margin-left:8px; font-weight:900;
-  color:var(--tmw-accent);
+  content:"›"; margin-left:10px; font-weight:900;
+  font-size:1.35rem; line-height:1; color:var(--tmw-accent);
 }
 
-/* BACK: "View profile" in red */
+/* BACK: centered “View profile >>>” in red */
 .tmw-view{
-  position:absolute; left:12px; bottom:12px;
+  position:absolute; left:50%; bottom:12px;
+  transform:translateX(-50%);
   padding:6px 10px; border-radius:8px;
-  font-weight:800; font-size:.95rem;
-  color:var(--tmw-accent);
-  background:rgba(0,0,0,.55);
-  text-decoration:none;
+  font-weight:800; font-size:1rem;
+  color:var(--tmw-accent); background:rgba(0,0,0,.55);
+  text-decoration:none; line-height:1;
 }
+.tmw-view::after{ content:" >>>"; }
 
 /* ---------- BANNER BETWEEN ROWS ---------- */
 .tmw-banner-wrap{
   grid-column:1 / -1;
   display:flex; justify-content:center; align-items:center;
+  min-height:45px; margin:6px 0 2px;
 }
 .tmw-banner img{
-  max-width:100%; height:auto; display:block;
-  border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.3);
+  width:364px; height:45px; max-width:100%;
+  display:block; border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.3);
 }
+.tmw-banner-empty{ min-height:45px; }
 
 /* ---------- PAGINATION ---------- */
 .tmw-pagination{
@@ -123,78 +117,13 @@
   background:#181818; color:#eee; text-decoration:none;
   box-shadow:0 2px 10px rgba(0,0,0,.25);
 }
-.tmw-pagination .page-numbers.current{
-  background:var(--tmw-accent); color:#fff;
-}
-.tmw-pagination .page-numbers:hover{
-  filter:brightness(1.2);
-}
-
-/* ---------- OPTIONAL: legacy caption styles (unused now but harmless) ---------- */
-.tmw-card{display:flex;flex-direction:column;gap:8px}
-.tmw-caption{
-  display:flex;align-items:center;gap:8px;margin-top:8px;
-  text-decoration:none
-}
-.tmw-caption .tmw-name{
-  position:static; left:auto; bottom:auto;
-  background:none; padding:0; margin:0;
-  color:var(--tmw-accent); text-shadow:none
-}
-.tmw-attn{
-  width:10px;height:10px;border-radius:999px;
-  background:var(--tmw-accent);
-  box-shadow:0 0 0 0 rgba(219,0,26,.55);
-  animation:tmw-ping 1.8s ease-in-out infinite;
-}
-@keyframes tmw-ping{
-  0%{box-shadow:0 0 0 0 rgba(219,0,26,.55)}
-  70%{box-shadow:0 0 0 8px rgba(219,0,26,0)}
-  100%{box-shadow:0 0 0 0 rgba(219,0,26,0)}
-}
-/* ===== Accent & layout ===== */
-.tmw-grid{ --tmw-accent:#db001a; }
-
-/* Center name on FRONT + bigger red arrow */
-.tmw-name{
-  position:absolute; left:50%; bottom:12px;
-  transform:translateX(-50%);
-  padding:6px 10px; border-radius:8px;
-  font-weight:800; font-size:1.05rem;
-  color:#fff; background:rgba(0,0,0,.55); line-height:1;
-}
-.tmw-name::after{
-  content:"›"; margin-left:10px; font-weight:900;
-  font-size:1.35rem; line-height:1; color:var(--tmw-accent);
-}
-
-/* Back: centered “View profile >>>” in red */
-.tmw-view{
-  position:absolute; left:50%; bottom:12px;
-  transform:translateX(-50%);
-  padding:6px 10px; border-radius:8px;
-  font-weight:800; font-size:1rem;
-  color:var(--tmw-accent); background:rgba(0,0,0,.55);
-  text-decoration:none; line-height:1;
-}
-.tmw-view::after{ content:" >>>"; }
-
-/* Banner row (reserve gap even if empty) */
-.tmw-banner-wrap{
-  grid-column:1 / -1;
-  display:flex; justify-content:center; align-items:center;
-  min-height:45px; margin:6px 0 2px;
-}
-.tmw-banner img{ width:364px; height:45px; max-width:100%; border-radius:8px; display:block; }
-.tmw-banner-empty{ min-height:45px; }
-
-/* Pagination: active + NEXT in red */
 .tmw-pagination .page-numbers.current,
 .tmw-pagination .page-numbers.next{
   background:var(--tmw-accent); color:#fff;
 }
+.tmw-pagination .page-numbers:hover{ filter:brightness(1.2); }
 
-/* ====== Title bar (screenshot style) ====== */
+/* ---------- TITLE BAR (screenshot style) ---------- */
 .tmw-title{
   display:flex; align-items:center; gap:10px;
   background:#2d2d2d; color:#fff;
@@ -203,14 +132,13 @@
   border-left:10px solid var(--tmw-accent);
   border-radius:4px;
 }
-.tmw-title .tmw-star{
-  color:#fff; font-size:1.1em; line-height:1;
-}
+.tmw-title .tmw-star{ color:#fff; font-size:1.1em; line-height:1; }
 
-/* ====== Layout with sidebar ====== */
+/* ---------- LAYOUT WITH SIDEBAR ---------- */
 .tmw-layout{
   display:grid; grid-template-columns:1fr 320px; gap:24px;
 }
 @media (max-width:1024px){
   .tmw-layout{ grid-template-columns:1fr; }
 }
+
