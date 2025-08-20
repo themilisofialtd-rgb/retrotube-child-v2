@@ -2,7 +2,7 @@
 /**
  * Retrotube Child (Flipbox Edition) v2
  * - Enqueues parent styles and child CSS
- * - Actors Flipboxes shortcode with pagination, banner slot, trigger button
+ * - Actors Flipboxes shortcode with pagination, banner slot
  * - Promo flipboxes shortcode (4 items, external links)
  */
 
@@ -34,7 +34,7 @@ function tmw_count_terms($taxonomy, $hide_empty=false){
 
 /**
  * Shortcode: [actors_flipboxes per_page="16" cols="4" orderby="name" order="ASC" hide_empty="false"
- *             trigger_text="See profile" banner_img="" banner_url="" banner_alt=""
+ *             banner_img="" banner_url="" banner_alt=""
  *             show_pagination="true" page_var="pg"]
  */
 add_shortcode('actors_flipboxes', function($atts){
@@ -44,7 +44,6 @@ add_shortcode('actors_flipboxes', function($atts){
     'orderby'        => 'name',
     'order'          => 'ASC',
     'hide_empty'     => false,
-    'trigger_text'   => 'See profile', // default text on the card
     'banner_img'     => '',
     'banner_url'     => '',
     'banner_alt'     => 'Sponsored',
@@ -64,7 +63,6 @@ add_shortcode('actors_flipboxes', function($atts){
   $per_page   = max(1, intval($a['per_page']));
   $offset     = ($paged - 1) * $per_page;
   $hide_empty = filter_var($a['hide_empty'], FILTER_VALIDATE_BOOLEAN);
-  $trigger    = sanitize_text_field($a['trigger_text']);
 
   $args = [
     'taxonomy'   => 'actors',
@@ -85,7 +83,8 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // Advanced Custom Fields (optional)
+
+    // ACF images (optional)
     $front = function_exists('get_field') ? get_field('actor_card_front', 'actors_'.$term->term_id) : null;
     $back  = function_exists('get_field') ? get_field('actor_card_back',  'actors_'.$term->term_id) : null;
     $front_url = is_array($front) && !empty($front['url']) ? $front['url'] : '';
@@ -93,21 +92,17 @@ add_shortcode('actors_flipboxes', function($atts){
 
     $link = get_term_link($term);
 
-    // === NEW CARD MARKUP (image with red "See profile", name under image with red attention dot) ===
-    echo '<div class="tmw-card">';
-    echo   '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
-              <div class="tmw-flip-inner">
-                <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
-                  <span class="tmw-view">'.esc_html($trigger).'</span>
-                </div>
-                <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');"></div>
+    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
+    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
+            <div class="tmw-flip-inner">
+              <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
+                <span class="tmw-name">'.esc_html($term->name).'</span>
               </div>
-            </a>';
-    echo   '<a class="tmw-caption" href="'.esc_url($link).'">
-              <span class="tmw-name">'.esc_html($term->name).'</span>
-              <span class="tmw-attn" aria-hidden="true"></span>
-            </a>';
-    echo '</div>';
+              <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
+                <span class="tmw-view">View profile</span>
+              </div>
+            </div>
+          </a>';
 
     $i++;
     // Inject banner after 8th item
@@ -120,7 +115,6 @@ add_shortcode('actors_flipboxes', function($atts){
                           <img src="'.esc_url($a['banner_img']).'" alt="'.esc_attr($a['banner_alt']).'" width="364" height="45">
                         </a>';
       } else {
-        // Try external file: /assets/models-banner.html (editable by user)
         $banner_file = get_stylesheet_directory() . '/assets/models-banner.html';
         if ( is_readable($banner_file) ) {
           $banner_html = file_get_contents($banner_file);
@@ -192,7 +186,6 @@ add_shortcode('promo_flipboxes', function($atts){
             <div class="tmw-flip-inner">
               <div class="tmw-flip-front" style="background-image:url('.$front.');">
                 <span class="tmw-name">'.$title.'</span>
-                <span class="tmw-trigger">Open</span>
               </div>
               <div class="tmw-flip-back" style="background-image:url('.$back.');">
                 <span class="tmw-view">Go</span>
@@ -203,4 +196,3 @@ add_shortcode('promo_flipboxes', function($atts){
   echo '</div>';
   return ob_get_clean();
 });
-
