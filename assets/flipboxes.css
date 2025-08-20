@@ -42,3 +42,38 @@
 .tmw-pagination{display:flex;gap:8px;justify-content:center;margin:18px 0}
 .tmw-pagination .page-numbers{display:inline-block;padding:8px 12px;border-radius:8px;background:#1a1a1a;color:#fff;text-decoration:none}
 .tmw-pagination .current{background:#ff3b6a}
+/* Accent (match theme link red; adjust if needed) */
+.tmw-grid{ --tmw-accent:#ff3b6a; }
+
+/* Card layout: image + caption under it */
+.tmw-card{display:flex;flex-direction:column;gap:8px}
+
+/* Red "See profile" badge on the image */
+.tmw-view{
+  position:absolute;left:12px;bottom:12px;
+  padding:6px 10px;border-radius:8px;
+  font-weight:800;font-size:.95rem;
+  color:var(--tmw-accent);
+  background:rgba(0,0,0,.55);
+  text-decoration:none
+}
+
+/* Name under image + red attention icon */
+.tmw-caption{
+  display:inline-flex;align-items:center;gap:8px;
+  text-decoration:none
+}
+.tmw-caption .tmw-name{
+  font-weight:700;font-size:1rem;color:var(--tmw-accent)
+}
+.tmw-attn{
+  width:10px;height:10px;border-radius:999px;
+  background:var(--tmw-accent);
+  box-shadow:0 0 0 0 rgba(255,59,106,.55);
+  animation:tmw-ping 1.8s ease-in-out infinite
+}
+@keyframes tmw-ping{
+  0%{box-shadow:0 0 0 0 rgba(255,59,106,.55)}
+  70%{box-shadow:0 0 0 8px rgba(255,59,106,0)}
+  100%{box-shadow:0 0 0 0 rgba(255,59,106,0)}
+}
