@@ -33,13 +33,13 @@ function tmw_count_terms($taxonomy, $hide_empty=false){
 }
 
 /**
- * Shortcode: [actors_flipboxes per_page="16" cols="4" orderby="name" order="ASC" hide_empty="false"
+ * Shortcode: [actors_flipboxes per_page="12" cols="4" orderby="name" order="ASC" hide_empty="false"
  *             banner_img="" banner_url="" banner_alt=""
  *             show_pagination="true" page_var="pg"]
  */
 add_shortcode('actors_flipboxes', function($atts){
   $a = shortcode_atts([
-    'per_page'       => 16,
+    'per_page'       => 12,   // A) CHANGED: 12 per page (was 16)
     'cols'           => 4,
     'orderby'        => 'name',
     'order'          => 'ASC',
@@ -105,8 +105,9 @@ add_shortcode('actors_flipboxes', function($atts){
           </a>';
 
     $i++;
-    // Inject banner after 8th item
-    if ( $i === 8 ) {
+
+    // B) CHANGED: Inject banner after the 6th item (was 8th).
+    if ( $i === 6 ) {
       $banner_html = '';
       if ( !empty($a['banner_html']) ) {
         $banner_html = $a['banner_html'];
@@ -120,8 +121,11 @@ add_shortcode('actors_flipboxes', function($atts){
           $banner_html = file_get_contents($banner_file);
         }
       }
+      // Always reserve space even if we have no banner content
       if ( !empty($banner_html) ) {
         echo '<div class="tmw-banner-wrap">'.$banner_html.'</div>';
+      } else {
+        echo '<div class="tmw-banner-wrap tmw-banner-empty" aria-hidden="true"></div>';
       }
     }
   }
