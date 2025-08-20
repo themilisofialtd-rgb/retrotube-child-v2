@@ -39,7 +39,7 @@ function tmw_count_terms($taxonomy, $hide_empty=false){
  */
 add_shortcode('actors_flipboxes', function($atts){
   $a = shortcode_atts([
-    'per_page'       => 12,   // A) CHANGED: 12 per page (was 16)
+    'per_page'       => 16,   // A) CHANGED: 12 per page (was 16)
     'cols'           => 4,
     'orderby'        => 'name',
     'order'          => 'ASC',
