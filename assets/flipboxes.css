@@ -1,198 +1,154 @@
-<?php
-/**
- * Retrotube Child (Flipbox Edition) v2
- * - Enqueues parent styles and child CSS
- * - Actors Flipboxes shortcode with pagination, banner slot
- * - Promo flipboxes shortcode (4 items, external links)
- */
+/* =========================================================
+   Flipboxes CSS  —  Retrotube Child (Flipbox Edition) v2
+   - Grid + card
+   - 3D flip
+   - Front: actor name + small red arrow
+   - Back: "View profile" in red
+   - Banner + pagination styling
+   ========================================================= */
 
-// Load parent CSS.
-add_action('wp_enqueue_scripts', function () {
-  wp_enqueue_style('retrotube-parent', get_template_directory_uri() . '/style.css');
-});
+/* Theme accent (red) */
+.tmw-grid{ --tmw-accent:#db001a; }
 
-// Child CSS.
-add_action('wp_enqueue_scripts', function () {
-  wp_enqueue_style('rt-child-flip', get_stylesheet_directory_uri() . '/assets/flipboxes.css', [], '1.1.0');
-});
-
-/**
- * Helper: total term count for a taxonomy (hide_empty aware)
- */
-function tmw_count_terms($taxonomy, $hide_empty=false){
-  if ( function_exists('wp_count_terms') ) {
-    $count = wp_count_terms([
-      'taxonomy'   => $taxonomy,
-      'hide_empty' => $hide_empty
-    ]);
-    if ( ! is_wp_error($count) ) return (int)$count;
-  }
-  // Fallback
-  $ids = get_terms([ 'taxonomy'=>$taxonomy, 'fields'=>'ids', 'hide_empty'=>$hide_empty ]);
-  return is_wp_error($ids) ? 0 : count($ids);
+/* ---------- GRID ---------- */
+.tmw-grid{
+  display:grid;
+  gap:24px;
+  /* perf hint for long grids */
+  content-visibility:auto;
+  contain-intrinsic-size:1px 1600px;
 }
 
-/**
- * Shortcode: [actors_flipboxes per_page="16" cols="4" orderby="name" order="ASC" hide_empty="false"
- *             banner_img="" banner_url="" banner_alt=""
- *             show_pagination="true" page_var="pg"]
- */
-add_shortcode('actors_flipboxes', function($atts){
-  $a = shortcode_atts([
-    'per_page'       => 16,
-    'cols'           => 4,
-    'orderby'        => 'name',
-    'order'          => 'ASC',
-    'hide_empty'     => false,
-    'banner_img'     => '',
-    'banner_url'     => '',
-    'banner_alt'     => 'Sponsored',
-    'banner_html'    => '',
-    'show_pagination'=> true,
-    'page_var'       => 'pg',
-  ], $atts);
+/* columns helpers (you set tmw-cols-4 in PHP) */
+.tmw-cols-2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+.tmw-cols-3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+.tmw-cols-4{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+.tmw-cols-5{ grid-template-columns:repeat(5,minmax(0,1fr)); }
 
-  // Current page number (supports /?pg=2 on static pages).
-  $paged = 1;
-  if ( isset($_GET[$a['page_var']]) ) {
-    $paged = max(1, intval($_GET[$a['page_var']]));
-  } else {
-    $paged = max(1, intval(get_query_var('paged')), intval(get_query_var('page')));
-  }
+@media (max-width:1024px){
+  .tmw-cols-4,.tmw-cols-5{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media (max-width:768px){
+  .tmw-cols-3,.tmw-cols-4,.tmw-cols-5{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:480px){
+  .tmw-cols-2,.tmw-cols-3,.tmw-cols-4,.tmw-cols-5{ grid-template-columns:1fr; }
+}
 
-  $per_page   = max(1, intval($a['per_page']));
-  $offset     = ($paged - 1) * $per_page;
-  $hide_empty = filter_var($a['hide_empty'], FILTER_VALIDATE_BOOLEAN);
+/* ---------- CARD / LINK ---------- */
+.tmw-flip{
+  position:relative;
+  display:block;
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 6px 22px rgba(0,0,0,.35);
+  background:#0b0b0b;
+  /* aspect ratio for consistent tiles */
+  aspect-ratio:4/5;
+}
+.tmw-flip::before{
+  /* fallback for browsers without aspect-ratio */
+  content:""; float:left; padding-bottom:125%;
+}
+.tmw-flip::after{ content:""; display:block; clear:both; }
 
-  $args = [
-    'taxonomy'   => 'actors',
-    'hide_empty' => $hide_empty,
-    'orderby'    => $a['orderby'],
-    'order'      => $a['order'],
-    'number'     => $per_page,
-    'offset'     => $offset,
-  ];
-  $terms = get_terms($args);
-  if ( is_wp_error($terms) ) return '';
+.tmw-flip-inner{
+  position:absolute; inset:0;
+  transform-style:preserve-3d;
+  transition:transform .6s ease;
+}
+.tmw-flip-front,
+.tmw-flip-back{
+  position:absolute; inset:0;
+  background-size:cover;
+  background-position:center;
+  backface-visibility:hidden;
+}
+.tmw-flip-back{ transform:rotateY(180deg); }
 
-  $total   = tmw_count_terms('actors', $hide_empty);
-  $total_p = max(1, (int)ceil($total / $per_page));
+.tmw-flip:hover .tmw-flip-inner,
+.tmw-flip:focus-visible .tmw-flip-inner{
+  transform:rotateY(180deg);
+}
+@media (prefers-reduced-motion:reduce){
+  .tmw-flip-inner{ transition:none; }
+}
 
-  ob_start();
-  printf('<div class="tmw-grid tmw-cols-%d">', (int)$a['cols']);
+/* ---------- OVERLAYS ---------- */
 
-  $i = 0;
-  foreach ($terms as $term){
+/* FRONT: actor name with small red arrow */
+.tmw-name{
+  position:absolute; left:12px; bottom:12px;
+  padding:6px 10px; border-radius:8px;
+  font-weight:800; font-size:1rem;
+  color:#fff; background:rgba(0,0,0,.55);
+  line-height:1;
+  text-decoration:none;
+}
+.tmw-name::after{
+  content:"›"; margin-left:8px; font-weight:900;
+  color:var(--tmw-accent);
+}
 
-    // ACF images (optional)
-    $front = function_exists('get_field') ? get_field('actor_card_front', 'actors_'.$term->term_id) : null;
-    $back  = function_exists('get_field') ? get_field('actor_card_back',  'actors_'.$term->term_id) : null;
-    $front_url = is_array($front) && !empty($front['url']) ? $front['url'] : '';
-    $back_url  = is_array($back)  && !empty($back['url'])  ? $back['url']  : $front_url;
+/* BACK: "View profile" in red */
+.tmw-view{
+  position:absolute; left:12px; bottom:12px;
+  padding:6px 10px; border-radius:8px;
+  font-weight:800; font-size:.95rem;
+  color:var(--tmw-accent);
+  background:rgba(0,0,0,.55);
+  text-decoration:none;
+}
 
-    $link = get_term_link($term);
+/* ---------- BANNER BETWEEN ROWS ---------- */
+.tmw-banner-wrap{
+  grid-column:1 / -1;
+  display:flex; justify-content:center; align-items:center;
+}
+.tmw-banner img{
+  max-width:100%; height:auto; display:block;
+  border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.3);
+}
 
-    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
-    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
-            <div class="tmw-flip-inner">
-              <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
-                <span class="tmw-name">'.esc_html($term->name).'</span>
-              </div>
-              <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
-                <span class="tmw-view">View profile</span>
-              </div>
-            </div>
-          </a>';
+/* ---------- PAGINATION ---------- */
+.tmw-pagination{
+  grid-column:1 / -1;
+  display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+  margin-top:10px;
+}
+.tmw-pagination .page-numbers{
+  display:inline-block; min-width:34px; text-align:center;
+  padding:8px 12px; border-radius:999px;
+  background:#181818; color:#eee; text-decoration:none;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);
+}
+.tmw-pagination .page-numbers.current{
+  background:var(--tmw-accent); color:#fff;
+}
+.tmw-pagination .page-numbers:hover{
+  filter:brightness(1.2);
+}
 
-    $i++;
-    // Inject banner after 8th item
-    if ( $i === 8 ) {
-      $banner_html = '';
-      if ( !empty($a['banner_html']) ) {
-        $banner_html = $a['banner_html'];
-      } else if ( !empty($a['banner_img']) && !empty($a['banner_url']) ) {
-        $banner_html = '<a class="tmw-banner" href="'.esc_url($a['banner_url']).'" target="_blank" rel="sponsored nofollow noopener">
-                          <img src="'.esc_url($a['banner_img']).'" alt="'.esc_attr($a['banner_alt']).'" width="364" height="45">
-                        </a>';
-      } else {
-        $banner_file = get_stylesheet_directory() . '/assets/models-banner.html';
-        if ( is_readable($banner_file) ) {
-          $banner_html = file_get_contents($banner_file);
-        }
-      }
-      if ( !empty($banner_html) ) {
-        echo '<div class="tmw-banner-wrap">'.$banner_html.'</div>';
-      }
-    }
-  }
-  echo '</div>';
-
-  // Pagination
-  if ( filter_var($a['show_pagination'], FILTER_VALIDATE_BOOLEAN) && $total_p > 1 ){
-    $base = remove_query_arg($a['page_var']);
-    $base = add_query_arg($a['page_var'], '%#%');
-    $links = paginate_links([
-      'base'      => $base,
-      'format'    => '',
-      'current'   => $paged,
-      'total'     => $total_p,
-      'type'      => 'array',
-      'prev_text' => '« Prev',
-      'next_text' => 'Next »',
-    ]);
-    if ( ! empty($links) ) {
-      echo '<nav class="tmw-pagination" aria-label="Pagination">';
-      foreach ($links as $l) echo $l;
-      echo '</nav>';
-    }
-  }
-
-  return ob_get_clean();
-});
-
-/**
- * Shortcode: 4 promo flipboxes with external links
- * [promo_flipboxes
- *   front1="" back1="" url1="" title1=""
- *   front2="" back2="" url2="" title2=""
- *   front3="" back3="" url3="" title3=""
- *   front4="" back4="" url4="" title4=""
- *   cols="4"]
- */
-add_shortcode('promo_flipboxes', function($atts){
-  $a = shortcode_atts([
-    'front1'=>'','back1'=>'','url1'=>'','title1'=>'',
-    'front2'=>'','back2'=>'','url2'=>'','title2'=>'',
-    'front3'=>'','back3'=>'','url3'=>'','title3'=>'',
-    'front4'=>'','back4'=>'','url4'=>'','title4'=>'',
-    'cols'=>4,
-  ], $atts);
-
-  $items = [];
-  for ($i=1;$i<=4;$i++){
-    $front = $a["front{$i}"]; $back = $a["back{$i}"]; $url = $a["url{$i}"]; $title = $a["title{$i}"];
-    if ( !empty($url) && (!empty($front) || !empty($back)) ){
-      $items[] = compact('front','back','url','title');
-    }
-  }
-  if ( empty($items) ) return '';
-
-  ob_start();
-  printf('<div class="tmw-grid tmw-cols-%d">', (int)$a['cols']);
-  foreach ($items as $it){
-    $front = esc_url($it['front']); $back = esc_url($it['back'] ?: $it['front']);
-    $url   = esc_url($it['url']);   $title= esc_html($it['title'] ?: 'Open');
-    echo '<a class="tmw-flip" href="'.$url.'" target="_blank" rel="sponsored noopener nofollow">
-            <div class="tmw-flip-inner">
-              <div class="tmw-flip-front" style="background-image:url('.$front.');">
-                <span class="tmw-name">'.$title.'</span>
-              </div>
-              <div class="tmw-flip-back" style="background-image:url('.$back.');">
-                <span class="tmw-view">Go</span>
-              </div>
-            </div>
-          </a>';
-  }
-  echo '</div>';
-  return ob_get_clean();
-});
+/* ---------- OPTIONAL: legacy caption styles (unused now but harmless) ---------- */
+.tmw-card{display:flex;flex-direction:column;gap:8px}
+.tmw-caption{
+  display:flex;align-items:center;gap:8px;margin-top:8px;
+  text-decoration:none
+}
+.tmw-caption .tmw-name{
+  position:static; left:auto; bottom:auto;
+  background:none; padding:0; margin:0;
+  color:var(--tmw-accent); text-shadow:none
+}
+.tmw-attn{
+  width:10px;height:10px;border-radius:999px;
+  background:var(--tmw-accent);
+  box-shadow:0 0 0 0 rgba(219,0,26,.55);
+  animation:tmw-ping 1.8s ease-in-out infinite;
+}
+@keyframes tmw-ping{
+  0%{box-shadow:0 0 0 0 rgba(219,0,26,.55)}
+  70%{box-shadow:0 0 0 8px rgba(219,0,26,0)}
+  100%{box-shadow:0 0 0 0 rgba(219,0,26,0)}
+}
