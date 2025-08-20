@@ -1,7 +1,9 @@
 /*
  Theme Name: Retrotube Child (Flipbox Edition) v2
  Template: retrotube
- Description: Child theme for WP-Script Retrotube with Actors flipboxes, sidebar layout, banner slot, and a custom Actor profile.
- Version: 1.1.0
+ Version: 1.1.3
+ Description: Child theme for WP-Script Retrotube with Actors flipboxes, sidebar layout, banner slot, and custom Actor profile.
  Author: Top Models Webcam
 */
+/* quick test – subtle glow on the flipbox CTA */
+.tmw-trigger{box-shadow:0 2px 8px rgba(0,0,0,.35)}
