@@ -1,0 +1,44 @@
+/* === Layout with sidebar === */
+.tmw-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+@media (max-width: 1024px){.tmw-layout{grid-template-columns:1fr}}
+
+/* === Flipbox grid === */
+.tmw-grid{display:grid;gap:16px}
+.tmw-cols-4{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.tmw-flip{display:block;perspective:1000px;border-radius:12px;overflow:hidden;background:#000}
+.tmw-flip-inner{position:relative;padding-top:130%;transform-style:preserve-3d;transition:transform .6s}
+.tmw-flip:hover .tmw-flip-inner{transform:rotateY(180deg)}
+.tmw-flip-front,.tmw-flip-back{position:absolute;inset:0;background-size:cover;background-position:center;backface-visibility:hidden}
+.tmw-flip-back{transform:rotateY(180deg)}
+.tmw-name{position:absolute;left:12px;bottom:10px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-weight:700;font-size:.95rem;line-height:1}
+.tmw-trigger{position:absolute;right:12px;bottom:10px;padding:6px 10px;border-radius:999px;background:#ff3b6a;color:#fff;font-weight:700;font-size:.85rem;border:0;pointer-events:none}
+.tmw-trigger::after{content:"";display:inline-block;margin-left:6px;border:4px solid transparent;border-left-color:#fff}
+
+/* === Banner slot between rows === */
+.tmw-banner-wrap{display:flex;justify-content:center;align-items:center;margin:4px 0 12px}
+.tmw-banner{display:inline-block}
+.tmw-banner img{display:block;height:auto;max-width:100%}
+
+/* === Actor hero and info === */
+.actor-hero{margin:0 0 12px}
+.actor-hero img{display:block;width:100%;height:auto;border-radius:12px}
+.actor-info.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.actor-name{font-size:2rem;margin:16px 0 6px}
+.actor-bio{max-width:800px;margin:0 0 10px}
+.actor-links{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.actor-link{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#1f1f1f;color:#fff;text-decoration:none;font-size:.9rem}
+.actor-link:hover{opacity:.9}
+.btn.btn-primary{display:inline-block;padding:10px 16px;border-radius:8px;background:#e91e63;color:#fff;text-decoration:none;margin-top:6px}
+
+/* === Video grid === */
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.video-card{background:#111;border-radius:12px;overflow:hidden}
+.video-card .thumb img{display:block;width:100%;height:auto}
+.video-title{font-size:1rem;margin:.5rem .75rem 1rem}
+.video-meta{font-size:.85rem;color:#aaa;margin:0 .75rem 1rem}
+
+/* === Pagination === */
+.tmw-pagination{display:flex;gap:8px;justify-content:center;margin:18px 0}
+.tmw-pagination .page-numbers{display:inline-block;padding:8px 12px;border-radius:8px;background:#1a1a1a;color:#fff;text-decoration:none}
+.tmw-pagination .current{background:#ff3b6a}
