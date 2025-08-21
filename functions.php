@@ -250,3 +250,44 @@ add_shortcode('promo_flipboxes', function($atts){
   echo '</div>';
   return ob_get_clean();
 });
+/**
+ * Performance: preload child CSS and improve LCP on the first image.
+ * - Preloads our child CSS (rt-child-flip) non-blocking and switches to stylesheet onload
+ * - Makes the first above-the-fold image eager/high priority
+ * - Small JS fallback for non-attachment images inside grids
+ */
+add_filter('style_loader_tag', function( $html, $handle, $href, $media ) {
+  if ( 'rt-child-flip' === $handle ) {
+    $href  = esc_url( $href );
+    $media = esc_attr( $media ?: 'all' );
+    // Preload + noscript fallback
+    return "<link rel='preload' as='style' href='{$href}' media='{$media}' onload=\"this.onload=null;this.rel='stylesheet'\" />"
+         . "<noscript><link rel='stylesheet' href='{$href}' media='{$media}' /></noscript>";
+  }
+  return $html;
+}, 10, 4);
+
+add_filter('wp_get_attachment_image_attributes', function( $attr ) {
+  static $tmw_first = false;
+  if ( ! $tmw_first && ( is_front_page() || is_home() || is_archive() ) ) {
+    $attr['loading']       = 'eager';
+    $attr['fetchpriority'] = 'high';
+    $attr['decoding']      = 'async';
+    $tmw_first             = true;
+  }
+  return $attr;
+}, 20);
+
+// Fallback for non-attachment grid images (first card only).
+add_action('wp_head', function () { ?>
+  <script>
+  document.addEventListener('DOMContentLoaded',function(){
+    var img = document.querySelector('.video-grid img, .tmw-grid img');
+    if(img){
+      img.setAttribute('loading','eager');
+      img.setAttribute('fetchpriority','high');
+      img.setAttribute('decoding','async');
+    }
+  });
+  </script>
+<?php }, 99);
