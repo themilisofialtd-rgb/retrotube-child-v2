@@ -9,6 +9,38 @@ $term     = get_queried_object();
 $term_id  = isset($term->term_id) ? (int)$term->term_id : 0;
 $acf_id   = 'actors_' . $term_id;
 
+// Build hero banner HTML (ACF "front" image preferred; otherwise taxonomy thumbnail)
+$front     = function_exists('get_field') ? get_field('actor_card_front', 'actors_' . $term_id) : null;
+$hero_html = '';
+
+if (is_array($front) && !empty($front['ID'])) {
+  $hero_html = wp_get_attachment_image($front['ID'], 'tmw-actor-hero-banner', false, [
+    'class'         => 'tmw-actor-hero-img',
+    'alt'           => $term->name,
+    'loading'       => 'eager',
+    'fetchpriority' => 'high',
+    'decoding'      => 'async',
+    'sizes'         => '(max-width: 1024px) 100vw, 720px',
+  ]);
+} else {
+  $thumb_id = (int) get_term_meta($term_id, 'thumbnail_id', true);
+  if ($thumb_id) {
+    $hero_html = wp_get_attachment_image($thumb_id, 'tmw-actor-hero-banner', false, [
+      'class'         => 'tmw-actor-hero-img',
+      'alt'           => $term->name,
+      'loading'       => 'eager',
+      'fetchpriority' => 'high',
+      'decoding'      => 'async',
+      'sizes'         => '(max-width: 1024px) 100vw, 720px',
+    ]);
+  }
+}
+
+// Output hero above the biography
+if ($hero_html) {
+  echo '<figure class="tmw-actor-hero">' . $hero_html . '</figure>';
+}
+
 // Description (term description supports HTML entered in admin)
 $bio_html = term_description($term_id, 'actors');
 
@@ -30,36 +62,7 @@ if (function_exists('get_field')) {
 <div class="tmw-layout">
   <main id="primary" class="site-main">
     <article class="tmw-actor">
-      <?php
-      // Hero image (ACF front preferred) → landscape size
-      $front     = function_exists('get_field') ? get_field('actor_card_front', $acf_id) : null;
-      $hero_html = '';
-      if (is_array($front) && !empty($front['ID'])) {
-        $hero_html = wp_get_attachment_image($front['ID'], 'tmw-actor-hero-land', false, [
-          'class' => 'tmw-actor-hero-img',
-          'alt'   => $term->name,
-          'loading' => 'eager',
-          'fetchpriority' => 'high',
-          'decoding' => 'async',
-        ]);
-      } else {
-        $thumb_id = (int) get_term_meta($term_id, 'thumbnail_id', true);
-        if ($thumb_id) {
-          $hero_html = wp_get_attachment_image($thumb_id, 'tmw-actor-hero-land', false, [
-            'class' => 'tmw-actor-hero-img',
-            'alt'   => $term->name,
-            'loading' => 'eager',
-            'fetchpriority' => 'high',
-            'decoding' => 'async',
-          ]);
-        }
-      }
-      if ($hero_html) {
-        echo '<figure class="tmw-actor-hero">'.$hero_html.'</figure>';
-      }
-      ?>
-
-      <?php if ($bio_html): ?>
+        <?php if ($bio_html): ?>
         <div class="tmw-actor-bio">
           <?php echo wp_kses_post($bio_html); ?>
         </div>

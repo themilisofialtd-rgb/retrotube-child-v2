@@ -266,3 +266,13 @@
   border-radius:16px; box-shadow:0 6px 22px rgba(0,0,0,.35);
   display:block;
 }
+
+/* ===== Model biography: horizontal hero banner (1200×250, 24:5) ===== */
+.tmw-actor-hero{ margin:0 0 14px; }
+.tmw-actor-hero-img{
+  width:100%; height:auto; display:block;
+  aspect-ratio: 24 / 5;          /* matches 1200×250 */
+  object-fit: cover;              /* hard-crop visually to banner */
+  border-radius: 16px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.35);
+}
