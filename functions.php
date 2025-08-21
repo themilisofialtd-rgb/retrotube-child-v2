@@ -316,3 +316,19 @@ add_action('wp_head', function () { ?>
   });
   </script>
 <?php }, 99);
+
+// Make clicking/tapping the back label navigate to the same URL as the card
+add_action('wp_footer', function(){ ?>
+  <script>
+  (function(){
+    function go(e){
+      var el = e.target.closest && e.target.closest('.tmw-view');
+      if(!el) return;
+      var a = el.closest('a.tmw-flip');
+      if(a && a.href){ window.location.href = a.href; }
+    }
+    document.addEventListener('click', go);
+    document.addEventListener('touchend', go);
+  })();
+  </script>
+<?php }, 30);

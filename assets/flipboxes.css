@@ -177,7 +177,7 @@
 /* Ensure no arrows on the back side */
 .tmw-view::after{ content:""; }
 
-/* Back label: center, one line, show arrows, clickable feel */
+/* Back label: single line, clickable feel, with arrows */
 .tmw-view{
   white-space: nowrap;
   display: inline-block;
@@ -186,5 +186,5 @@
 .tmw-view::after{
   content: " >>>";
 }
-/* Ensure accent red is our theme red */
+/* Ensure accent red */
 .tmw-grid{ --tmw-accent:#db001a; }
