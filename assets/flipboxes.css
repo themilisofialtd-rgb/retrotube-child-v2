@@ -39,10 +39,10 @@
   box-shadow:0 6px 22px rgba(0,0,0,.35);
   background:#0b0b0b;
   /* aspect ratio for consistent tiles */
-  aspect-ratio:4/5;
+  aspect-ratio:2/3;
 }
 /* fallback for browsers without aspect-ratio */
-.tmw-flip::before{ content:""; float:left; padding-bottom:125%; }
+.tmw-flip::before{ content:""; float:left; padding-bottom:150%; /* 3/2 = 1.5 */ }
 .tmw-flip::after{ content:""; display:block; clear:both; }
 
 .tmw-flip-inner{
@@ -55,6 +55,7 @@
   position:absolute; inset:0;
   background-size:cover;
   background-position:center;
+  background-repeat:no-repeat;
   backface-visibility:hidden;
 }
 .tmw-flip-back{ transform:rotateY(180deg); }
