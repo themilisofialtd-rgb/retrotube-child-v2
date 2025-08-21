@@ -166,14 +166,15 @@ add_shortcode('actors_flipboxes', function($atts){
 
     $link = get_term_link($term);
 
-    // === FRONT: actor name with small red arrow; BACK: red "Model profile" ===
+    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
     echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
             <div class="tmw-flip-inner">
               <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
                 <span class="tmw-name">'.esc_html($term->name).'</span>
-              </div>
-              <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
-                <span class="tmw-view">Model profile</span>
+              </div>';
+    // Back label; the entire card (including this text) links to the model's biography via $link.
+    echo '  <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
+                <span class="tmw-view">View profile</span>
               </div>
             </div>
           </a>';

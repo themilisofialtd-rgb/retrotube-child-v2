@@ -176,3 +176,15 @@
 }
 /* Ensure no arrows on the back side */
 .tmw-view::after{ content:""; }
+
+/* Back label: center, one line, show arrows, clickable feel */
+.tmw-view{
+  white-space: nowrap;
+  display: inline-block;
+  cursor: pointer;
+}
+.tmw-view::after{
+  content: " >>>";
+}
+/* Ensure accent red is our theme red */
+.tmw-grid{ --tmw-accent:#db001a; }
