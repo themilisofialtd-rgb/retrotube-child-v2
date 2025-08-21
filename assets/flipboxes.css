@@ -188,3 +188,18 @@
 }
 /* Ensure accent red */
 .tmw-grid{ --tmw-accent:#db001a; }
+
+/* ===== Model biography (actors taxonomy) ===== */
+.tmw-actor{display:block}
+.tmw-actor-photo{max-width:420px;margin:0 0 12px}
+.tmw-actor-photo img{
+  width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;
+  border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.35)
+}
+.tmw-actor-bio{color:#ddd;margin:8px 0 6px}
+.tmw-actor-bio p{margin:0 0 10px}
+.tmw-actor-social{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.tmw-social{
+  display:inline-block;padding:6px 10px;border-radius:8px;
+  background:rgba(0,0,0,.55);color:var(--tmw-accent);text-decoration:none;font-weight:700
+}
