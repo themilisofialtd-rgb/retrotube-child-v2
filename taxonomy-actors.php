@@ -9,16 +9,6 @@ $term     = get_queried_object();
 $term_id  = isset($term->term_id) ? (int)$term->term_id : 0;
 $acf_id   = 'actors_' . $term_id;
 
-// Photo (ACF front, then term thumbnail, else empty)
-$front    = function_exists('get_field') ? get_field('actor_card_front', $acf_id) : null;
-$front_url = (is_array($front) && !empty($front['url'])) ? $front['url'] : '';
-if (!$front_url) {
-  $thumb_id  = (int) get_term_meta($term_id, 'thumbnail_id', true);
-  if ($thumb_id) {
-    $front_url = wp_get_attachment_image_url($thumb_id, 'large');
-  }
-}
-
 // Description (term description supports HTML entered in admin)
 $bio_html = term_description($term_id, 'actors');
 
@@ -40,11 +30,34 @@ if (function_exists('get_field')) {
 <div class="tmw-layout">
   <main id="primary" class="site-main">
     <article class="tmw-actor">
-      <?php if ($front_url): ?>
-        <figure class="tmw-actor-photo">
-          <img src="<?php echo esc_url($front_url); ?>" alt="<?php echo esc_attr($term->name); ?>" loading="eager" fetchpriority="high" decoding="async" />
-        </figure>
-      <?php endif; ?>
+      <?php
+      // Hero image (ACF front preferred) → landscape size
+      $front     = function_exists('get_field') ? get_field('actor_card_front', $acf_id) : null;
+      $hero_html = '';
+      if (is_array($front) && !empty($front['ID'])) {
+        $hero_html = wp_get_attachment_image($front['ID'], 'tmw-actor-hero-land', false, [
+          'class' => 'tmw-actor-hero-img',
+          'alt'   => $term->name,
+          'loading' => 'eager',
+          'fetchpriority' => 'high',
+          'decoding' => 'async',
+        ]);
+      } else {
+        $thumb_id = (int) get_term_meta($term_id, 'thumbnail_id', true);
+        if ($thumb_id) {
+          $hero_html = wp_get_attachment_image($thumb_id, 'tmw-actor-hero-land', false, [
+            'class' => 'tmw-actor-hero-img',
+            'alt'   => $term->name,
+            'loading' => 'eager',
+            'fetchpriority' => 'high',
+            'decoding' => 'async',
+          ]);
+        }
+      }
+      if ($hero_html) {
+        echo '<figure class="tmw-actor-hero">'.$hero_html.'</figure>';
+      }
+      ?>
 
       <?php if ($bio_html): ?>
         <div class="tmw-actor-bio">

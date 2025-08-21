@@ -198,6 +198,7 @@
 }
 .tmw-actor-bio{color:#ddd;margin:8px 0 6px}
 .tmw-actor-bio p{margin:0 0 10px}
+
 .tmw-actor-social{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
 .tmw-social{
   display:inline-block;padding:6px 10px;border-radius:8px;
@@ -254,5 +255,14 @@
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce){
   .tmw-flip-front .tmw-name,
-  .tmw-flip-front .tmw-name::after{ animation: none !important; }
+.tmw-flip-front .tmw-name::after{ animation: none !important; }
+}
+
+/* Landscape hero on model biography */
+.tmw-actor-hero{ margin:0 0 12px; }
+.tmw-actor-hero-img{
+  width:100%; height:auto;
+  aspect-ratio:16/9; object-fit:cover;
+  border-radius:16px; box-shadow:0 6px 22px rgba(0,0,0,.35);
+  display:block;
 }
