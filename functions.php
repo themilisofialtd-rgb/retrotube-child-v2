@@ -31,6 +31,41 @@ add_action('init', function () {
   add_filter('emoji_svg_url', '__return_false');
 });
 
+// LCP: prioritize first above-the-fold image on listings
+add_filter('post_thumbnail_html', function($html){
+  static $done = false;
+  if ( ! $done && (is_home() || is_archive()) ) {
+    $html = preg_replace('#\\sloading=("|\')lazy("|\')#i', '', $html);
+    $html = preg_replace('#<img\\s#', '<img fetchpriority="high" decoding="async" ', $html, 1);
+    $done = true;
+  }
+  return $html;
+}, 10, 5);
+
+add_action('wp_head', function(){
+  if ( !is_home() && !is_archive() ) return;
+  echo '<script>\n';
+  echo 'document.addEventListener("DOMContentLoaded", function () {\n';
+  echo '  var img = document.querySelector(".video-grid img, .tmw-grid img");\n';
+  echo '  if (img) {\n';
+  echo '    img.setAttribute("fetchpriority", "high");\n';
+  echo '    img.setAttribute("decoding", "async");\n';
+  echo '    img.removeAttribute("loading");\n';
+  echo '  }\n';
+  echo '});\n';
+  echo '</script>\n';
+});
+
+add_filter('wp_resource_hints', function($urls, $relation_type){
+  if ( 'preconnect' === $relation_type ) {
+    $urls[] = 'https://galleryn3.vcmdawe.com';
+  }
+  if ( 'dns-prefetch' === $relation_type ) {
+    $urls[] = '//galleryn3.vcmdawe.com';
+  }
+  return $urls;
+}, 10, 2);
+
 /**
  * Helper: total term count for a taxonomy (hide_empty aware)
  */
