@@ -90,6 +90,11 @@ add_filter('wp_resource_hints', function($urls, $relation_type){
   return $urls;
 }, 10, 2);
 
+// Landscape hero for model biography (retina-ready for ~720px display width)
+add_action('after_setup_theme', function () {
+  add_image_size('tmw-actor-hero-land', 1440, 810, true); // 16:9 hard crop
+});
+
 /**
  * Helper: total term count for a taxonomy (hide_empty aware)
  */
