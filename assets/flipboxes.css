@@ -203,3 +203,37 @@
   display:inline-block;padding:6px 10px;border-radius:8px;
   background:rgba(0,0,0,.55);color:var(--tmw-accent);text-decoration:none;font-weight:700
 }
+/* ===== Attention animations for back label ===== */
+/* Subtle pulse on the label + tiny nudge on the >>> arrows */
+.tmw-flip-back .tmw-view{
+  /* keep your existing styles; add the animation below */
+  animation: tmw-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 rgba(219,0,26,0);
+  will-change: transform, box-shadow;
+}
+
+.tmw-flip-back .tmw-view::after{
+  /* you already have: content: " >>>"; keep it */
+  animation: tmw-caret 1s ease-in-out infinite;
+  display: inline-block; /* ensures the nudge is visible */
+}
+
+/* Pulse the chip (slight scale + soft red glow) */
+@keyframes tmw-pulse{
+  0%   { transform: translateX(-50%) scale(1);    box-shadow: 0 0 0 0 rgba(219,0,26,0); }
+  35%  { transform: translateX(-50%) scale(1.06); box-shadow: 0 0 18px 2px rgba(219,0,26,.45); }
+  70%  { transform: translateX(-50%) scale(1);    box-shadow: 0 0 0 0 rgba(219,0,26,0); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Nudge the >>> a tiny bit */
+@keyframes tmw-caret{
+  0%,100% { transform: translateX(0);   opacity: 1;   }
+  50%     { transform: translateX(2px); opacity: .92; }
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce){
+  .tmw-flip-back .tmw-view,
+  .tmw-flip-back .tmw-view::after{ animation: none !important; }
+}
