@@ -276,3 +276,24 @@
   border-radius: 16px;
   box-shadow: 0 6px 22px rgba(0,0,0,.35);
 }
+
+/* ===== Model biography: hero + bio + live link ===== */
+.tmw-actor-hero{ margin:0 0 14px; }
+.tmw-actor-hero-img{
+  width:100%; height:auto; display:block;
+  aspect-ratio: 24 / 5;        /* 1200×250 */
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 6px 22px rgba(0,0,0,.35);
+}
+
+.tmw-bio{ margin: 10px 0 8px; }
+.tmw-bio-empty{ opacity:.7; }
+
+.tmw-live { margin: 8px 0 16px; }
+.tmw-live-btn{
+  display:inline-block; padding:10px 14px; border-radius:999px;
+  background:#db001a; color:#fff; text-decoration:none; font-weight:700;
+  box-shadow:0 4px 14px rgba(219,0,26,.35);
+}
+.tmw-live-btn:hover{ filter:brightness(1.08); }
