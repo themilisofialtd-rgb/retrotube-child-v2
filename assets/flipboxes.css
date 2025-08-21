@@ -237,3 +237,22 @@
   .tmw-flip-back .tmw-view,
   .tmw-flip-back .tmw-view::after{ animation: none !important; }
 }
+/* ===== Attention animations for FRONT label (actor name) ===== */
+.tmw-flip-front .tmw-name{
+  /* keep existing centering styles; add animation */
+  animation: tmw-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 rgba(219,0,26,0);
+  will-change: transform, box-shadow;
+}
+
+.tmw-flip-front .tmw-name::after{
+  /* we keep your existing '›››' or '>>>' content; just animate it */
+  animation: tmw-caret 1s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Respect users who prefer less motion */
+@media (prefers-reduced-motion: reduce){
+  .tmw-flip-front .tmw-name,
+  .tmw-flip-front .tmw-name::after{ animation: none !important; }
+}
