@@ -19,6 +19,30 @@ add_action('wp_enqueue_scripts', function () {
   wp_deregister_script('wp-embed');
 }, 20);
 
+// Rename "Video Actors" taxonomy labels to "Models"
+add_filter('register_taxonomy_args', function($args, $taxonomy){
+  if ($taxonomy !== 'actors') return $args;
+  $labels = isset($args['labels']) ? $args['labels'] : [];
+  $labels['name']                       = 'Models';
+  $labels['singular_name']              = 'Model';
+  $labels['menu_name']                  = 'Models';
+  $labels['all_items']                  = 'All Models';
+  $labels['search_items']               = 'Search Models';
+  $labels['popular_items']              = 'Popular Models';
+  $labels['edit_item']                  = 'Edit Model';
+  $labels['view_item']                  = 'View Model';
+  $labels['update_item']                = 'Update Model';
+  $labels['add_new_item']               = 'Add New Model';
+  $labels['new_item_name']              = 'New Model Name';
+  $labels['separate_items_with_commas'] = 'Separate models with commas';
+  $labels['add_or_remove_items']        = 'Add or remove models';
+  $labels['choose_from_most_used']      = 'Choose from the most used models';
+  $labels['not_found']                  = 'No models found';
+  $args['labels'] = $labels;
+  $args['label']  = $labels['name'];
+  return $args;
+}, 10, 2);
+
 // Disable emojis.
 add_action('init', function () {
   remove_action('wp_head', 'print_emoji_detection_script', 7);
@@ -142,14 +166,14 @@ add_shortcode('actors_flipboxes', function($atts){
 
     $link = get_term_link($term);
 
-    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
+    // === FRONT: actor name with small red arrow; BACK: red "Model profile" ===
     echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
             <div class="tmw-flip-inner">
               <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
                 <span class="tmw-name">'.esc_html($term->name).'</span>
               </div>
               <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
-                <span class="tmw-view">View profile</span>
+                <span class="tmw-view">Model profile</span>
               </div>
             </div>
           </a>';
