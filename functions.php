@@ -2,19 +2,69 @@
 /**
  * Retrotube Child (Flipbox Edition) v2
  * - Enqueues parent styles and child CSS
- * - Actors Flipboxes shortcode with pagination, banner slot, trigger button
+ * - Actors Flipboxes shortcode with pagination, banner slot
  * - Promo flipboxes shortcode (4 items, external links)
  */
 
-// Load parent CSS.
+// Styles and lightweight optimizations.
 add_action('wp_enqueue_scripts', function () {
+  // Parent + child styles.
   wp_enqueue_style('retrotube-parent', get_template_directory_uri() . '/style.css');
+  wp_enqueue_style('rt-child-flip', get_stylesheet_directory_uri() . '/assets/flipboxes.css', ['retrotube-parent'], '1.1.0');
+
+  // Remove unused default assets for better performance.
+  wp_dequeue_style('wp-block-library');
+  wp_dequeue_style('wp-block-library-theme');
+  wp_dequeue_style('wc-blocks-style');
+  wp_deregister_script('wp-embed');
+}, 20);
+
+// Disable emojis.
+add_action('init', function () {
+  remove_action('wp_head', 'print_emoji_detection_script', 7);
+  remove_action('admin_print_scripts', 'print_emoji_detection_script');
+  remove_action('wp_print_styles', 'print_emoji_styles');
+  remove_action('admin_print_styles', 'print_emoji_styles');
+  remove_filter('the_content_feed', 'wp_staticize_emoji');
+  remove_filter('comment_text_rss', 'wp_staticize_emoji');
+  remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
+  add_filter('emoji_svg_url', '__return_false');
 });
 
-// Child CSS.
-add_action('wp_enqueue_scripts', function () {
-  wp_enqueue_style('rt-child-flip', get_stylesheet_directory_uri() . '/assets/flipboxes.css', [], '1.1.0');
+// LCP: prioritize first above-the-fold image on listings
+add_filter('post_thumbnail_html', function($html){
+  static $done = false;
+  if ( ! $done && (is_home() || is_archive()) ) {
+    $html = preg_replace('#\\sloading=("|\')lazy("|\')#i', '', $html);
+    $html = preg_replace('#<img\\s#', '<img fetchpriority="high" decoding="async" ', $html, 1);
+    $done = true;
+  }
+  return $html;
+}, 10, 5);
+
+add_action('wp_head', function(){
+  if ( !is_home() && !is_archive() ) return;
+  echo '<script>\n';
+  echo 'document.addEventListener("DOMContentLoaded", function () {\n';
+  echo '  var img = document.querySelector(".video-grid img, .tmw-grid img");\n';
+  echo '  if (img) {\n';
+  echo '    img.setAttribute("fetchpriority", "high");\n';
+  echo '    img.setAttribute("decoding", "async");\n';
+  echo '    img.removeAttribute("loading");\n';
+  echo '  }\n';
+  echo '});\n';
+  echo '</script>\n';
 });
+
+add_filter('wp_resource_hints', function($urls, $relation_type){
+  if ( 'preconnect' === $relation_type ) {
+    $urls[] = 'https://galleryn3.vcmdawe.com';
+  }
+  if ( 'dns-prefetch' === $relation_type ) {
+    $urls[] = '//galleryn3.vcmdawe.com';
+  }
+  return $urls;
+}, 10, 2);
 
 /**
  * Helper: total term count for a taxonomy (hide_empty aware)
@@ -33,18 +83,17 @@ function tmw_count_terms($taxonomy, $hide_empty=false){
 }
 
 /**
- * Shortcode: [actors_flipboxes per_page="16" cols="4" orderby="name" order="ASC" hide_empty="false"
- *             trigger_text="Watch now" banner_img="" banner_url="" banner_alt=""
+ * Shortcode: [actors_flipboxes per_page="12" cols="4" orderby="name" order="ASC" hide_empty="false"
+ *             banner_img="" banner_url="" banner_alt=""
  *             show_pagination="true" page_var="pg"]
  */
 add_shortcode('actors_flipboxes', function($atts){
   $a = shortcode_atts([
-    'per_page'       => 16,
+    'per_page'       => 16,   // A) CHANGED: 12 per page (was 16)
     'cols'           => 4,
     'orderby'        => 'name',
     'order'          => 'ASC',
     'hide_empty'     => false,
-    'trigger_text'   => 'Watch now',
     'banner_img'     => '',
     'banner_url'     => '',
     'banner_alt'     => 'Sponsored',
@@ -64,7 +113,6 @@ add_shortcode('actors_flipboxes', function($atts){
   $per_page   = max(1, intval($a['per_page']));
   $offset     = ($paged - 1) * $per_page;
   $hide_empty = filter_var($a['hide_empty'], FILTER_VALIDATE_BOOLEAN);
-  $trigger    = sanitize_text_field($a['trigger_text']);
 
   $args = [
     'taxonomy'   => 'actors',
@@ -85,18 +133,20 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // Advanced Custom Fields (optional)
+
+    // ACF images (optional)
     $front = function_exists('get_field') ? get_field('actor_card_front', 'actors_'.$term->term_id) : null;
     $back  = function_exists('get_field') ? get_field('actor_card_back',  'actors_'.$term->term_id) : null;
     $front_url = is_array($front) && !empty($front['url']) ? $front['url'] : '';
     $back_url  = is_array($back)  && !empty($back['url'])  ? $back['url']  : $front_url;
 
     $link = get_term_link($term);
+
+    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
     echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
             <div class="tmw-flip-inner">
               <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
                 <span class="tmw-name">'.esc_html($term->name).'</span>
-                <span class="tmw-trigger">'.esc_html($trigger).'</span>
               </div>
               <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
                 <span class="tmw-view">View profile</span>
@@ -105,7 +155,8 @@ add_shortcode('actors_flipboxes', function($atts){
           </a>';
 
     $i++;
-    // Inject banner after 8th item
+
+    // B) CHANGED: Inject banner after the 8th item (was 8th).
     if ( $i === 8 ) {
       $banner_html = '';
       if ( !empty($a['banner_html']) ) {
@@ -115,14 +166,16 @@ add_shortcode('actors_flipboxes', function($atts){
                           <img src="'.esc_url($a['banner_img']).'" alt="'.esc_attr($a['banner_alt']).'" width="364" height="45">
                         </a>';
       } else {
-        // Try external file: /assets/models-banner.html (editable by user)
         $banner_file = get_stylesheet_directory() . '/assets/models-banner.html';
         if ( is_readable($banner_file) ) {
           $banner_html = file_get_contents($banner_file);
         }
       }
+      // Always reserve space even if we have no banner content
       if ( !empty($banner_html) ) {
         echo '<div class="tmw-banner-wrap">'.$banner_html.'</div>';
+      } else {
+        echo '<div class="tmw-banner-wrap tmw-banner-empty" aria-hidden="true"></div>';
       }
     }
   }
@@ -187,7 +240,6 @@ add_shortcode('promo_flipboxes', function($atts){
             <div class="tmw-flip-inner">
               <div class="tmw-flip-front" style="background-image:url('.$front.');">
                 <span class="tmw-name">'.$title.'</span>
-                <span class="tmw-trigger">Open</span>
               </div>
               <div class="tmw-flip-back" style="background-image:url('.$back.');">
                 <span class="tmw-view">Go</span>
@@ -198,32 +250,23 @@ add_shortcode('promo_flipboxes', function($atts){
   echo '</div>';
   return ob_get_clean();
 });
-
 /**
- * Preload child CSS (non-render-blocking) and then switch to stylesheet.
- *
- * @param string $html   The link tag for the enqueued style.
- * @param string $handle The style's registered handle.
- * @param string $href   The stylesheet's source URL.
- * @param string $media  The media for which this stylesheet has been defined.
- * @return string Modified <link> tag.
+ * Performance: preload child CSS and improve LCP on the first image.
+ * - Preloads our child CSS (rt-child-flip) non-blocking and switches to stylesheet onload
+ * - Makes the first above-the-fold image eager/high priority
+ * - Small JS fallback for non-attachment images inside grids
  */
 add_filter('style_loader_tag', function( $html, $handle, $href, $media ) {
   if ( 'rt-child-flip' === $handle ) {
     $href  = esc_url( $href );
     $media = esc_attr( $media ?: 'all' );
-    return "<link rel='preload' as='style' href='{$href}' media='{$media}' onload=\"this.onload=null;this.rel='stylesheet'\">";
+    // Preload + noscript fallback
+    return "<link rel='preload' as='style' href='{$href}' media='{$media}' onload=\"this.onload=null;this.rel='stylesheet'\" />"
+         . "<noscript><link rel='stylesheet' href='{$href}' media='{$media}' /></noscript>";
   }
   return $html;
 }, 10, 4);
 
-/**
- * Make the first above-the-fold image eager & high priority to improve LCP.
- * Works for featured images; a small JS fallback handles plain <img> in grids.
- *
- * @param array $attr Attributes for the image markup.
- * @return array Possibly modified attributes.
- */
 add_filter('wp_get_attachment_image_attributes', function( $attr ) {
   static $tmw_first = false;
   if ( ! $tmw_first && ( is_front_page() || is_home() || is_archive() ) ) {
