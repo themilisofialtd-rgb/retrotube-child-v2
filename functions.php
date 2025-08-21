@@ -198,3 +198,53 @@ add_shortcode('promo_flipboxes', function($atts){
   echo '</div>';
   return ob_get_clean();
 });
+
+/**
+ * Preload child CSS (non-render-blocking) and then switch to stylesheet.
+ *
+ * @param string $html   The link tag for the enqueued style.
+ * @param string $handle The style's registered handle.
+ * @param string $href   The stylesheet's source URL.
+ * @param string $media  The media for which this stylesheet has been defined.
+ * @return string Modified <link> tag.
+ */
+add_filter('style_loader_tag', function( $html, $handle, $href, $media ) {
+  if ( 'rt-child-flip' === $handle ) {
+    $href  = esc_url( $href );
+    $media = esc_attr( $media ?: 'all' );
+    return "<link rel='preload' as='style' href='{$href}' media='{$media}' onload=\"this.onload=null;this.rel='stylesheet'\">";
+  }
+  return $html;
+}, 10, 4);
+
+/**
+ * Make the first above-the-fold image eager & high priority to improve LCP.
+ * Works for featured images; a small JS fallback handles plain <img> in grids.
+ *
+ * @param array $attr Attributes for the image markup.
+ * @return array Possibly modified attributes.
+ */
+add_filter('wp_get_attachment_image_attributes', function( $attr ) {
+  static $tmw_first = false;
+  if ( ! $tmw_first && ( is_front_page() || is_home() || is_archive() ) ) {
+    $attr['loading']       = 'eager';
+    $attr['fetchpriority'] = 'high';
+    $attr['decoding']      = 'async';
+    $tmw_first             = true;
+  }
+  return $attr;
+}, 20);
+
+// Fallback for non-attachment grid images (first card only).
+add_action('wp_head', function () { ?>
+  <script>
+  document.addEventListener('DOMContentLoaded',function(){
+    var img = document.querySelector('.video-grid img, .tmw-grid img');
+    if(img){
+      img.setAttribute('loading','eager');
+      img.setAttribute('fetchpriority','high');
+      img.setAttribute('decoding','async');
+    }
+  });
+  </script>
+<?php }, 99);
