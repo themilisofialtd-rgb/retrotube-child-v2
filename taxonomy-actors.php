@@ -5,16 +5,37 @@
  */
 get_header();
 
+// Read ACF fields and build hero/banner + biography + live link
 $term     = get_queried_object();
 $term_id  = isset($term->term_id) ? (int)$term->term_id : 0;
 $acf_id   = 'actors_' . $term_id;
 
-// Build hero banner HTML (ACF "front" image preferred; otherwise taxonomy thumbnail)
-$front     = function_exists('get_field') ? get_field('actor_card_front', 'actors_' . $term_id) : null;
-$hero_html = '';
+// --- Read ACF fields with robust fallbacks for possible field names ---
+$hero    = null;
+foreach ([
+  'hero_image','tmw_hero_image','actor_hero','actor_header','header_image','actor_card_front'
+] as $key) {
+  $v = function_exists('get_field') ? get_field($key, $acf_id) : null;
+  if ($v) { $hero = $v; break; }
+}
 
-if (is_array($front) && !empty($front['ID'])) {
-  $hero_html = wp_get_attachment_image($front['ID'], 'tmw-actor-hero-banner', false, [
+$short_bio = '';
+foreach (['short_bio','tmw_short_bio','bio','about'] as $key) {
+  $v = function_exists('get_field') ? get_field($key, $acf_id) : '';
+  if (!empty($v)) { $short_bio = (string)$v; break; }
+}
+
+$live_link = '';
+foreach (['live_link','tmw_live_link','affiliate_url','chat_url','external_url'] as $key) {
+  $v = function_exists('get_field') ? get_field($key, $acf_id) : '';
+  if (!empty($v)) { $live_link = (string)$v; break; }
+}
+
+// --- Build hero banner HTML (prefer ACF hero, then term thumbnail, then nothing) ---
+$hero_html = '';
+if (is_array($hero) && !empty($hero['ID'])) {
+  // ACF returns image array
+  $hero_html = wp_get_attachment_image($hero['ID'], 'tmw-actor-hero-banner', false, [
     'class'         => 'tmw-actor-hero-img',
     'alt'           => $term->name,
     'loading'       => 'eager',
@@ -22,7 +43,11 @@ if (is_array($front) && !empty($front['ID'])) {
     'decoding'      => 'async',
     'sizes'         => '(max-width: 1024px) 100vw, 720px',
   ]);
+} elseif (is_array($hero) && !empty($hero['url'])) {
+  // ACF returns simple url
+  $hero_html = '<img class="tmw-actor-hero-img" src="'.esc_url($hero['url']).'" alt="'.esc_attr($term->name).'" loading="eager" fetchpriority="high" decoding="async" />';
 } else {
+  // Fallback: taxonomy thumbnail ID
   $thumb_id = (int) get_term_meta($term_id, 'thumbnail_id', true);
   if ($thumb_id) {
     $hero_html = wp_get_attachment_image($thumb_id, 'tmw-actor-hero-banner', false, [
@@ -31,18 +56,9 @@ if (is_array($front) && !empty($front['ID'])) {
       'loading'       => 'eager',
       'fetchpriority' => 'high',
       'decoding'      => 'async',
-      'sizes'         => '(max-width: 1024px) 100vw, 720px',
     ]);
   }
 }
-
-// Output hero above the biography
-if ($hero_html) {
-  echo '<figure class="tmw-actor-hero">' . $hero_html . '</figure>';
-}
-
-// Description (term description supports HTML entered in admin)
-$bio_html = term_description($term_id, 'actors');
 
 // Optional socials (any that exist will be shown)
 $social_keys = ['onlyfans','fancentro','twitter','instagram','facebook','reddit','tiktok','website'];
@@ -62,15 +78,26 @@ if (function_exists('get_field')) {
 <div class="tmw-layout">
   <main id="primary" class="site-main">
     <article class="tmw-actor">
-        <?php if ($bio_html): ?>
-        <div class="tmw-actor-bio">
-          <?php echo wp_kses_post($bio_html); ?>
-        </div>
-      <?php else: ?>
-        <div class="tmw-actor-bio tmw-actor-bio--empty">
-          <p>No biography provided yet.</p>
-        </div>
-      <?php endif; ?>
+      <?php if ($hero_html) { echo '<figure class="tmw-actor-hero">'.$hero_html.'</figure>'; } ?>
+
+      <?php
+      // Biography: prefer ACF short_bio; fallback to term description
+      if (!empty($short_bio)) {
+        echo '<div class="tmw-bio">'.wp_kses_post(wpautop($short_bio)).'</div>';
+      } else {
+        $desc = term_description($term_id, 'actors');
+        if (!empty($desc)) {
+          echo '<div class="tmw-bio">'.wp_kses_post($desc).'</div>';
+        } else {
+          echo '<div class="tmw-bio tmw-bio-empty">No biography provided yet.</div>';
+        }
+      }
+
+      // Live link button (optional)
+      if (!empty($live_link)) {
+        echo '<p class="tmw-live"><a class="tmw-live-btn" href="'.esc_url($live_link).'" target="_blank" rel="nofollow sponsored noopener">Live chat &raquo;</a></p>';
+      }
+      ?>
 
       <?php if (!empty($socials)): ?>
         <div class="tmw-actor-social">
