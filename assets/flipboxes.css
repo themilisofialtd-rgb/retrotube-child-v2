@@ -169,3 +169,10 @@
 
 /* Ensure theme accent is our red */
 .tmw-grid{ --tmw-accent:#db001a; }
+/* Back label: stay on one line, still centered & red */
+.tmw-view{
+  white-space: nowrap;
+  display: inline-block;
+}
+/* Ensure no arrows on the back side */
+.tmw-view::after{ content:""; }
