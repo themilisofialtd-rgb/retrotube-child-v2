@@ -142,3 +142,29 @@
   .tmw-layout{ grid-template-columns:1fr; }
 }
 
+/* Front: name smaller, single line, centered, with three red arrows */
+.tmw-name{
+  /* keep existing centering via left:50% + translateX(-50%) from current CSS */
+  font-size:.90rem;
+  padding:5px 10px;
+  display:inline-flex;
+  align-items:center;
+  white-space:nowrap;
+  max-width:calc(100% - 24px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.tmw-name::after{
+  content:" >>>";
+  margin-left:8px;
+  font-weight:900;
+  font-size:1.1rem;
+  line-height:1;
+  color:var(--tmw-accent);
+}
+
+/* Back: keep red label, but remove arrows */
+.tmw-view::after{ content:""; }
+
+/* Ensure theme accent is our red */
+.tmw-grid{ --tmw-accent:#db001a; }
