@@ -287,3 +287,20 @@
     line-height: 1;
   }
 }
+/* ===== Mobile-only: 2× larger FRONT label on flipboxes ===== */
+@media (max-width: 768px), (pointer: coarse){
+  .tmw-name{
+    font-size: 1.80rem;       /* ~2× your typical .90rem base */
+    line-height: 1;
+    padding: 10px 16px;       /* ~2× padding for balance */
+    border-radius: 12px;
+    white-space: nowrap;      /* one line only */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 92%;           /* avoid spilling on narrow cards */
+  }
+  .tmw-name::after{
+    font-size: 1.80rem;       /* scale arrows too */
+    line-height: 1;
+  }
+}
