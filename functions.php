@@ -327,21 +327,35 @@ add_action('wp_head', function () { ?>
   </script>
 <?php }, 99);
 
-// Make clicking/tapping the back label navigate to the same URL as the card
+// Ensure clicks/taps on .tmw-view behave correctly on mobile (open external in new tab)
 add_action('wp_footer', function(){ ?>
   <script>
   (function(){
-    function go(e){
-      var el = e.target.closest && e.target.closest('.tmw-view');
-      if(!el) return;
-      var a = el.closest('a.tmw-flip');
-      if(a && a.href){ window.location.href = a.href; }
+    function onTap(e){
+      var label = e.target.closest && e.target.closest('.tmw-view');
+      if(!label) return;
+
+      var card = label.closest && label.closest('a.tmw-flip');
+      if(!card || !card.href) return;
+
+      // External promos: anchor has target _blank or rel includes 'sponsored' or data-external="1"
+      var isExternal = (card.getAttribute('target') === '_blank')
+                       || (card.rel && card.rel.indexOf('sponsored') !== -1)
+                       || (card.dataset && card.dataset.external === '1');
+
+      if(isExternal){
+        e.preventDefault();
+        window.open(card.href, '_blank', 'noopener');
+      }else{
+        // internal cards (e.g., model profile) keep same-tab navigation
+        window.location.href = card.href;
+      }
     }
-    document.addEventListener('click', go);
-    document.addEventListener('touchend', go);
+    document.addEventListener('click', onTap);
+    document.addEventListener('touchend', onTap);
   })();
   </script>
-<?php }, 30);
+<?php }, 40);
 
 /* -----------------------------------------
  * ACF local fields: Promo Flipboxes (actors)
@@ -445,7 +459,7 @@ function tmw_render_actor_promos($term_id){
   <section class="tmw-actor-promos" aria-label="Promotions">
     <div class="tmw-grid tmw-cols-4" style="margin-top:18px">
       <?php foreach ($items as $it): ?>
-        <a class="tmw-flip" href="<?php echo $it['url']; ?>" target="_blank" rel="sponsored nofollow noopener">
+        <a class="tmw-flip tmw-promo" href="<?php echo $it['url']; ?>" target="_blank" rel="sponsored nofollow noopener" data-external="1">
           <div class="tmw-flip-inner">
             <!-- FRONT: fixed CTA -->
             <div class="tmw-flip-front" style="background-image:url('<?php echo $it['front']; ?>');">
