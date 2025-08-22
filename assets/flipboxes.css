@@ -69,7 +69,7 @@
 }
 
 /* ---------- OVERLAYS ---------- */
-/* FRONT: actor name centered + bigger red arrow */
+/* FRONT: actor name centered */
 .tmw-name{
   position:absolute; left:50%; bottom:12px;
   transform:translateX(-50%);
@@ -78,12 +78,17 @@
   color:#fff; background:rgba(0,0,0,.55); line-height:1;
   text-decoration:none;
 }
+/* Front label: add three red arrows */
 .tmw-name::after{
-  content:"›"; margin-left:10px; font-weight:900;
-  font-size:1.35rem; line-height:1; color:var(--tmw-accent);
+  content:" >>>";
+  margin-left:10px;
+  font-weight:900;
+  font-size:1.25rem;
+  line-height:1;
+  color:var(--tmw-accent);
 }
 
-/* BACK: centered “View profile >>>” in red */
+/* BACK: centered “View profile” in red */
 .tmw-view{
   position:absolute; left:50%; bottom:12px;
   transform:translateX(-50%);
@@ -92,7 +97,6 @@
   color:var(--tmw-accent); background:rgba(0,0,0,.55);
   text-decoration:none; line-height:1;
 }
-.tmw-view::after{ content:" >>>"; }
 
 /* ---------- BANNER BETWEEN ROWS ---------- */
 .tmw-banner-wrap{
@@ -143,52 +147,6 @@
   .tmw-layout{ grid-template-columns:1fr; }
 }
 
-/* Front: name smaller, single line, centered, with three red arrows */
-.tmw-name{
-  /* keep existing centering via left:50% + translateX(-50%) from current CSS */
-  font-size:.90rem;
-  padding:5px 10px;
-  display:inline-flex;
-  align-items:center;
-  white-space:nowrap;
-  max-width:calc(100% - 24px);
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.tmw-name::after{
-  content:" >>>";
-  margin-left:8px;
-  font-weight:900;
-  font-size:1.1rem;
-  line-height:1;
-  color:var(--tmw-accent);
-}
-
-/* Back: keep red label, but remove arrows */
-.tmw-view::after{ content:""; }
-
-/* Ensure theme accent is our red */
-.tmw-grid{ --tmw-accent:#db001a; }
-/* Back label: stay on one line, still centered & red */
-.tmw-view{
-  white-space: nowrap;
-  display: inline-block;
-}
-/* Ensure no arrows on the back side */
-.tmw-view::after{ content:""; }
-
-/* Back label: single line, clickable feel, with arrows */
-.tmw-view{
-  white-space: nowrap;
-  display: inline-block;
-  cursor: pointer;
-}
-.tmw-view::after{
-  content: " >>>";
-}
-/* Ensure accent red */
-.tmw-grid{ --tmw-accent:#db001a; }
-
 /* ===== Model biography (actors taxonomy) ===== */
 .tmw-actor{display:block}
 .tmw-actor-photo{max-width:420px;margin:0 0 12px}
@@ -205,7 +163,7 @@
   background:rgba(0,0,0,.55);color:var(--tmw-accent);text-decoration:none;font-weight:700
 }
 /* ===== Attention animations for back label ===== */
-/* Subtle pulse on the label + tiny nudge on the >>> arrows */
+/* Subtle pulse on the label */
 .tmw-flip-back .tmw-view{
   /* keep your existing styles; add the animation below */
   animation: tmw-pulse 1.6s ease-in-out infinite;
@@ -213,11 +171,6 @@
   will-change: transform, box-shadow;
 }
 
-.tmw-flip-back .tmw-view::after{
-  /* you already have: content: " >>>"; keep it */
-  animation: tmw-caret 1s ease-in-out infinite;
-  display: inline-block; /* ensures the nudge is visible */
-}
 
 /* Pulse the chip (slight scale + soft red glow) */
 @keyframes tmw-pulse{
@@ -235,8 +188,7 @@
 
 /* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce){
-  .tmw-flip-back .tmw-view,
-  .tmw-flip-back .tmw-view::after{ animation: none !important; }
+  .tmw-flip-back .tmw-view{ animation: none !important; }
 }
 /* ===== Attention animations for FRONT label (actor name) ===== */
 .tmw-flip-front .tmw-name{
