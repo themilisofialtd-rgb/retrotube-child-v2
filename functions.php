@@ -327,35 +327,32 @@ add_action('wp_head', function () { ?>
   </script>
 <?php }, 99);
 
-// Ensure clicks/taps on .tmw-view behave correctly on mobile (open external in new tab)
+// Allow navigation on promo cards ONLY when the back label is clicked
 add_action('wp_footer', function(){ ?>
   <script>
   (function(){
-    function onTap(e){
-      var label = e.target.closest && e.target.closest('.tmw-view');
-      if(!label) return;
+    function closest(el, sel){ return el && el.closest ? el.closest(sel) : null; }
 
-      var card = label.closest && label.closest('a.tmw-flip');
-      if(!card || !card.href) return;
+    function onClick(e){
+      var promoA  = closest(e.target, 'a.tmw-flip.tmw-promo');
+      if(!promoA) return; // not a promo card
 
-      // External promos: anchor has target _blank or rel includes 'sponsored' or data-external="1"
-      var isExternal = (card.getAttribute('target') === '_blank')
-                       || (card.rel && card.rel.indexOf('sponsored') !== -1)
-                       || (card.dataset && card.dataset.external === '1');
-
-      if(isExternal){
+      var onLabel = !!closest(e.target, '.tmw-view'); // the back-side action label
+      if(onLabel){
+        // Always open external in a new tab (mobile/desktop)
         e.preventDefault();
-        window.open(card.href, '_blank', 'noopener');
+        window.open(promoA.href, '_blank', 'noopener');
       }else{
-        // internal cards (e.g., model profile) keep same-tab navigation
-        window.location.href = card.href;
+        // Click elsewhere on the card (front or back background): just flip, no navigation
+        e.preventDefault();
       }
     }
-    document.addEventListener('click', onTap);
-    document.addEventListener('touchend', onTap);
+
+    document.addEventListener('click', onClick);
+    document.addEventListener('touchend', onClick);
   })();
   </script>
-<?php }, 40);
+<?php }, 45);
 
 /* -----------------------------------------
  * ACF local fields: Promo Flipboxes (actors)
@@ -458,8 +455,10 @@ function tmw_render_actor_promos($term_id){
   ob_start(); ?>
   <section class="tmw-actor-promos" aria-label="Promotions">
     <div class="tmw-grid tmw-cols-4" style="margin-top:18px">
-      <?php foreach ($items as $it): ?>
-        <a class="tmw-flip tmw-promo" href="<?php echo $it['url']; ?>" target="_blank" rel="sponsored nofollow noopener" data-external="1">
+      <?php foreach ($items as $it):
+        // Anchor for promo cards — must be external/new tab
+        echo '<a class="tmw-flip tmw-promo" href="'.$it['url'].'" target="_blank" rel="sponsored nofollow noopener" data-external="1">';
+      ?>
           <div class="tmw-flip-inner">
             <!-- FRONT: fixed CTA -->
             <div class="tmw-flip-front" style="background-image:url('<?php echo $it['front']; ?>');">
