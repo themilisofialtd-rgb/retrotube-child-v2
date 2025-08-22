@@ -297,3 +297,6 @@
   box-shadow:0 4px 14px rgba(219,0,26,.35);
 }
 .tmw-live-btn:hover{ filter:brightness(1.08); }
+
+/* Promo row under bio */
+.tmw-promos{ margin-top: 10px; }

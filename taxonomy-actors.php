@@ -90,7 +90,12 @@ if (function_exists('get_field')) {
           echo '<div class="tmw-bio">'.wp_kses_post($desc).'</div>';
         } else {
           echo '<div class="tmw-bio tmw-bio-empty">No biography provided yet.</div>';
-        }
+      }
+      }
+
+      // Show promo flipboxes, default 4 columns (auto-responsive)
+      if (function_exists('tmw_render_actor_promos')) {
+        tmw_render_actor_promos($term->term_id, 4);
       }
 
       // Live link button (optional)
