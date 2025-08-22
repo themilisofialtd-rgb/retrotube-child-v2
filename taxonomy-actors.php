@@ -93,9 +93,9 @@ if (function_exists('get_field')) {
       }
       }
 
-      // Show promo flipboxes, default 4 columns (auto-responsive)
-      if (function_exists('tmw_render_actor_promos')) {
-        tmw_render_actor_promos($term->term_id, 4);
+      $term = get_queried_object();
+      if ($term && isset($term->term_id)) {
+        echo tmw_render_actor_promos($term->term_id);
       }
 
       // Live link button (optional)
