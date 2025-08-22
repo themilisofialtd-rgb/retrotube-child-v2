@@ -426,7 +426,7 @@ function tmw_render_actor_promos($term_id){
     if (!$g) continue;
 
     $url   = isset($g['url'])   ? trim($g['url'])   : '';
-    $title = isset($g['title']) ? trim($g['title']) : '';
+    $title = isset($g['title']) ? trim($g['title']) : ''; // this is the BACK label (your custom text)
     $front = isset($g['front']['url']) ? $g['front']['url'] : '';
     $back  = isset($g['back']['url'])  ? $g['back']['url']  : $front;
 
@@ -447,11 +447,13 @@ function tmw_render_actor_promos($term_id){
       <?php foreach ($items as $it): ?>
         <a class="tmw-flip" href="<?php echo $it['url']; ?>" target="_blank" rel="sponsored nofollow noopener">
           <div class="tmw-flip-inner">
+            <!-- FRONT: fixed CTA -->
             <div class="tmw-flip-front" style="background-image:url('<?php echo $it['front']; ?>');">
-              <span class="tmw-name"><?php echo $it['title']; ?></span>
+              <span class="tmw-name">View more</span>
             </div>
+            <!-- BACK: your custom per-card text -->
             <div class="tmw-flip-back" style="background-image:url('<?php echo $it['back']; ?>');">
-              <span class="tmw-view">Open >>></span>
+              <span class="tmw-view"><?php echo $it['title']; ?></span>
             </div>
           </div>
         </a>
