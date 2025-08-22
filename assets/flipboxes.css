@@ -267,3 +267,23 @@
 
 /* Promo row under bio */
 .tmw-promos{ margin-top: 10px; }
+
+/* ===== Mobile-only: 2× larger action button on flipbox back ===== */
+@media (max-width: 768px), (pointer: coarse){
+  .tmw-view{
+    font-size: 1.80rem;       /* ~2× typical .90rem base */
+    line-height: 1;
+    padding: 10px 16px;       /* ~2× padding for balance */
+    border-radius: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 92%;
+    cursor: pointer;
+  }
+  /* Scale arrows if present on the back label (harmless if none) */
+  .tmw-view::after{
+    font-size: 1.80rem;
+    line-height: 1;
+  }
+}
