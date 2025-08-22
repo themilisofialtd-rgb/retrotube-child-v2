@@ -343,109 +343,121 @@ add_action('wp_footer', function(){ ?>
   </script>
 <?php }, 30);
 
-/* --- ACF: Promo flipboxes on Actors taxonomy --- */
-add_action('init', function () {
+/* -----------------------------------------
+ * ACF local fields: Promo Flipboxes (actors)
+ * ----------------------------------------- */
+add_action('acf/init', function () {
   if (!function_exists('acf_add_local_field_group')) return;
 
-  // Avoid double-registering
-  if (!acf_get_local_field_group('group_tmw_actor_promos')) {
-    acf_add_local_field_group([
-      'key' => 'group_tmw_actor_promos',
-      'title' => 'Promo Flipboxes',
-      'fields' => [
+  // Helper to build one promo group
+  $promo_group = function ($n, $default_title = '') {
+    return [
+      'key'   => "field_tmw_promo_{$n}",
+      'label' => "Promo {$n}",
+      'name'  => "promo{$n}",
+      'type'  => 'group',
+      'layout'=> 'block',
+      'sub_fields' => [
         [
-          'key' => 'field_tmw_promos',
-          'label' => 'Promo Flipboxes',
-          'name' => 'tmw_promos',
-          'type' => 'repeater',
-          'instructions' => 'Add external promo cards for this model. Each card can link to a different platform (OnlyFans, Fansly, Reddit, etc.).',
-          'collapsed' => 'field_tmw_label',
-          'min' => 0,
-          'max' => 12,
-          'layout' => 'row',
-          'button_label' => 'Add Promo Flipbox',
-          'sub_fields' => [
-            [
-              'key' => 'field_tmw_front',
-              'label' => 'Front Image',
-              'name' => 'front',
-              'type' => 'image',
-              'return_format' => 'array',
-              'preview_size' => 'medium',
-              'library' => 'all',
-            ],
-            [
-              'key' => 'field_tmw_back',
-              'label' => 'Back Image',
-              'name' => 'back',
-              'type' => 'image',
-              'return_format' => 'array',
-              'preview_size' => 'medium',
-              'library' => 'all',
-            ],
-            [
-              'key' => 'field_tmw_label',
-              'label' => 'Back-side Text',
-              'name' => 'label',
-              'type' => 'text',
-              'default_value' => 'View offer >>>',
-              'placeholder' => 'e.g. Follow on OnlyFans >>>',
-            ],
-            [
-              'key' => 'field_tmw_url',
-              'label' => 'External URL',
-              'name' => 'url',
-              'type' => 'url',
-              'placeholder' => 'https://...',
-            ],
-          ],
+          'key'   => "field_tmw_promo{$n}_title",
+          'label' => 'Label / Text',
+          'name'  => 'title',
+          'type'  => 'text',
+          'default_value' => $default_title,
+          'wrapper' => ['width' => 40],
+        ],
+        [
+          'key'   => "field_tmw_promo{$n}_url",
+          'label' => 'External URL',
+          'name'  => 'url',
+          'type'  => 'url',
+          'wrapper' => ['width' => 60],
+        ],
+        [
+          'key'   => "field_tmw_promo{$n}_front",
+          'label' => 'Front image',
+          'name'  => 'front',
+          'type'  => 'image',
+          'return_format' => 'array',
+          'preview_size'  => 'medium',
+          'instructions'  => 'Recommended: 800×1200 (portrait) to match your flipboxes',
+          'wrapper' => ['width' => 50],
+        ],
+        [
+          'key'   => "field_tmw_promo{$n}_back",
+          'label' => 'Back image (optional)',
+          'name'  => 'back',
+          'type'  => 'image',
+          'return_format' => 'array',
+          'preview_size'  => 'medium',
+          'wrapper' => ['width' => 50],
         ],
       ],
-      'location' => [[[
-        'param' => 'taxonomy',
-        'operator' => '==',
-        'value' => 'actors',
-      ]]],
-      'style' => 'default',
-      'position' => 'acf_after_term_description',
-      'active' => true,
-    ]);
-  }
+    ];
+  };
+
+  acf_add_local_field_group([
+    'key'    => 'group_tmw_actor_promos',
+    'title'  => 'Promo Flipboxes',
+    'fields' => [
+      $promo_group(1, 'OnlyFans'),
+      $promo_group(2, 'Fansly'),
+      $promo_group(3, 'Reddit'),
+      $promo_group(4, 'Website'),
+    ],
+    'location' => [[[
+      'param'    => 'taxonomy',
+      'operator' => '==',
+      'value'    => 'actors',   // “Models” taxonomy
+    ]]],
+    'menu_order' => 30,
+  ]);
 });
 
 /**
- * Render promo flipboxes for a given actors term.
- * @param int $term_id
- * @param int $cols columns (2–4)
+ * Front-end renderer for the 4 promo flipboxes on an actor page.
  */
-function tmw_render_actor_promos(int $term_id, int $cols = 4) {
-  if (!function_exists('get_field')) return;
+function tmw_render_actor_promos($term_id){
+  if (!function_exists('get_field')) return '';
 
-  $items = get_field('tmw_promos', 'actors_' . $term_id);
-  if (empty($items) || !is_array($items)) return;
+  $items = [];
+  for ($i=1; $i<=4; $i++){
+    $g = get_field("promo{$i}", "actors_{$term_id}");
+    if (!$g) continue;
 
-  $cols = max(2, min(4, (int)$cols));
+    $url   = isset($g['url'])   ? trim($g['url'])   : '';
+    $title = isset($g['title']) ? trim($g['title']) : '';
+    $front = isset($g['front']['url']) ? $g['front']['url'] : '';
+    $back  = isset($g['back']['url'])  ? $g['back']['url']  : $front;
 
-  echo '<div class="tmw-grid tmw-cols-' . (int)$cols . ' tmw-promos">';
-  foreach ($items as $it) {
-    $front = is_array($it['front'] ?? null) ? ($it['front']['url'] ?? '') : '';
-    $back  = is_array($it['back']  ?? null) ? ($it['back']['url']  ?? '') : '';
-    $url   = esc_url($it['url']    ?? '');
-    $label = esc_html($it['label'] ?? 'Open >>>');
-
-    // Skip if no link or no imagery
-    if (empty($url) || (empty($front) && empty($back))) continue;
-    if (empty($back))  $back  = $front;
-    if (empty($front)) $front = $back;
-
-    echo '<a class="tmw-flip tmw-promo" href="'.$url.'" target="_blank" rel="nofollow sponsored noopener">';
-      echo '<div class="tmw-flip-inner">';
-        echo '<div class="tmw-flip-front" style="background-image:url('.esc_url($front).');"></div>';
-        echo '<div class="tmw-flip-back"  style="background-image:url('.esc_url($back).');">';
-          echo '<span class="tmw-view">'.$label.'</span>';
-        echo '</div>';
-      echo '</div>';
-    echo '</a>';
+    if ($url && $front){
+      $items[] = [
+        'url'   => esc_url($url),
+        'title' => esc_html($title ?: 'Open'),
+        'front' => esc_url($front),
+        'back'  => esc_url($back),
+      ];
+    }
   }
-  echo '</div>';
+  if (!$items) return '';
+
+  ob_start(); ?>
+  <section class="tmw-actor-promos" aria-label="Promotions">
+    <div class="tmw-grid tmw-cols-4" style="margin-top:18px">
+      <?php foreach ($items as $it): ?>
+        <a class="tmw-flip" href="<?php echo $it['url']; ?>" target="_blank" rel="sponsored nofollow noopener">
+          <div class="tmw-flip-inner">
+            <div class="tmw-flip-front" style="background-image:url('<?php echo $it['front']; ?>');">
+              <span class="tmw-name"><?php echo $it['title']; ?></span>
+            </div>
+            <div class="tmw-flip-back" style="background-image:url('<?php echo $it['back']; ?>');">
+              <span class="tmw-view">Open >>></span>
+            </div>
+          </div>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </section>
+  <?php
+  return ob_get_clean();
 }
