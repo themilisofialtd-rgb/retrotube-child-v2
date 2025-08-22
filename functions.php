@@ -95,11 +95,9 @@ add_action('after_setup_theme', function () {
   add_image_size('tmw-actor-hero-land', 1440, 810, true); // 16:9 hard crop
 });
 
-// Horizontal hero banner for model biography (24:5)
+// Horizontal hero banner for model biography (4:1)
 add_action('after_setup_theme', function () {
-  if (!has_image_size('tmw-actor-hero-banner')) {
-    add_image_size('tmw-actor-hero-banner', 1200, 250, true); // hard crop
-  }
+  add_image_size('tmw-actor-hero-banner', 1200, 300, true); // hard crop 1200×300
 });
 
 /**
