@@ -327,32 +327,61 @@ add_action('wp_head', function () { ?>
   </script>
 <?php }, 99);
 
-// Allow navigation on promo cards ONLY when the back label is clicked
+// Unified flipbox tap/click behavior (mobile-friendly)
 add_action('wp_footer', function(){ ?>
   <script>
   (function(){
     function closest(el, sel){ return el && el.closest ? el.closest(sel) : null; }
 
-    function onClick(e){
-      var promoA  = closest(e.target, 'a.tmw-flip.tmw-promo');
-      if(!promoA) return; // not a promo card
-
-      var onLabel = !!closest(e.target, '.tmw-view'); // the back-side action label
-      if(onLabel){
-        // Always open external in a new tab (mobile/desktop)
-        e.preventDefault();
-        window.open(promoA.href, '_blank', 'noopener');
-      }else{
-        // Click elsewhere on the card (front or back background): just flip, no navigation
-        e.preventDefault();
-      }
+    // Heuristic for mobile/touch
+    var isMobile = false;
+    try {
+      isMobile = (matchMedia('(pointer: coarse)').matches || matchMedia('(hover: none)').matches);
+    } catch(e) {
+      // fallback width check
+      isMobile = (window.innerWidth <= 992);
     }
 
-    document.addEventListener('click', onClick);
-    document.addEventListener('touchend', onClick);
+    function onInteract(e){
+      var card = closest(e.target, 'a.tmw-flip');
+      if(!card) return; // not a flipbox card
+
+      var onLabel = !!closest(e.target, '.tmw-view');   // the back-side label/button
+      var isPromo = card.classList.contains('tmw-promo'); // external promo cards under bio
+
+      if(isPromo){
+        // PROMO CARDS (external): only the back label navigates, always new tab
+        if(onLabel){
+          e.preventDefault();
+          window.open(card.href, '_blank', 'noopener');
+        }else{
+          // tap/click elsewhere: just flip, no navigation
+          e.preventDefault();
+        }
+        return;
+      }
+
+      // INTERNAL ACTOR GRID CARDS
+      if(isMobile){
+        // On mobile: only back label should navigate (same tab)
+        if(onLabel){
+          // allow default navigation
+          return;
+        }else{
+          // tap on front/elsewhere: prevent navigation (flip only)
+          e.preventDefault();
+          return;
+        }
+      }
+      // Desktop: do nothing (default behavior ok)
+    }
+
+    // Use capture to catch early and be robust against theme handlers
+    document.addEventListener('click', onInteract, true);
+    document.addEventListener('touchend', onInteract, true);
   })();
   </script>
-<?php }, 45);
+<?php }, 50);
 
 /* -----------------------------------------
  * ACF local fields: Promo Flipboxes (actors)
