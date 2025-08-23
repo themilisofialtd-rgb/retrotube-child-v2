@@ -544,3 +544,89 @@ add_filter('the_content', function ($content) {
 
 // Disable WordPress auto-embeds (e.g. raw URLs turned into players)
 remove_filter('the_content', array($GLOBALS['wp_embed'], 'autoembed'), 8);
+
+/**
+ * Strip any video inside post content on single video posts.
+ * Multi-layer approach:
+ *  - block video shortcodes before they render
+ *  - kill oEmbed output
+ *  - remove Gutenberg video/embed blocks
+ *  - final HTML sweep to remove <iframe>/<video>/<embed>
+ * The theme's main player (outside the_content) is unaffected.
+ */
+
+if (!function_exists('tmw_strip_video_in_content_active')) {
+  function tmw_strip_video_in_content_active(): bool {
+    // Adjust post type list if your videos use a custom type
+    if (is_admin()) return false;
+    if (!is_singular()) return false;
+    $pt = get_post_type();
+    $video_types = ['post','video','videos','wpsc-video','wp-script-video','wpws_video'];
+    return in_array($pt, $video_types, true);
+  }
+}
+
+// 1) Stop video shortcodes before they execute
+add_filter('pre_do_shortcode_tag', function($return, $tag, $atts, $m){
+  if (!tmw_strip_video_in_content_active()) return $return;
+  $video_tags = [
+    'video','playlist','audio','embed','wpvideo','wp_playlist',
+    'youtube','vimeo','dailymotion','jwplayer','videojs','fvplayer','plyr',
+    'wpsc_video','wps_video','wpws_video','flowplayer','jetpack_video'
+  ];
+  if (in_array(strtolower($tag), $video_tags, true)) {
+    return ''; // block it
+  }
+  return $return;
+}, 10, 4);
+
+// 2) Kill oEmbed output inside content
+add_filter('embed_oembed_html', function($html, $url, $attr, $post_ID){
+  if (!tmw_strip_video_in_content_active()) return $html;
+  return ''; // no embedded players in content area
+}, 10, 4);
+
+add_filter('oembed_dataparse', function($return, $data, $url){
+  if (!tmw_strip_video_in_content_active()) return $return;
+  return ''; // belt & suspenders
+}, 10, 3);
+
+// 3) Remove Gutenberg video/embed blocks when rendering content
+add_filter('render_block', function($block_content, $block){
+  if (!tmw_strip_video_in_content_active()) return $block_content;
+  $name = isset($block['blockName']) ? $block['blockName'] : '';
+  if (!$name) return $block_content;
+
+  // core/video, core/embed and all core-embed/* (YouTube, Vimeo, etc.)
+  if ($name === 'core/video' || $name === 'core/embed' || strpos($name, 'core-embed/') === 0) {
+    return '';
+  }
+  return $block_content;
+}, 9, 2);
+
+// 4) Final HTML sweep on the_content (removes raw tags & wrappers)
+add_filter('the_content', function ($content) {
+  if (!tmw_strip_video_in_content_active()) return $content;
+
+  $patterns = [
+    '#<iframe\\b[^>]*>.*?</iframe>#is',
+    '#<video\\b[^>]*>.*?</video>#is',
+    '#<audio\\b[^>]*>.*?</audio>#is',
+    '#<object\\b[^>]*>.*?</object>#is',
+    '#<embed\\b[^>]*>.*?</embed>#is',
+    // common wrappers/classes used by blocks/players
+    '#<figure[^>]*class="[^\"]*(wp-block-embed|wp-block-video)[^\"]*"[^>]*>.*?</figure>#is',
+    '#<div[^>]*class="[^\"]*(wp-block-embed|video-js|jwplayer|plyr|flowplayer|responsive-embed|embed-container)[^\"]*"[^>]*>.*?</div>#is',
+  ];
+  foreach ($patterns as $rx) {
+    $content = preg_replace($rx, '', $content);
+  }
+
+  // Generic shortcode cleanup if any slipped through
+  $content = preg_replace('/\\[[^\\]]*?video[^\\]]*\\](?:.*?\\[\\/[^\\]]*?video[^\\]]*\\])?/is', '', $content);
+  // Remove empty <p> left behind
+  $content = preg_replace('/<p>\\s*<\\/p>/i', '', $content);
+
+  return $content;
+}, 99);
+
