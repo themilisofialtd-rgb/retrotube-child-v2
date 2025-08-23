@@ -630,3 +630,51 @@ add_filter('the_content', function ($content) {
   return $content;
 }, 99);
 
+/**
+ * Pick front/back images for a model/actor term.
+ * $prefer: 'auto' (default) | 'aw' | 'acf'
+ * - 'auto': use AWEmpire if available (tmw_aw_card_data), else ACF (actor_card_front/back), else term thumbnail.
+ * - 'aw':   force AWEmpire (falls back to ACF if missing).
+ * - 'acf':  force ACF/thumbnail only.
+ *
+ * @return array [front_url, back_url]
+ */
+function tmw_get_term_images( int $term_id, string $prefer = 'auto' ): array {
+  $front = ''; $back = '';
+
+  $use_aw  = ($prefer === 'aw'  || $prefer === 'auto');
+  $use_acf = ($prefer === 'acf' || $prefer === 'auto');
+
+  // 1) AWEmpire (if bridge loaded and nickname configured)
+  if ( $use_aw && function_exists('tmw_aw_card_data') ) {
+    $cd = tmw_aw_card_data($term_id);
+    if ( !empty($cd['front']) ) $front = esc_url_raw($cd['front']);
+    if ( !empty($cd['back'])  ) $back  = esc_url_raw($cd['back']);
+  }
+
+  // 2) ACF fallbacks (actor_card_front/back)
+  if ( $use_acf && (!$front || !$back) && function_exists('get_field') ) {
+    $acf_id = 'actors_'.$term_id;
+    $acf_front = get_field('actor_card_front', $acf_id);
+    $acf_back  = get_field('actor_card_back',  $acf_id);
+    if (!$front && is_array($acf_front) && !empty($acf_front['url'])) $front = esc_url_raw($acf_front['url']);
+    if (!$back  && is_array($acf_back)  && !empty($acf_back['url']))   $back  = esc_url_raw($acf_back['url']);
+  }
+
+  // 3) Taxonomy thumbnail as a last resort
+  if (!$front || !$back) {
+    $thumb_id = (int) get_term_meta($term_id, 'thumbnail_id', true);
+    if ($thumb_id) {
+      $thumb_url = wp_get_attachment_image_url($thumb_id, 'large');
+      if (!$front) $front = $thumb_url ?: '';
+      if (!$back)  $back  = $thumb_url ?: '';
+    }
+  }
+
+  // Ensure back isn’t empty
+  if (!$back) $back = $front;
+
+  return [$front, $back];
+}
+
+
