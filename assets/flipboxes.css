@@ -304,3 +304,16 @@
     line-height: 1;
   }
 }
+
+/* Safety net: hide any leftover video embeds inside the post description */
+.entry-content iframe,
+.entry-content video,
+.entry-content .wp-block-embed,
+.entry-content .wp-block-video,
+.entry-content .video-js,
+.entry-content .jwplayer,
+.entry-content .plyr,
+.entry-content .flowplayer,
+.entry-content .responsive-embed,
+.entry-content .embed-container { display:none !important; }
+
