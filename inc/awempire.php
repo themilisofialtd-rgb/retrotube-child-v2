@@ -179,3 +179,22 @@ if (function_exists('tmw_aw_pick_images_from_row') && function_exists('tmw_aw_bu
     return ['front'=>$front,'back'=>$back,'link'=>$link];
   }
 endif;
+
+// Admin bar button to purge the AWE feed transient cache
+add_action('admin_bar_menu', function($bar){
+  if (!current_user_can('manage_options')) return;
+  $bar->add_node([
+    'id'=>'tmw_aw_clear_cache',
+    'title'=>'Purge AWEmpire Cache',
+    'href'=> wp_nonce_url(admin_url('?tmw_aw_clear_cache=1'), 'tmw_aw_clear_cache')
+  ]);
+}, 100);
+
+add_action('admin_init', function(){
+  if (current_user_can('manage_options') && isset($_GET['tmw_aw_clear_cache']) && wp_verify_nonce($_GET['_wpnonce'],'tmw_aw_clear_cache')) {
+    delete_transient('tmw_aw_feed_v1');
+    wp_safe_redirect(remove_query_arg(['tmw_aw_clear_cache','_wpnonce']));
+    exit;
+  }
+});
+
