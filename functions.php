@@ -507,39 +507,37 @@ function tmw_render_actor_promos($term_id){
 }
 
 /**
- * Remove any video/embed markup from the post content (description) on single posts,
- * so the extra player does not show under the title/description.
- * Keeps the main theme/player intact.
+ * Remove video embeds/shortcodes from post content (description) on single posts.
+ * Prevents the video from appearing twice (theme player + content).
  */
 add_filter('the_content', function ($content) {
-    if (is_admin() || !is_singular()) {
+    // Only affect single posts (Retrotube uses "post" for videos)
+    if (!is_singular('post')) {
         return $content;
     }
 
-    // If you want to restrict to certain post types, list them here.
-    // Many WP-Script installs use 'post' for videos, but we include a few common variants.
-    $pt = get_post_type();
-    $video_types = ['post','video','videos','wpsc-video','wp-script-video'];
-    if (!in_array($pt, $video_types, true)) {
-        return $content;
-    }
-
-    // Remove common video shortcodes (and self-closing variants)
+    // 1) Remove common video shortcodes (standalone or enclosed)
     $shortcodes = [
-        'video','embed','playlist','videopress','videojs','jwplayer','flowplayer',
-        'fvplayer','streamable','wp-video-lightbox','wpsc_video','wps_video'
+        'video', 'playlist', 'audio', 'embed', 'wpvideo', 'wp_playlist',
+        'jwplayer', 'videojs', 'wps_player', 'plyr', 'wp-script-player'
     ];
-    foreach ($shortcodes as $sc) {
-        $content = preg_replace('/\\[' . $sc . '[^\\]]*\\](?:.*?\\[\\/' . $sc . '\\])?/is', '', $content);
+    foreach ($shortcodes as $tag) {
+        // [tag ...]...[/tag]
+        $content = preg_replace('/\\[' . $tag . '[^\\]]*\\].*?\\[\\/' . $tag . '\\]/is', '', $content);
+        // Self-closing: [tag ...]
+        $content = preg_replace('/\\[' . $tag . '[^\\]]*\\]/is', '', $content);
     }
 
-    // Remove Gutenberg video/embed blocks
-    $content = preg_replace('#<!--\\s*wp:(?:video|embed|core-embed/[a-z0-9\\-]+).*?-->.*?<!--\\s*/wp:(?:video|embed|core-embed/[a-z0-9\\-]+)\\s*-->#is', '', $content);
-
-    // Remove raw HTML media tags inside the content area
-    $content = preg_replace('#<(video|audio|object|iframe|embed)[^>]*>.*?</\\1>#is', '', $content);
-    $content = preg_replace('#<(iframe|embed)([^>]*)/?>#is', '', $content); // self-closing fallback
+    // 2) Strip raw HTML embeds
+    // <iframe ...></iframe>
+    $content = preg_replace('/<iframe\\b[^>]*>.*?<\\/iframe>/is', '', $content);
+    // <video ...></video>
+    $content = preg_replace('/<video\\b[^>]*>.*?<\\/video>/is', '', $content);
+    // <embed ...>
+    $content = preg_replace('/<embed\\b[^>]*>/is', '', $content);
+    // WordPress block/figure wrappers for embeds
+    $content = preg_replace('/<figure[^>]*class="[^"]*wp-block-embed[^"]*"[^>]*>.*?<\\/figure>/is', '', $content);
+    $content = preg_replace('/<div[^>]*class="[^"]*(wp-video|video-player)[^"]*"[^>]*>.*?<\\/div>/is', '', $content);
 
     return $content;
 }, 20);
-
