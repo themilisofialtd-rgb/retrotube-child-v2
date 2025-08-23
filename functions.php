@@ -541,3 +541,6 @@ add_filter('the_content', function ($content) {
 
     return $content;
 }, 20);
+
+// Disable WordPress auto-embeds (e.g. raw URLs turned into players)
+remove_filter('the_content', array($GLOBALS['wp_embed'], 'autoembed'), 8);
