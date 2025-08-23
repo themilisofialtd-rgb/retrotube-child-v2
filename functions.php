@@ -505,3 +505,41 @@ function tmw_render_actor_promos($term_id){
   <?php
   return ob_get_clean();
 }
+
+/**
+ * Remove any video/embed markup from the post content (description) on single posts,
+ * so the extra player does not show under the title/description.
+ * Keeps the main theme/player intact.
+ */
+add_filter('the_content', function ($content) {
+    if (is_admin() || !is_singular()) {
+        return $content;
+    }
+
+    // If you want to restrict to certain post types, list them here.
+    // Many WP-Script installs use 'post' for videos, but we include a few common variants.
+    $pt = get_post_type();
+    $video_types = ['post','video','videos','wpsc-video','wp-script-video'];
+    if (!in_array($pt, $video_types, true)) {
+        return $content;
+    }
+
+    // Remove common video shortcodes (and self-closing variants)
+    $shortcodes = [
+        'video','embed','playlist','videopress','videojs','jwplayer','flowplayer',
+        'fvplayer','streamable','wp-video-lightbox','wpsc_video','wps_video'
+    ];
+    foreach ($shortcodes as $sc) {
+        $content = preg_replace('/\\[' . $sc . '[^\\]]*\\](?:.*?\\[\\/' . $sc . '\\])?/is', '', $content);
+    }
+
+    // Remove Gutenberg video/embed blocks
+    $content = preg_replace('#<!--\\s*wp:(?:video|embed|core-embed/[a-z0-9\\-]+).*?-->.*?<!--\\s*/wp:(?:video|embed|core-embed/[a-z0-9\\-]+)\\s*-->#is', '', $content);
+
+    // Remove raw HTML media tags inside the content area
+    $content = preg_replace('#<(video|audio|object|iframe|embed)[^>]*>.*?</\\1>#is', '', $content);
+    $content = preg_replace('#<(iframe|embed)([^>]*)/?>#is', '', $content); // self-closing fallback
+
+    return $content;
+}, 20);
+
