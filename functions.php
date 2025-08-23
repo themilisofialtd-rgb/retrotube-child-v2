@@ -21,46 +21,42 @@ add_action('wp_enqueue_scripts', function () {
 
 /* ---------------- AWE: Admin purge button + helpers ---------------- */
 
+if (!function_exists('tmw_normalize_nick')) {
+  function tmw_normalize_nick($s){
+    $s = strtolower($s);
+    $s = preg_replace('~[^\pL\d]+~u', '', $s); // remove spaces, hyphens, underscores
+    return $s;
+  }
+}
+
 if (!function_exists('tmw_aw_get_feed')) {
-  function tmw_aw_get_feed($cache_minutes = 10) {
+  function tmw_aw_get_feed($ttl_minutes = 10) {
     $key = 'tmw_aw_feed_v1';
     $cached = get_transient($key);
     if ($cached !== false) return $cached;
 
-    if (!defined('AWEMPIRE_FEED_URL') || !AWEMPIRE_FEED_URL) {
-      return [];
-    }
+    if (!defined('AWEMPIRE_FEED_URL') || !AWEMPIRE_FEED_URL) return [];
 
     $resp = wp_remote_get(AWEMPIRE_FEED_URL, ['timeout' => 15]);
     if (is_wp_error($resp)) return [];
 
     $data = json_decode(wp_remote_retrieve_body($resp), true);
     if (!is_array($data)) $data = [];
-
-    set_transient($key, $data, MINUTE_IN_SECONDS * $cache_minutes);
+    set_transient($key, $data, $ttl_minutes * MINUTE_IN_SECONDS);
     return $data;
   }
 }
 
 if (!function_exists('tmw_aw_find_by_candidates')) {
-  function tmw_aw_find_by_candidates(array $candidates) {
+  function tmw_aw_find_by_candidates($cands){
     $feed = tmw_aw_get_feed();
-    if (!$feed) return null;
+    if (empty($feed)) return null;
 
-    // Normalise once
-    $want = [];
-    foreach ($candidates as $cand) {
-      $cand = trim((string)$cand);
-      if ($cand === '') continue;
-      $want[] = strtolower($cand);
-      $want[] = strtolower(str_replace(['-','_',' '], '', $cand)); // “Abby Murray” -> “abbymurray”
-    }
-    $want = array_unique($want);
-
-    foreach ($feed as $row) {
-      $nickname = strtolower($row['nickname'] ?? ($row['name'] ?? ''));
-      $nickname_flat = str_replace(['-','_',' '], '', $nickname);
-      if (in_array($nickname, $want, true) || in_array($nickname_flat, $want, true)) {
+    $norms = array_map('tmw_normalize_nick', array_filter(array_unique($cands)));
+    foreach ($feed as $row){
+      $nick = strtolower($row['nickname'] ?? ($row['name'] ?? ''));
+      if (!$nick) continue;
+      if (in_array(tmw_normalize_nick($nick), $norms, true)) {
         return $row;
       }
     }
@@ -338,10 +334,27 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // Get images (ACF override -> AWE feed -> placeholder)
-    $card = function_exists('tmw_aw_card_data') ? tmw_aw_card_data($term->term_id) : ['front'=>'', 'back'=>'', 'link'=>''];
-    $front_url = esc_url($card['front']);
-    $back_url  = esc_url($card['back']);
+    // Auto-pick images from AWE feed; fall back to ACF/placeholder
+    $front_url = $back_url = '';
+    if (function_exists('tmw_aw_card_data')) {
+      $cd = tmw_aw_card_data($term->term_id);
+      $front_url = $cd['front'];
+      $back_url  = $cd['back'];
+    } else {
+      // Legacy fallback to ACF only
+      if (function_exists('get_field')) {
+        $acf_front = get_field('actor_card_front', 'actors_'.$term->term_id);
+        $acf_back  = get_field('actor_card_back',  'actors_'.$term->term_id);
+        $front_url = is_array($acf_front) && !empty($acf_front['url']) ? $acf_front['url'] : '';
+        $back_url  = is_array($acf_back)  && !empty($acf_back['url'])  ? $acf_back['url']  : $front_url;
+      }
+    }
+    $ph = get_stylesheet_directory_uri().'/assets/img/placeholders/model-card.jpg';
+    if (empty($front_url)) $front_url = $ph;
+    if (empty($back_url))  $back_url  = $front_url;
+
+    $front_url = esc_url($front_url);
+    $back_url  = esc_url($back_url);
 
     // Always link to biography here
     $profile_link = get_term_link($term);
