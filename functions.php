@@ -6,6 +6,10 @@
  * - Promo flipboxes shortcode (4 items, external links)
  */
 
+// Load AWEmpire helper
+$tmw_aw_file = get_stylesheet_directory() . '/inc/awempire.php';
+if (is_readable($tmw_aw_file)) { require_once $tmw_aw_file; }
+
 // Styles and lightweight optimizations.
 add_action('wp_enqueue_scripts', function () {
   // Parent + child styles.
@@ -169,10 +173,29 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // NEW: choose images (AW feed if available)
-    list($front_url, $back_url) = tmw_get_term_images( $term->term_id, strtolower($a['img_source']) );
+    // ACF first
+    $front_url = '';
+    $back_url  = '';
 
-    $link = get_term_link($term); // INTERNAL link to the biography page
+    if ( function_exists('get_field') ) {
+      $front = get_field('actor_card_front', 'actors_'.$term->term_id);
+      $back  = get_field('actor_card_back',  'actors_'.$term->term_id);
+      if ( is_array($front) && !empty($front['url']) ) $front_url = $front['url'];
+      if ( is_array($back)  && !empty($back['url'])  ) $back_url  = $back['url'];
+    }
+
+    // AWE fallback (auto-matched nickname)
+    if ( (empty($front_url) || empty($back_url)) && function_exists('tmw_aw_card_data') ) {
+      $card = tmw_aw_card_data( $term->term_id );
+      if ( empty($front_url) && !empty($card['front']) ) $front_url = $card['front'];
+      if ( empty($back_url)  && !empty($card['back'])  ) $back_url  = $card['back'];
+    }
+
+    // Final fallback
+    if ( empty($back_url) ) $back_url = $front_url;
+
+    // Keep INTERNAL link to the model biography on the models page
+    $link = get_term_link($term);
 
     echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">';
     echo   '<div class="tmw-flip-inner">';
