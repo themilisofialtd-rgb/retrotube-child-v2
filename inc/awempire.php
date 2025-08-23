@@ -91,9 +91,34 @@ if (!function_exists('tmw_aw_card_data')) {
   // if function doesn't exist yet, it's defined later in file; this guard avoids fatal.
 }
 
+// Admin bar button to purge the AWE feed transient cache
+add_action('admin_bar_menu', function($bar){
+  if (!current_user_can('manage_options')) return;
+  $bar->add_node([
+    'id'    => 'tmw_aw_clear_cache',
+    'title' => 'Purge AWEmpire Cache',
+    'href'  => wp_nonce_url(admin_url('?tmw_aw_clear_cache=1'), 'tmw_aw_clear_cache')
+  ]);
+}, 100);
+
+add_action('admin_init', function(){
+  if (
+    current_user_can('manage_options')
+    && isset($_GET['tmw_aw_clear_cache'])
+    && isset($_GET['_wpnonce'])
+    && wp_verify_nonce($_GET['_wpnonce'],'tmw_aw_clear_cache')
+  ) {
+    // IMPORTANT: this key must match the one used in tmw_aw_get_feed()
+    delete_transient('tmw_aw_feed_v1');
+    wp_safe_redirect(remove_query_arg(['tmw_aw_clear_cache','_wpnonce']));
+    exit;
+  }
+});
+
 if (function_exists('tmw_aw_pick_images_from_row') && function_exists('tmw_aw_build_link')):
   /**
-   * Get front/back/link for a model term using: ACF overrides → AWE feed (auto-matched) → placeholder.
+   * Get front/back/link for a model term using:
+   *   ACF overrides → AWE feed (auto-matched) → placeholder.
    * Uses both tmw_aw_nick and (legacy) tm_lj_nick meta as explicit nickname if present.
    */
   function tmw_aw_card_data($term_id){
@@ -111,18 +136,23 @@ if (function_exists('tmw_aw_pick_images_from_row') && function_exists('tmw_aw_bu
     // Build candidate list for feed matching
     $term = get_term($term_id);
     $nick_explicit = get_term_meta($term_id,'tmw_aw_nick',true);
-    if (!$nick_explicit) $nick_explicit = get_term_meta($term_id,'tm_lj_nick',true); // legacy key
+    if (!$nick_explicit) {
+      // legacy key support
+      $nick_explicit = get_term_meta($term_id,'tm_lj_nick',true);
+    }
+
     $cands = [];
     if (!empty($nick_explicit)) $cands[] = $nick_explicit;
     if ($term && !is_wp_error($term)) {
-      $cands[] = $term->slug;                                  // abby-murray
-      $cands[] = $term->name;                                  // Abby Murray
-      $cands[] = str_replace(['-','_',' '],'',$term->slug);    // abbymurray
-      $cands[] = str_replace(['-','_',' '],'',$term->name);    // aellenagrace, etc.
+      $cands[] = $term->slug;                               // e.g. abby-murray
+      $cands[] = $term->name;                               // e.g. Abby Murray
+      $cands[] = str_replace(['-','_',' '],'',$term->slug); // abbymurray
+      $cands[] = str_replace(['-','_',' '],'',$term->name); // aellenagrace, etc.
     }
     $cands = array_unique(array_filter($cands));
 
-    $row = tmw_aw_find_by_candidates($cands);
+    // This relies on tmw_aw_find_by_candidates() you added earlier
+    $row = function_exists('tmw_aw_find_by_candidates') ? tmw_aw_find_by_candidates($cands) : null;
 
     // subAffId defaults to slug if not set
     $sub = get_term_meta($term_id,'tmw_aw_subaff',true);
@@ -142,7 +172,7 @@ if (function_exists('tmw_aw_pick_images_from_row') && function_exists('tmw_aw_bu
       );
     }
 
-    // Final fallbacks
+    // Final fallbacks (avoid empty/black tiles)
     if (!$front) $front = $place;
     if (!$back)  $back  = $front;
 
