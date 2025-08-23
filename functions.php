@@ -334,41 +334,47 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // Auto-pick images from AWE feed; fall back to ACF/placeholder
-    $front_url = $back_url = '';
-    if (function_exists('tmw_aw_card_data')) {
-      $cd = tmw_aw_card_data($term->term_id);
-      $front_url = $cd['front'];
-      $back_url  = $cd['back'];
-    } else {
-      // Legacy fallback to ACF only
-      if (function_exists('get_field')) {
-        $acf_front = get_field('actor_card_front', 'actors_'.$term->term_id);
-        $acf_back  = get_field('actor_card_back',  'actors_'.$term->term_id);
-        $front_url = is_array($acf_front) && !empty($acf_front['url']) ? $acf_front['url'] : '';
-        $back_url  = is_array($acf_back)  && !empty($acf_back['url'])  ? $acf_back['url']  : $front_url;
-      }
+    // Link to the model term page stays the same
+    $link = get_term_link($term);
+
+    // 1) Defaults (so we always have something)
+    $front_url = '';
+    $back_url  = '';
+
+    // 2) Use AWE helper if present
+    if ( function_exists('tmw_aw_card_data') ) {
+      $card = tmw_aw_card_data($term->term_id); // uses AWEMPIRE_FEED_URL + caching
+      if ( !empty($card['front']) ) $front_url = $card['front'];
+      if ( !empty($card['back'])  ) $back_url  = $card['back'];
     }
-    $ph = get_stylesheet_directory_uri().'/assets/img/placeholders/model-card.jpg';
-    if (empty($front_url)) $front_url = $ph;
-    if (empty($back_url))  $back_url  = $front_url;
 
-    $front_url = esc_url($front_url);
-    $back_url  = esc_url($back_url);
+    // 3) Fall back to ACF if needed
+    if ( (empty($front_url) || empty($back_url)) && function_exists('get_field') ) {
+      $acf_front = get_field('actor_card_front', 'actors_'.$term->term_id);
+      $acf_back  = get_field('actor_card_back',  'actors_'.$term->term_id);
+      if (empty($front_url) && is_array($acf_front) && !empty($acf_front['url'])) $front_url = $acf_front['url'];
+      if (empty($back_url)  && is_array($acf_back)  && !empty($acf_back['url']))  $back_url  = $acf_back['url'];
+    }
 
-    // Always link to biography here
-    $profile_link = get_term_link($term);
+    // 4) Final fallback to placeholder
+    if ( empty($front_url) ) {
+      $front_url = get_stylesheet_directory_uri().'/assets/img/placeholders/model-card.jpg';
+    }
+    if ( empty($back_url) ) {
+      $back_url  = $front_url;
+    }
 
-    echo '<a class="tmw-flip" href="'.esc_url($profile_link).'" aria-label="'.esc_attr($term->name).'">';
+    // Output card
+    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">';
     echo   '<div class="tmw-flip-inner">';
-    echo     '<div class="tmw-flip-front" style="background-image:url('.$front_url.');">';
-    echo       '<span class="tmw-name">'.esc_html($term->name).'</span>';
-    echo     '</div>';
-    echo     '<div class="tmw-flip-back" style="background-image:url('.$back_url.');">';
-    echo       '<span class="tmw-view">View profile</span>';
-    echo     '</div>';
-    echo   '</div>';
-    echo '</a>';
+    echo     '<div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">';
+      echo       '<span class="tmw-name">'.esc_html($term->name).'</span>';
+      echo     '</div>';
+    echo     '<div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">';
+    echo       '<span class="tmw-view">View profile &raquo;&raquo;&raquo;</span>';
+      echo     '</div>';
+      echo   '</div>';
+      echo '</a>';
 
     $i++;
     // Banner after 8th item (unchanged)
