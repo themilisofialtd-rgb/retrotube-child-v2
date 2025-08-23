@@ -6,10 +6,6 @@
  * - Promo flipboxes shortcode (4 items, external links)
  */
 
-// Load AWEmpire helper
-$tmw_aw_file = get_stylesheet_directory() . '/inc/awempire.php';
-if (is_readable($tmw_aw_file)) { require_once $tmw_aw_file; }
-
 // Styles and lightweight optimizations.
 add_action('wp_enqueue_scripts', function () {
   // Parent + child styles.
@@ -22,6 +18,175 @@ add_action('wp_enqueue_scripts', function () {
   wp_dequeue_style('wc-blocks-style');
   wp_deregister_script('wp-embed');
 }, 20);
+
+/* ---------------- AWE: Admin purge button + helpers ---------------- */
+
+if (!function_exists('tmw_aw_get_feed')) {
+  function tmw_aw_get_feed($cache_minutes = 10) {
+    $key = 'tmw_aw_feed_v1';
+    $cached = get_transient($key);
+    if ($cached !== false) return $cached;
+
+    if (!defined('AWEMPIRE_FEED_URL') || !AWEMPIRE_FEED_URL) {
+      return [];
+    }
+
+    $resp = wp_remote_get(AWEMPIRE_FEED_URL, ['timeout' => 15]);
+    if (is_wp_error($resp)) return [];
+
+    $data = json_decode(wp_remote_retrieve_body($resp), true);
+    if (!is_array($data)) $data = [];
+
+    set_transient($key, $data, MINUTE_IN_SECONDS * $cache_minutes);
+    return $data;
+  }
+}
+
+if (!function_exists('tmw_aw_find_by_candidates')) {
+  function tmw_aw_find_by_candidates(array $candidates) {
+    $feed = tmw_aw_get_feed();
+    if (!$feed) return null;
+
+    // Normalise once
+    $want = [];
+    foreach ($candidates as $cand) {
+      $cand = trim((string)$cand);
+      if ($cand === '') continue;
+      $want[] = strtolower($cand);
+      $want[] = strtolower(str_replace(['-','_',' '], '', $cand)); // “Abby Murray” -> “abbymurray”
+    }
+    $want = array_unique($want);
+
+    foreach ($feed as $row) {
+      $nickname = strtolower($row['nickname'] ?? ($row['name'] ?? ''));
+      $nickname_flat = str_replace(['-','_',' '], '', $nickname);
+      if (in_array($nickname, $want, true) || in_array($nickname_flat, $want, true)) {
+        return $row;
+      }
+    }
+    return null;
+  }
+}
+
+if (!function_exists('tmw_aw_pick_images_from_row')) {
+  function tmw_aw_pick_images_from_row($row) {
+    $all = [];
+
+    // Crawl any nested arrays for image URLs
+    $walk = function($v) use (&$walk, &$all) {
+      if (is_string($v) && preg_match('~https?://[^\s"]+\.(?:jpe?g|png|webp)(?:\?[^\s"]*)?$~i', $v)) {
+        $all[] = $v;
+      } elseif (is_array($v)) {
+        foreach ($v as $vv) $walk($vv);
+      }
+    };
+    $walk($row);
+
+    $front = $back = null;
+    foreach ($all as $u) { if (strpos($u, '800x600') !== false) { $front = $u; break; } }
+    foreach ($all as $u) { if (strpos($u, '896x504') !== false) { $back  = $u; break; } }
+
+    if (!$front) $front = $all[0] ?? null;
+    if (!$back)  $back  = $all[1] ?? $front;
+
+    return [$front, $back];
+  }
+}
+
+if (!function_exists('tmw_aw_build_link')) {
+  function tmw_aw_build_link($base, $sub = '') {
+    if (!$base) return '#';
+    if ($sub) {
+      if (strpos($base, '{SUBAFFID}') !== false) {
+        return str_replace('{SUBAFFID}', rawurlencode($sub), $base);
+      }
+      $sep = (strpos($base, '?') !== false) ? '&' : '?';
+      return $base . $sep . 'subAffId=' . rawurlencode($sub);
+    }
+    return str_replace('{SUBAFFID}', '', $base);
+  }
+}
+
+if (!function_exists('tmw_aw_card_data')) {
+  /**
+   * Returns ['front','back','link'] for a term.
+   * - ACF overrides win (if present)
+   * - else AWE feed auto-match by nickname/name/slug/flattened
+   * - link is the *AWE tracking* (used on biography promo cards),
+   *   but on the models grid we’ll still use term link.
+   */
+  function tmw_aw_card_data($term_id) {
+    $placeholder = get_stylesheet_directory_uri() . '/assets/img/placeholders/model-card.jpg';
+
+    $front = $back = '';
+    // 1) ACF overrides
+    if (function_exists('get_field')) {
+      $acf_front = get_field('actor_card_front', 'actors_' . $term_id);
+      $acf_back  = get_field('actor_card_back',  'actors_' . $term_id);
+      if (is_array($acf_front) && !empty($acf_front['url'])) $front = $acf_front['url'];
+      if (is_array($acf_back)  && !empty($acf_back['url']))  $back  = $acf_back['url'];
+    }
+
+    // 2) AWE feed auto-match
+    $term = get_term($term_id);
+    $cands = [];
+    $explicit = get_term_meta($term_id, 'tmw_aw_nick', true);
+    if (!$explicit) $explicit = get_term_meta($term_id, 'tm_lj_nick', true); // legacy key
+    if ($explicit) $cands[] = $explicit;
+
+    if ($term && !is_wp_error($term)) {
+      $cands[] = $term->slug;                    // abby-murray
+      $cands[] = $term->name;                    // Abby Murray
+      $cands[] = str_replace(['-','_',' '], '', $term->slug); // abbymurray
+      $cands[] = str_replace(['-','_',' '], '', $term->name); // aellenagrace
+    }
+
+    $row = tmw_aw_find_by_candidates(array_unique(array_filter($cands)));
+
+    // Build link (used on biography promo cards)
+    $sub = get_term_meta($term_id, 'tmw_aw_subaff', true);
+    if (!$sub) $sub = get_term_meta($term_id, 'tm_subaff', true); // legacy key
+    if (!$sub && $term && !is_wp_error($term)) $sub = $term->slug;
+    $link = '';
+
+    if ($row) {
+      if (!$front || !$back) {
+        list($f, $b) = tmw_aw_pick_images_from_row($row);
+        if (!$front) $front = $f;
+        if (!$back)  $back  = ($b ?: $front);
+      }
+      $link = tmw_aw_build_link(($row['tracking_url'] ?? ($row['url'] ?? '')), $sub ?: ($explicit ?: ($term->slug ?? '')));
+    }
+
+    if (!$front) $front = $placeholder;
+    if (!$back)  $back  = $front;
+
+    return ['front' => $front, 'back' => $back, 'link' => $link];
+  }
+}
+
+/* Admin bar button to purge feed cache */
+add_action('admin_bar_menu', function($bar){
+  if (!current_user_can('manage_options')) return;
+  $bar->add_node([
+    'id'    => 'tmw_aw_clear_cache',
+    'title' => 'Purge AWEmpire Cache',
+    'href'  => wp_nonce_url(admin_url('?tmw_aw_clear_cache=1'), 'tmw_aw_clear_cache'),
+  ]);
+}, 100);
+
+add_action('admin_init', function(){
+  if (
+    current_user_can('manage_options') &&
+    isset($_GET['tmw_aw_clear_cache']) &&
+    wp_verify_nonce($_GET['_wpnonce'] ?? '', 'tmw_aw_clear_cache')
+  ) {
+    delete_transient('tmw_aw_feed_v1');
+    wp_safe_redirect(remove_query_arg(['tmw_aw_clear_cache','_wpnonce']));
+    exit;
+  }
+});
+/* ---------------- end AWE helpers ---------------- */
 
 // Rename "Video Actors" taxonomy labels to "Models"
 add_filter('register_taxonomy_args', function($args, $taxonomy){
@@ -173,36 +338,20 @@ add_shortcode('actors_flipboxes', function($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    // ACF first
-    $front_url = '';
-    $back_url  = '';
+    // Get images (ACF override -> AWE feed -> placeholder)
+    $card = function_exists('tmw_aw_card_data') ? tmw_aw_card_data($term->term_id) : ['front'=>'', 'back'=>'', 'link'=>''];
+    $front_url = esc_url($card['front']);
+    $back_url  = esc_url($card['back']);
 
-    if ( function_exists('get_field') ) {
-      $front = get_field('actor_card_front', 'actors_'.$term->term_id);
-      $back  = get_field('actor_card_back',  'actors_'.$term->term_id);
-      if ( is_array($front) && !empty($front['url']) ) $front_url = $front['url'];
-      if ( is_array($back)  && !empty($back['url'])  ) $back_url  = $back['url'];
-    }
+    // Always link to biography here
+    $profile_link = get_term_link($term);
 
-    // AWE fallback (auto-matched nickname)
-    if ( (empty($front_url) || empty($back_url)) && function_exists('tmw_aw_card_data') ) {
-      $card = tmw_aw_card_data( $term->term_id );
-      if ( empty($front_url) && !empty($card['front']) ) $front_url = $card['front'];
-      if ( empty($back_url)  && !empty($card['back'])  ) $back_url  = $card['back'];
-    }
-
-    // Final fallback
-    if ( empty($back_url) ) $back_url = $front_url;
-
-    // Keep INTERNAL link to the model biography on the models page
-    $link = get_term_link($term);
-
-    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">';
+    echo '<a class="tmw-flip" href="'.esc_url($profile_link).'" aria-label="'.esc_attr($term->name).'">';
     echo   '<div class="tmw-flip-inner">';
-    echo     '<div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">';
+    echo     '<div class="tmw-flip-front" style="background-image:url('.$front_url.');">';
     echo       '<span class="tmw-name">'.esc_html($term->name).'</span>';
     echo     '</div>';
-    echo     '<div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">';
+    echo     '<div class="tmw-flip-back" style="background-image:url('.$back_url.');">';
     echo       '<span class="tmw-view">View profile</span>';
     echo     '</div>';
     echo   '</div>';
