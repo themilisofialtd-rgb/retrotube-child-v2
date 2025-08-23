@@ -116,14 +116,10 @@ function tmw_count_terms($taxonomy, $hide_empty=false){
   return is_wp_error($ids) ? 0 : count($ids);
 }
 
-/**
- * Shortcode: [actors_flipboxes per_page="12" cols="4" orderby="name" order="ASC" hide_empty="false"
- *             banner_img="" banner_url="" banner_alt=""
- *             show_pagination="true" page_var="pg"]
- */
+// === MODELS/ACTORS GRID (internal links) ===
 add_shortcode('actors_flipboxes', function($atts){
   $a = shortcode_atts([
-    'per_page'       => 16,   // A) CHANGED: 12 per page (was 16)
+    'per_page'       => 16,
     'cols'           => 4,
     'orderby'        => 'name',
     'order'          => 'ASC',
@@ -134,9 +130,11 @@ add_shortcode('actors_flipboxes', function($atts){
     'banner_html'    => '',
     'show_pagination'=> true,
     'page_var'       => 'pg',
+    // NEW: where to source images from: auto|aw|acf
+    'img_source'     => 'auto',
   ], $atts);
 
-  // Current page number (supports /?pg=2 on static pages).
+  // Current page
   $paged = 1;
   if ( isset($_GET[$a['page_var']]) ) {
     $paged = max(1, intval($_GET[$a['page_var']]));
@@ -148,50 +146,47 @@ add_shortcode('actors_flipboxes', function($atts){
   $offset     = ($paged - 1) * $per_page;
   $hide_empty = filter_var($a['hide_empty'], FILTER_VALIDATE_BOOLEAN);
 
-  $args = [
+  $terms = get_terms([
     'taxonomy'   => 'actors',
     'hide_empty' => $hide_empty,
     'orderby'    => $a['orderby'],
     'order'      => $a['order'],
     'number'     => $per_page,
     'offset'     => $offset,
-  ];
-  $terms = get_terms($args);
+  ]);
   if ( is_wp_error($terms) ) return '';
 
-  $total   = tmw_count_terms('actors', $hide_empty);
+  // Count for pagination
+  $total = tmw_count_terms('actors', $hide_empty);
   $total_p = max(1, (int)ceil($total / $per_page));
 
   ob_start();
+
+  // Optional title bar (keep if you had it)
+  // echo '<div class="tmw-title"><span class="tmw-star">★</span>Actors</div>';
+
   printf('<div class="tmw-grid tmw-cols-%d">', (int)$a['cols']);
 
   $i = 0;
   foreach ($terms as $term){
+    // NEW: choose images (AW feed if available)
+    list($front_url, $back_url) = tmw_get_term_images( $term->term_id, strtolower($a['img_source']) );
 
-    // ACF images (optional)
-    $front = function_exists('get_field') ? get_field('actor_card_front', 'actors_'.$term->term_id) : null;
-    $back  = function_exists('get_field') ? get_field('actor_card_back',  'actors_'.$term->term_id) : null;
-    $front_url = is_array($front) && !empty($front['url']) ? $front['url'] : '';
-    $back_url  = is_array($back)  && !empty($back['url'])  ? $back['url']  : $front_url;
+    $link = get_term_link($term); // INTERNAL link to the biography page
 
-    $link = get_term_link($term);
-
-    // === FRONT: actor name with small red arrow; BACK: red "View profile" ===
-    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">
-            <div class="tmw-flip-inner">
-              <div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">
-                <span class="tmw-name">'.esc_html($term->name).'</span>
-              </div>';
-    // Back label; the entire card (including this text) links to the model's biography via $link.
-    echo '  <div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">
-                <span class="tmw-view">View profile</span>
-              </div>
-            </div>
-          </a>';
+    echo '<a class="tmw-flip" href="'.esc_url($link).'" aria-label="'.esc_attr($term->name).'">';
+    echo   '<div class="tmw-flip-inner">';
+    echo     '<div class="tmw-flip-front" style="background-image:url('.esc_url($front_url).');">';
+    echo       '<span class="tmw-name">'.esc_html($term->name).'</span>';
+    echo     '</div>';
+    echo     '<div class="tmw-flip-back" style="background-image:url('.esc_url($back_url).');">';
+    echo       '<span class="tmw-view">View profile</span>';
+    echo     '</div>';
+    echo   '</div>';
+    echo '</a>';
 
     $i++;
-
-    // B) CHANGED: Inject banner after the 8th item (was 8th).
+    // Banner after 8th item (unchanged)
     if ( $i === 8 ) {
       $banner_html = '';
       if ( !empty($a['banner_html']) ) {
@@ -206,17 +201,14 @@ add_shortcode('actors_flipboxes', function($atts){
           $banner_html = file_get_contents($banner_file);
         }
       }
-      // Always reserve space even if we have no banner content
       if ( !empty($banner_html) ) {
         echo '<div class="tmw-banner-wrap">'.$banner_html.'</div>';
-      } else {
-        echo '<div class="tmw-banner-wrap tmw-banner-empty" aria-hidden="true"></div>';
       }
     }
   }
-  echo '</div>';
+  echo '</div>'; // .tmw-grid
 
-  // Pagination
+  // Pagination (unchanged)
   if ( filter_var($a['show_pagination'], FILTER_VALIDATE_BOOLEAN) && $total_p > 1 ){
     $base = remove_query_arg($a['page_var']);
     $base = add_query_arg($a['page_var'], '%#%');
