@@ -1,0 +1,24 @@
+/* Hide the duplicate player injected at the start of the About text */
+#video-about .video-description .desc > .player:first-child,
+#video-about .video-description .desc > .responsive-player:first-child,
+#video-about .video-description .desc > iframe:first-child,
+#video-about .video-description .desc > .wp-block-embed:first-child,
+#video-about .video-description .desc > figure.wp-block-video:first-child,
+#video-about .video-description .desc > .wp-block-spacer:first-child,
+#video-about .video-description .desc > p:empty:first-child {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+/* Nuke any leftover top spacing inside the About text */
+#video-about .video-description .desc > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* Extra guard for single “video format” posts */
+body.single-post.single-format-video .entry-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}

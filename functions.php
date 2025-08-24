@@ -861,3 +861,28 @@ function tmw_get_term_images( int $term_id, string $prefer = 'auto' ): array {
 }
 
 
+/**
+ * Gap fix: hide duplicate About player + clean spacing.
+ */
+function tmw_gap_fix_assets() {
+  $ver = wp_get_theme( get_stylesheet() )->get( 'Version' ); // child theme version
+  $base = get_stylesheet_directory_uri();
+
+  wp_enqueue_style(
+    'tmw-gap-fix',
+    $base . '/assets/css/tmw-gap-fix.css',
+    array(),
+    $ver
+  );
+
+  // optional JS cleanup
+  wp_enqueue_script(
+    'tmw-gap-fix',
+    $base . '/assets/js/tmw-gap-fix.js',
+    array(),
+    $ver,
+    true
+  );
+}
+add_action( 'wp_enqueue_scripts', 'tmw_gap_fix_assets', 99 );
+
