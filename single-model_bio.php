@@ -10,13 +10,6 @@ $flipbox_shortcode = get_field('flipbox_shortcode');
 
 <div class="container model-bio-page">
 
-    <!-- ✅ Breadcrumbs -->
-    <?php tmw_render_models_breadcrumbs([
-        'current'         => get_the_title(),
-        'container_style' => 'margin:15px 0;',
-    ]); ?>
-    <!-- ✅ End Breadcrumbs -->
-
     <div class="model-header" style="text-align: center; margin-bottom: 30px;">
         <h1><?php the_title(); ?></h1>
 
