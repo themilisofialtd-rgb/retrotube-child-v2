@@ -2059,55 +2059,34 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         return $items;
     }
 
-    $home_url      = home_url('/');
-    $home_label    = esc_html__('Home', 'retrotube-child');
-    $models_label  = esc_html__('Models', 'retrotube-child');
-    $archive_url   = get_post_type_archive_link('model');
+    $home_crumb = [
+        'label' => esc_html__('Home', 'retrotube-child'),
+        'url'   => home_url('/'),
+    ];
 
-    if (!$archive_url) {
+    $models_label = esc_html__('Models', 'retrotube-child');
+    $models_url   = get_post_type_archive_link('model');
+    if (!$models_url) {
         $models_page = get_page_by_path('models');
         if ($models_page) {
-            $archive_url = get_permalink($models_page);
+            $models_url = get_permalink($models_page);
         }
     }
-
-    if (!$archive_url) {
-        $archive_url = home_url('/models/');
+    if (!$models_url) {
+        $models_url = home_url('/models/');
     }
 
-    $is_models_archive = is_post_type_archive('model') || is_post_type_archive('model_bio') || (is_post_type_archive() && get_query_var('post_type') === 'model_bio');
-    $is_models_single  = is_singular('model') || is_singular('model_bio');
-
-    $crumb_updated = false;
-
-    foreach ($items as $index => $item) {
-        if (!is_array($item) || !isset($item['label'])) {
-            continue;
-        }
-
-        $raw_label   = wp_strip_all_tags((string) $item['label']);
-        $label       = strtolower(trim($raw_label));
-        $normalized  = str_replace([' ', '-'], '', $label);
-
-        if ($normalized === 'model' || $normalized === 'modelbio') {
-            $items[$index]['label'] = $models_label;
-            $items[$index]['url']   = $is_models_archive ? '' : $archive_url;
-            $crumb_updated = true;
-        }
-    }
-
-    if ($is_models_archive && !$crumb_updated) {
-        $items = [
-            [
-                'label' => $home_label,
-                'url'   => $home_url,
-            ],
+    if (is_post_type_archive('model')) {
+        return [
+            $home_crumb,
             [
                 'label' => $models_label,
                 'url'   => '',
             ],
         ];
-    } elseif ($is_models_single && !$crumb_updated) {
+    }
+
+    if (is_singular('model')) {
         $current_title = single_post_title('', false);
         if ($current_title === '') {
             $current_id = get_queried_object_id();
@@ -2117,20 +2096,31 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         }
         $current_title = wp_strip_all_tags($current_title);
 
-        $items = [
-            [
-                'label' => $home_label,
-                'url'   => $home_url,
-            ],
+        return [
+            $home_crumb,
             [
                 'label' => $models_label,
-                'url'   => $archive_url,
+                'url'   => $models_url,
             ],
             [
                 'label' => $current_title,
                 'url'   => '',
             ],
         ];
+    }
+
+    foreach ($items as $index => $item) {
+        if (!is_array($item) || !isset($item['label'])) {
+            continue;
+        }
+
+        $raw_label  = wp_strip_all_tags((string) $item['label']);
+        $normalized = strtolower(str_replace([' ', '-'], '', $raw_label));
+
+        if ($normalized === 'model' || $normalized === 'modelbio') {
+            $items[$index]['label'] = $models_label;
+            $items[$index]['url']   = $models_url;
+        }
     }
 
     return $items;
