@@ -1966,7 +1966,7 @@ add_action('after_setup_theme', function () {
             return;
         }
 
-        echo '<div id="breadcrumbs">';
+        echo '<div id="breadcrumbs" class="rank-math-breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">';
         rank_math_the_breadcrumbs();
         echo '</div>';
     }, 20);
