@@ -9,6 +9,16 @@
  */
 
 /* ======================================================================
+ * LEGACY CPT CLEANUP
+ * ====================================================================== */
+add_action('init', function(){
+  global $wp_post_types;
+  if (isset($wp_post_types['model_bio'])) {
+    unset($wp_post_types['model_bio']);
+  }
+}, 20);
+
+/* ======================================================================
  * SAFE PLACEHOLDER (never 404s)
  * ====================================================================== */
 if (!function_exists('tmw_placeholder_image_url')) {
