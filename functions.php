@@ -1955,41 +1955,6 @@ add_action('template_redirect', function () {
     }
 });
 
-/* ======================================================================
- * MODELS BREADCRUMB FIX (RANK MATH ONLY)
- * ====================================================================== */
-add_action('after_setup_theme', function () {
-    remove_action('retrotube_before_main_content', 'retrotube_breadcrumb', 20);
-
-    add_action('retrotube_before_main_content', function () {
-        if (!function_exists('rank_math_the_breadcrumbs')) {
-            return;
-        }
-
-        echo '<div id="breadcrumbs" class="rank-math-breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">';
-        rank_math_the_breadcrumbs();
-        echo '</div>';
-    }, 20);
-});
-
-// Enforce clean breadcrumb items for Models CPT
-add_filter('rank_math/frontend/breadcrumb/items', function($crumbs) {
-  if (is_post_type_archive('model')) {
-    return [
-      ['label' => 'Home', 'url' => home_url('/')],
-      ['label' => 'Models', 'url' => ''],
-    ];
-  }
-  if (is_singular('model')) {
-    return [
-      ['label' => 'Home', 'url' => home_url('/')],
-      ['label' => 'Models', 'url' => home_url('/models/')],
-      ['label' => get_the_title(), 'url' => ''],
-    ];
-  }
-  return $crumbs;
-});
-
 // Redirect legacy /model/ archive → /models/
 add_action('template_redirect', function () {
     if (is_admin()) {
