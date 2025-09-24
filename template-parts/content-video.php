@@ -94,9 +94,16 @@ if ( has_post_thumbnail() && wp_get_attachment_url( get_post_thumbnail_id() ) ) 
 			if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 				echo '<span class="video-meta-item video-meta-model"><i class="fa fa-star"></i> Model: ';
 				$links = array();
-				foreach ( $terms as $term ) {
-					$links[] = '<a href="' . esc_url( get_term_link( $term ) ) . '">' . esc_html( $term->name ) . '</a>';
-				}
+                                foreach ( $terms as $term ) {
+                                        $model_link = function_exists( 'tmw_get_model_link_for_term' ) ? tmw_get_model_link_for_term( $term ) : '';
+                                        if ( ! $model_link ) {
+                                                $fallback = get_term_link( $term );
+                                                $model_link = is_wp_error( $fallback ) ? '' : $fallback;
+                                        }
+                                        if ( $model_link ) {
+                                                $links[] = '<a href="' . esc_url( $model_link ) . '">' . esc_html( $term->name ) . '</a>';
+                                        }
+                                }
 				echo implode( ', ', $links );
 				echo '</span>';
 			}

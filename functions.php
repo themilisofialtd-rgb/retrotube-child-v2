@@ -1184,6 +1184,77 @@ if (!function_exists('tmw_pick_images_for_term')) {
   }
 }
 
+if (!function_exists('tmw_get_model_post_for_term')) {
+  function tmw_get_model_post_for_term($term) {
+    if (is_numeric($term)) {
+      $term = get_term((int)$term, 'models');
+    }
+    if (!$term || is_wp_error($term)) return null;
+
+    $stored_id = (int) get_term_meta($term->term_id, 'tmw_model_post_id', true);
+    if ($stored_id) {
+      $stored_post = get_post($stored_id);
+      if ($stored_post && $stored_post->post_type === 'model' && $stored_post->post_status !== 'trash') {
+        return $stored_post;
+      }
+    }
+
+    if (!post_type_exists('model')) {
+      return null;
+    }
+
+    $post = get_page_by_path($term->slug, OBJECT, 'model');
+    if (!$post) {
+      $post = get_page_by_title($term->name, OBJECT, 'model');
+    }
+
+    if (!$post || is_wp_error($post)) {
+      $legacy = get_page_by_path($term->slug, OBJECT, 'model_bio');
+      if (!$legacy) {
+        $legacy = get_page_by_title($term->name, OBJECT, 'model_bio');
+      }
+      if ($legacy && !is_wp_error($legacy)) {
+        $converted = wp_update_post([
+          'ID'        => $legacy->ID,
+          'post_type' => 'model',
+        ], true);
+        if (!is_wp_error($converted)) {
+          $post = get_post($legacy->ID);
+        }
+      }
+    }
+
+    if ($post && !is_wp_error($post) && $post->post_type === 'model' && $post->post_status !== 'trash') {
+      update_term_meta($term->term_id, 'tmw_model_post_id', (int) $post->ID);
+      return $post;
+    }
+
+    if ($stored_id) {
+      delete_term_meta($term->term_id, 'tmw_model_post_id');
+    }
+
+    return null;
+  }
+}
+
+if (!function_exists('tmw_get_model_link_for_term')) {
+  function tmw_get_model_link_for_term($term): string {
+    if (is_numeric($term)) {
+      $term = get_term((int)$term, 'models');
+    }
+    if (!$term || is_wp_error($term)) return '';
+
+    $post = tmw_get_model_post_for_term($term);
+    if ($post) {
+      $url = get_permalink($post);
+      if ($url) return $url;
+    }
+
+    $link = get_term_link($term);
+    return is_wp_error($link) ? '' : (string) $link;
+  }
+}
+
 /* Renderer used everywhere for one flipbox card */
 if (!function_exists('tmw_render_flipbox_card')) {
   function tmw_render_flipbox_card($term): string {
@@ -1199,7 +1270,7 @@ if (!function_exists('tmw_render_flipbox_card')) {
     $front_style = (function_exists('tmw_bg_style') ? tmw_bg_style($front_url) : 'background-image:url('.esc_url($front_url).');') . ($ov['css_front'] ?? '');
     $back_style  = (function_exists('tmw_bg_style') ? tmw_bg_style($back_url)  : 'background-image:url('.esc_url($back_url ).');') . ($ov['css_back']  ?? '');
 
-    $link = get_term_link($term);
+    $link = tmw_get_model_link_for_term($term);
     $name = $term->name;
 
     ob_start(); ?>
@@ -1358,7 +1429,7 @@ function tmw_models_flipboxes_cb($atts){
 
   $i = 0;
   foreach ($terms as $term){
-    $link = get_term_link($term);
+    $link = tmw_get_model_link_for_term($term);
 
     $front_url = '';
     $back_url  = '';
@@ -1549,6 +1620,56 @@ if (!function_exists('tmw_count_terms')) {
 }
 
 /* ======================================================================
+ * MODELS CUSTOM POST TYPE
+ * ====================================================================== */
+add_action('init', function () {
+  $labels = [
+    'name'                  => __('Models', 'retrotube-child'),
+    'singular_name'         => __('Model', 'retrotube-child'),
+    'menu_name'             => __('Models', 'retrotube-child'),
+    'name_admin_bar'        => __('Model', 'retrotube-child'),
+    'add_new'               => __('Add New', 'retrotube-child'),
+    'add_new_item'          => __('Add New Model', 'retrotube-child'),
+    'new_item'              => __('New Model', 'retrotube-child'),
+    'edit_item'             => __('Edit Model', 'retrotube-child'),
+    'view_item'             => __('View Model', 'retrotube-child'),
+    'all_items'             => __('All Models', 'retrotube-child'),
+    'search_items'          => __('Search Models', 'retrotube-child'),
+    'parent_item_colon'     => __('Parent Models:', 'retrotube-child'),
+    'not_found'             => __('No models found.', 'retrotube-child'),
+    'not_found_in_trash'    => __('No models found in Trash.', 'retrotube-child'),
+    'items_list'            => __('Models list', 'retrotube-child'),
+    'items_list_navigation' => __('Models list navigation', 'retrotube-child'),
+  ];
+
+  $args = [
+    'labels'             => $labels,
+    'public'             => true,
+    'publicly_queryable' => true,
+    'show_ui'            => true,
+    'show_in_menu'       => true,
+    'show_in_rest'       => true,
+    'has_archive'        => 'models',
+    'rewrite'            => ['slug' => 'model', 'with_front' => false],
+    'hierarchical'       => false,
+    'supports'           => ['title', 'editor', 'thumbnail', 'excerpt', 'custom-fields'],
+    'menu_icon'          => 'dashicons-groups',
+    'capability_type'    => 'post',
+    'map_meta_cap'       => true,
+  ];
+
+  register_post_type('model', $args);
+}, 5);
+
+add_filter('rank_math/post_types', function ($post_types) {
+  if (!is_array($post_types)) return $post_types;
+  if (!in_array('model', $post_types, true)) {
+    $post_types[] = 'model';
+  }
+  return $post_types;
+});
+
+/* ======================================================================
  * MODELS TAXONOMY (new internal slug) + redirects from old /actor/*
  * - Public URLs: /model/{term}/
  * - Keeps old /actor/* and /actors/* working with 301 to the new URL.
@@ -1578,7 +1699,7 @@ add_action('init', function () {
     'back_to_items'              => '← Back to Models',
   ];
 
-  register_taxonomy(TMW_TAX_SLUG, ['post'], [
+  register_taxonomy(TMW_TAX_SLUG, ['model'], [
     'labels'            => $labels,
     'public'            => true,
     'show_ui'           => true,
@@ -1595,9 +1716,9 @@ add_action('init', function () {
   add_rewrite_rule('^actor/([^/]+)/?$',  'index.php?' . TMW_TAX_SLUG . '=$matches[1]', 'top');
   add_rewrite_rule('^actors/([^/]+)/?$', 'index.php?' . TMW_TAX_SLUG . '=$matches[1]', 'top');
 
-  if (!get_option('tmw_models_flush_v2')) {
+  if (!get_option('tmw_models_flush_v3')) {
     flush_rewrite_rules(false);
-    update_option('tmw_models_flush_v2', 1);
+    update_option('tmw_models_flush_v3', 1);
   }
 }, 20);
 
@@ -1607,8 +1728,14 @@ add_action('template_redirect', function () {
     if (strpos($req, '/actor/') !== false || strpos($req, '/actors/') !== false) {
       $term = get_queried_object();
       if ($term && !is_wp_error($term)) {
-        $canonical = get_term_link($term, TMW_TAX_SLUG);
-        if (!is_wp_error($canonical)) {
+        $canonical = tmw_get_model_link_for_term($term);
+        if (!$canonical) {
+          $canonical = get_term_link($term, TMW_TAX_SLUG);
+          if (is_wp_error($canonical)) {
+            $canonical = '';
+          }
+        }
+        if ($canonical) {
           wp_safe_redirect($canonical, 301);
           exit;
         }
@@ -1636,7 +1763,14 @@ add_filter('the_content', function ($content) {
 
   $links = [];
   foreach ($terms as $t) {
-    $links[] = sprintf('<a href="%s">%s</a>', esc_url(get_term_link($t)), esc_html($t->name));
+    $model_link = tmw_get_model_link_for_term($t);
+    if (!$model_link) {
+      $fallback = get_term_link($t);
+      $model_link = is_wp_error($fallback) ? '' : $fallback;
+    }
+    if ($model_link) {
+      $links[] = sprintf('<a href="%s">%s</a>', esc_url($model_link), esc_html($t->name));
+    }
   }
 
   // singular when one model, plural otherwise
@@ -1659,6 +1793,10 @@ add_action('save_post', function ($post_id) {
   if (wp_is_post_revision($post_id)) return;
   $pt = get_post_type($post_id);
   if ($pt !== 'post' && $pt !== 'video') return;
+
+  if (!taxonomy_exists('models') || !is_object_in_taxonomy($pt, 'models')) {
+    return;
+  }
 
   $actors = wp_get_post_terms($post_id, 'actors', ['fields' => 'ids']);
   $models = wp_get_post_terms($post_id, 'models', ['fields' => 'ids']);
@@ -1737,35 +1875,67 @@ function tmw_save_flipbox_meta( $post_id ) {
     }
 }
 add_action( 'save_post', 'tmw_save_flipbox_meta' );
-// Auto-create Model Bio CPT posts for each 'models' taxonomy term
-add_action('admin_init', function() {
-    $taxonomy = 'models';
-    $post_type = 'model_bio';
+// Auto-create Model CPT posts for each 'models' taxonomy term
+add_action('admin_init', function () {
+    if (!post_type_exists('model')) {
+        return;
+    }
 
     $terms = get_terms([
-        'taxonomy' => $taxonomy,
+        'taxonomy'   => 'models',
         'hide_empty' => false,
     ]);
 
-    foreach ($terms as $term) {
-        $existing = get_posts([
-            'post_type' => $post_type,
-            'title' => $term->name,
-            'posts_per_page' => 1,
-        ]);
+    if (is_wp_error($terms) || empty($terms)) {
+        return;
+    }
 
-        if (empty($existing)) {
-            wp_insert_post([
-                'post_type' => $post_type,
-                'post_title' => $term->name,
-                'post_status' => 'publish',
-                'post_content' => '', // Can prefill later from ACF or feed
-            ]);
+    foreach ($terms as $term) {
+        $post = tmw_get_model_post_for_term($term);
+
+        if (!$post) {
+            $post = get_page_by_path($term->slug, OBJECT, 'model');
+            if (!$post) {
+                $post = get_page_by_title($term->name, OBJECT, 'model');
+            }
         }
+
+        if ($post && !is_wp_error($post) && $post->post_type !== 'model') {
+            $updated_id = wp_update_post([
+                'ID'        => $post->ID,
+                'post_type' => 'model',
+            ], true);
+            if (!is_wp_error($updated_id)) {
+                $post = get_post($post->ID);
+            }
+        }
+
+        if (!$post || is_wp_error($post) || $post->post_type !== 'model') {
+            $post_id = wp_insert_post([
+                'post_type'   => 'model',
+                'post_title'  => $term->name,
+                'post_name'   => $term->slug,
+                'post_status' => 'publish',
+                'post_content'=> '',
+            ], true);
+
+            if (is_wp_error($post_id) || !$post_id) {
+                continue;
+            }
+
+            $post = get_post($post_id);
+        }
+
+        if (!$post || is_wp_error($post) || $post->post_type !== 'model') {
+            continue;
+        }
+
+        update_term_meta($term->term_id, 'tmw_model_post_id', (int) $post->ID);
+        wp_set_object_terms($post->ID, [(int) $term->term_id], 'models', false);
     }
 });
-// Redirect taxonomy models -> model_bio CPT if exists
-add_action('template_redirect', function() {
+// Redirect taxonomy models -> Model CPT if exists
+add_action('template_redirect', function () {
     if (!is_tax('models')) {
         return;
     }
@@ -1775,18 +1945,9 @@ add_action('template_redirect', function() {
         return;
     }
 
-    // Look for a matching CPT by slug first
-    $slug = $term->slug;
-    $cpt = get_page_by_path($slug, OBJECT, 'model_bio');
-
-    // If no CPT with same slug, try by title (in case slugs differ)
-    if (!$cpt) {
-        $cpt = get_page_by_title($term->name, OBJECT, 'model_bio');
-    }
-
-    if ($cpt && !is_wp_error($cpt)) {
-        // Redirect taxonomy page to CPT permalink
-        $url = get_permalink($cpt->ID);
+    $post = tmw_get_model_post_for_term($term);
+    if ($post) {
+        $url = get_permalink($post);
         if ($url) {
             wp_safe_redirect($url, 301);
             exit;
@@ -1838,9 +1999,6 @@ if (!function_exists('tmw_render_models_breadcrumbs')) {
         $models_url = '';
         if (post_type_exists('model')) {
             $models_url = get_post_type_archive_link('model');
-        }
-        if (!$models_url && post_type_exists('model_bio')) {
-            $models_url = get_post_type_archive_link('model_bio');
         }
         if (!$models_url) {
             $models_page = get_page_by_path('models');
@@ -1895,3 +2053,56 @@ if (!function_exists('tmw_render_models_breadcrumbs')) {
         return $html;
     }
 }
+
+add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = null) {
+    if (!is_array($items)) {
+        return $items;
+    }
+
+    $home_url    = home_url('/');
+    $archive_url = get_post_type_archive_link('model');
+    if (!$archive_url) {
+        $archive_url = home_url('/models/');
+    }
+
+    if (is_post_type_archive('model')) {
+        return [
+            [
+                'label' => esc_html__('Home', 'retrotube-child'),
+                'url'   => $home_url,
+            ],
+            [
+                'label' => esc_html__('Models', 'retrotube-child'),
+                'url'   => '',
+            ],
+        ];
+    }
+
+    if (is_singular('model')) {
+        $current_title = single_post_title('', false);
+        if ($current_title === '') {
+            $current_id = get_queried_object_id();
+            if ($current_id) {
+                $current_title = get_the_title($current_id);
+            }
+        }
+        $current_title = wp_strip_all_tags($current_title);
+
+        return [
+            [
+                'label' => esc_html__('Home', 'retrotube-child'),
+                'url'   => $home_url,
+            ],
+            [
+                'label' => esc_html__('Models', 'retrotube-child'),
+                'url'   => $archive_url,
+            ],
+            [
+                'label' => $current_title,
+                'url'   => '',
+            ],
+        ];
+    }
+
+    return $items;
+}, 10, 2);
