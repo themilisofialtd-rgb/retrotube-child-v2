@@ -104,6 +104,22 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
   return $crumbs;
 });
 
+/**
+ * Add "Edit Models Page" link to admin bar when viewing /models/.
+ */
+add_action('admin_bar_menu', function ($admin_bar) {
+  if (!is_post_type_archive('model') || !current_user_can('edit_pages')) return;
+
+  $models_page = get_page_by_path('models');
+  if (!$models_page instanceof WP_Post) return;
+
+  $admin_bar->add_menu([
+    'id'    => 'edit-models-page',
+    'title' => 'Edit Models Page',
+    'href'  => get_edit_post_link($models_page->ID),
+  ]);
+}, 100);
+
 /* ======================================================================
  * SAFE PLACEHOLDER (never 404s)
  * ====================================================================== */
