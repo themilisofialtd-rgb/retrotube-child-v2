@@ -1,6 +1,6 @@
 /* Theme Name: Retrotube Child (Flipbox Edition) v2
  Template: retrotube
- Version: 1.1.4
+ Version: 1.1.5
  Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
  Author: Top Models Webcam
 */
@@ -190,3 +190,4 @@
 #video-about #video-actors {
   display: none !important;
 }
+
