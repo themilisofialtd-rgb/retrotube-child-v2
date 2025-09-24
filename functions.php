@@ -1624,9 +1624,9 @@ if (!function_exists('tmw_count_terms')) {
  * ====================================================================== */
 add_action('init', function () {
   $labels = [
-    'name'                  => __('Models', 'retrotube-child'),
-    'singular_name'         => __('Model', 'retrotube-child'),
-    'menu_name'             => __('Models', 'retrotube-child'),
+    'name'                  => esc_html__('Models', 'retrotube-child'),
+    'singular_name'         => esc_html__('Model', 'retrotube-child'),
+    'menu_name'             => esc_html__('Models', 'retrotube-child'),
     'name_admin_bar'        => __('Model', 'retrotube-child'),
     'add_new'               => __('Add New', 'retrotube-child'),
     'add_new_item'          => __('Add New Model', 'retrotube-child'),
