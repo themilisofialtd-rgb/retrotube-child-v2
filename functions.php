@@ -2059,26 +2059,55 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         return $items;
     }
 
-    $home_url    = home_url('/');
-    $archive_url = get_post_type_archive_link('model');
+    $home_url      = home_url('/');
+    $home_label    = esc_html__('Home', 'retrotube-child');
+    $models_label  = esc_html__('Models', 'retrotube-child');
+    $archive_url   = get_post_type_archive_link('model');
+
+    if (!$archive_url) {
+        $models_page = get_page_by_path('models');
+        if ($models_page) {
+            $archive_url = get_permalink($models_page);
+        }
+    }
+
     if (!$archive_url) {
         $archive_url = home_url('/models/');
     }
 
-    if (is_post_type_archive('model')) {
-        return [
+    $is_models_archive = is_post_type_archive('model') || is_post_type_archive('model_bio') || (is_post_type_archive() && get_query_var('post_type') === 'model_bio');
+    $is_models_single  = is_singular('model') || is_singular('model_bio');
+
+    $crumb_updated = false;
+
+    foreach ($items as $index => $item) {
+        if (!is_array($item) || !isset($item['label'])) {
+            continue;
+        }
+
+        $raw_label   = wp_strip_all_tags((string) $item['label']);
+        $label       = strtolower(trim($raw_label));
+        $normalized  = str_replace([' ', '-'], '', $label);
+
+        if ($normalized === 'model' || $normalized === 'modelbio') {
+            $items[$index]['label'] = $models_label;
+            $items[$index]['url']   = $is_models_archive ? '' : $archive_url;
+            $crumb_updated = true;
+        }
+    }
+
+    if ($is_models_archive && !$crumb_updated) {
+        $items = [
             [
-                'label' => esc_html__('Home', 'retrotube-child'),
+                'label' => $home_label,
                 'url'   => $home_url,
             ],
             [
-                'label' => esc_html__('Models', 'retrotube-child'),
+                'label' => $models_label,
                 'url'   => '',
             ],
         ];
-    }
-
-    if (is_singular('model')) {
+    } elseif ($is_models_single && !$crumb_updated) {
         $current_title = single_post_title('', false);
         if ($current_title === '') {
             $current_id = get_queried_object_id();
@@ -2088,13 +2117,13 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         }
         $current_title = wp_strip_all_tags($current_title);
 
-        return [
+        $items = [
             [
-                'label' => esc_html__('Home', 'retrotube-child'),
+                'label' => $home_label,
                 'url'   => $home_url,
             ],
             [
-                'label' => esc_html__('Models', 'retrotube-child'),
+                'label' => $models_label,
                 'url'   => $archive_url,
             ],
             [
@@ -2105,4 +2134,70 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
     }
 
     return $items;
-}, 10, 2);
+}, 20, 2);
+
+// Redirect legacy /model/ archive → /models/
+add_action('template_redirect', function () {
+    if (is_admin()) {
+        return;
+    }
+
+    $post_type_query = get_query_var('post_type');
+    if (is_array($post_type_query)) {
+        $post_type_query = reset($post_type_query);
+    }
+    if (is_string($post_type_query)) {
+        $post_type_query = strtolower($post_type_query);
+    } else {
+        $post_type_query = '';
+    }
+    $redirect_needed = false;
+
+    if (is_post_type_archive('model_bio') || (is_post_type_archive() && $post_type_query === 'model_bio')) {
+        $redirect_needed = true;
+    } elseif (is_post_type_archive('model') || (is_post_type_archive() && $post_type_query === 'model')) {
+        global $wp;
+        $request_path = isset($wp->request) ? strtolower(ltrim((string) $wp->request, '/')) : '';
+
+        if ($request_path === 'model' || strpos($request_path, 'model/page/') === 0) {
+            $redirect_needed = true;
+        }
+    }
+
+    if (!$redirect_needed) {
+        return;
+    }
+
+    $archive_url = get_post_type_archive_link('model');
+    if (!$archive_url) {
+        $models_page = get_page_by_path('models');
+        if ($models_page) {
+            $archive_url = get_permalink($models_page);
+        }
+    }
+    if (!$archive_url) {
+        $archive_url = home_url('/models/');
+    }
+
+    $paged = (int) get_query_var('paged');
+    $paged = $paged > 1 ? $paged : 0;
+
+    $target = $archive_url;
+    if ($paged > 1) {
+        $target = trailingslashit($target) . 'page/' . $paged . '/';
+    }
+
+    $query_args = [];
+    foreach (wp_unslash($_GET) as $key => $value) {
+        if ($key === 'paged' || $key === 'post_type') {
+            continue;
+        }
+        $query_args[$key] = $value;
+    }
+    if (!empty($query_args)) {
+        $target = add_query_arg($query_args, $target);
+    }
+
+    wp_safe_redirect($target, 301);
+    exit;
+});
