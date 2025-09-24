@@ -9,6 +9,22 @@
  */
 
 /* ======================================================================
+ * ONE-TIME MIGRATIONS
+ * ====================================================================== */
+/**
+ * Move all legacy model_bio posts into the model CPT.
+ */
+add_action('init', function(){
+  global $wpdb;
+  if (get_option('tmw_migrated_model_bio')) return;
+
+  $wpdb->query("UPDATE {$wpdb->posts} SET post_type = 'model' WHERE post_type = 'model_bio'");
+
+  update_option('tmw_migrated_model_bio', 1);
+  flush_rewrite_rules();
+}, 5);
+
+/* ======================================================================
  * LEGACY CPT CLEANUP
  * ====================================================================== */
 add_action('init', function(){
