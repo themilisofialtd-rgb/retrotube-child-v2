@@ -1281,6 +1281,7 @@ if (!function_exists('tmw_render_flipbox_card')) {
     $back_style  = (function_exists('tmw_bg_style') ? tmw_bg_style($back_url)  : 'background-image:url('.esc_url($back_url ).');') . ($ov['css_back']  ?? '');
 
     $link = tmw_get_model_link_for_term($term);
+    $link = apply_filters('tmw_model_flipbox_link', $link, $term);
     $name = $term->name;
 
     ob_start(); ?>
@@ -1440,6 +1441,7 @@ function tmw_models_flipboxes_cb($atts){
   $i = 0;
   foreach ($terms as $term){
     $link = tmw_get_model_link_for_term($term);
+    $link = apply_filters('tmw_model_flipbox_link', $link, $term);
 
     $front_url = '';
     $back_url  = '';
