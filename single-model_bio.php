@@ -11,28 +11,10 @@ $flipbox_shortcode = get_field('flipbox_shortcode');
 <div class="container model-bio-page">
 
     <!-- ✅ Breadcrumbs -->
-    <div id="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList" style="margin:15px 0;">
-        <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-            <a itemprop="item" href="<?php echo home_url(); ?>">
-                <span itemprop="name">Home</span>
-            </a>
-            <meta itemprop="position" content="1" />
-        </span>
-        <span class="separator"><i class="fa fa-caret-right"></i></span>
-
-        <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-            <a itemprop="item" href="<?php echo site_url('/models/'); ?>">
-                <span itemprop="name">Models</span>
-            </a>
-            <meta itemprop="position" content="2" />
-        </span>
-        <span class="separator"><i class="fa fa-caret-right"></i></span>
-
-        <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-            <span itemprop="name"><?php the_title(); ?></span>
-            <meta itemprop="position" content="3" />
-        </span>
-    </div>
+    <?php tmw_render_models_breadcrumbs([
+        'current'         => get_the_title(),
+        'container_style' => 'margin:15px 0;',
+    ]); ?>
     <!-- ✅ End Breadcrumbs -->
 
     <div class="model-header" style="text-align: center; margin-bottom: 30px;">

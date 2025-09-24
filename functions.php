@@ -1793,3 +1793,105 @@ add_action('template_redirect', function() {
         }
     }
 });
+
+/* ======================================================================
+ * MODELS BREADCRUMBS HELPER
+ * ====================================================================== */
+if (!function_exists('tmw_render_models_breadcrumbs')) {
+    /**
+     * Print the breadcrumb trail for the Models CPT.
+     *
+     * Defaults to: Home → Models → Current (optional).
+     *
+     * @param array $args {
+     *   Optional arguments to tweak the output.
+     *
+     *   @type string $current      Current item label. Required when show_current is true.
+     *   @type bool   $show_current Whether to append the current item. Default true when $current provided.
+     *   @type bool   $echo         Echo or return the markup. Default true.
+     *   @type string $container_class Optional extra class for the wrapper div.
+     *   @type string $container_style Optional inline style attribute for the wrapper div.
+     * }
+     *
+     * @return string Rendered breadcrumbs markup (also echoed when $echo is true).
+     */
+    function tmw_render_models_breadcrumbs(array $args = []) {
+        $defaults = [
+            'current'        => '',
+            'show_current'   => null,
+            'echo'           => true,
+            'container_class'=> '',
+            'container_style'=> '',
+        ];
+        $args = wp_parse_args($args, $defaults);
+
+        if ($args['show_current'] === null) {
+            $args['show_current'] = ($args['current'] !== '');
+        }
+
+        $items = [];
+        $items[] = [
+            'url'    => home_url('/'),
+            'label'  => esc_html__('Home', 'retrotube-child'),
+        ];
+
+        $models_url = '';
+        if (post_type_exists('model')) {
+            $models_url = get_post_type_archive_link('model');
+        }
+        if (!$models_url && post_type_exists('model_bio')) {
+            $models_url = get_post_type_archive_link('model_bio');
+        }
+        if (!$models_url) {
+            $models_page = get_page_by_path('models');
+            if ($models_page) {
+                $models_url = get_permalink($models_page);
+            }
+        }
+        if (!$models_url) {
+            $models_url = home_url('/models/');
+        }
+
+        $items[] = [
+            'url'   => $models_url,
+            'label' => esc_html__('Models', 'retrotube-child'),
+        ];
+
+        if ($args['show_current'] && $args['current'] !== '') {
+            $items[] = [
+                'url'   => '',
+                'label' => wp_strip_all_tags($args['current']),
+            ];
+        }
+
+        $position = 1;
+        $count = count($items);
+        $classes = trim((string) $args['container_class']);
+        $styles  = trim((string) $args['container_style']);
+        $class_attr = $classes ? ' class="' . esc_attr($classes) . '"' : '';
+        $style_attr = $styles  ? ' style="' . esc_attr($styles) . '"'  : '';
+
+        $html  = '<div id="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList"' . $class_attr . $style_attr . '>';
+        foreach ($items as $index => $item) {
+            $html .= '<span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
+            if (!empty($item['url'])) {
+                $html .= '<a itemprop="item" href="' . esc_url($item['url']) . '"><span itemprop="name">' . esc_html($item['label']) . '</span></a>';
+            } else {
+                $html .= '<span itemprop="name">' . esc_html($item['label']) . '</span>';
+            }
+            $html .= '<meta itemprop="position" content="' . $position . '" />';
+            $html .= '</span>';
+            if ($index < $count - 1) {
+                $html .= '<span class="separator"><i class="fa fa-caret-right"></i></span>';
+            }
+            $position++;
+        }
+        $html .= '</div>';
+
+        if ($args['echo']) {
+            echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        return $html;
+    }
+}
