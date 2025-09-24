@@ -4,13 +4,6 @@
  */
 get_header();
 ?>
-<div class="container model-archive-page">
-    <?php tmw_render_models_breadcrumbs([
-        'show_current'    => false,
-        'container_style' => 'margin:15px 0;',
-    ]); ?>
-</div>
-
 <main id="primary" class="site-main">
     <div class="tmw-layout container model-archive-layout">
         <section class="tmw-content">
