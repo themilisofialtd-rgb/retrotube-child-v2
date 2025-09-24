@@ -1725,10 +1725,13 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
       continue;
     }
 
-    $label = strtolower($crumb['label']);
+    $label = strtolower(trim((string) $crumb['label']));
     if ($label === 'model' || $label === 'model bio') {
       $crumbs[$key]['label'] = 'Models';
+      $crumbs[$key]['title'] = 'Models';
       $crumbs[$key]['url']   = $models_url;
+
+      return $crumbs;
     }
   }
 
