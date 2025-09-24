@@ -35,6 +35,57 @@ add_action('init', function(){
 }, 20);
 
 /* ======================================================================
+ * MODEL CPT NORMALIZATION
+ * ====================================================================== */
+/**
+ * Normalize 'model' CPT so breadcrumbs are correct.
+ * Works even if CPT is registered by parent theme or plugin.
+ */
+add_filter('register_post_type_args', function ($args, $post_type) {
+  if ($post_type !== 'model') return $args;
+
+  // Labels used by theme breadcrumbs
+  $args['labels']                 = isset($args['labels']) ? $args['labels'] : [];
+  $args['labels']['name']         = 'Models';
+  $args['labels']['menu_name']    = 'Models';
+  $args['labels']['singular_name'] = isset($args['labels']['singular_name']) ? $args['labels']['singular_name'] : 'Model';
+  $args['labels']['archives']     = 'Models';
+
+  // Archive should be /models/
+  // Singles should remain /model/%postname%/
+  $args['has_archive'] = 'models';
+  $args['rewrite'] = [
+    'slug'       => 'model',
+    'with_front' => false,
+  ];
+
+  // Ensure public so archive link is generated
+  $args['public'] = true;
+
+  return $args;
+}, 10, 2);
+
+/**
+ * One-time flush so the new /models/ archive starts working immediately.
+ */
+add_action('init', function () {
+  if (get_option('tmw_flushed_cpt_rewrites_models')) return;
+  flush_rewrite_rules();
+  update_option('tmw_flushed_cpt_rewrites_models', 1);
+});
+
+/**
+ * Redirect legacy /model/ archive to /models/
+ */
+add_action('template_redirect', function () {
+  $req = isset($_SERVER['REQUEST_URI']) ? trailingslashit(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)) : '';
+  if ($req === '/model/' && !is_singular('model')) {
+    wp_redirect(home_url('/models/'), 301);
+    exit;
+  }
+});
+
+/* ======================================================================
  * SAFE PLACEHOLDER (never 404s)
  * ====================================================================== */
 if (!function_exists('tmw_placeholder_image_url')) {
