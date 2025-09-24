@@ -8,6 +8,7 @@ $bio = get_field('bio');
 $model_link = get_field('model_link');
 $banner = get_field('banner_image');
 $flipbox_shortcode = get_field('flipbox_shortcode');
+$model_title = get_the_title();
 ?>
 
 <div class="container model-bio-page">
@@ -15,9 +16,28 @@ $flipbox_shortcode = get_field('flipbox_shortcode');
     <div class="model-header" style="text-align: center; margin-bottom: 30px;">
         <h1><?php the_title(); ?></h1>
 
-        <?php if ($banner): ?>
-            <img src="<?php echo esc_url($banner); ?>" alt="<?php the_title(); ?>" style="max-width:100%; height:auto; margin-top: 15px;">
-        <?php endif; ?>
+        <?php
+        if ($banner) {
+            $banner_url = '';
+            $banner_alt = '';
+
+            if (is_array($banner)) {
+                $banner_url = isset($banner['url']) ? $banner['url'] : '';
+                $banner_alt = isset($banner['alt']) ? $banner['alt'] : '';
+            } elseif (is_string($banner)) {
+                $banner_url = $banner;
+            }
+
+            if (!empty($banner_url)) {
+                $alt_text = !empty($banner_alt) ? $banner_alt : $model_title;
+                ?>
+                <div class="model-hero">
+                    <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($alt_text); ?>" style="max-width:100%; height:auto; margin-top: 15px;">
+                </div>
+                <?php
+            }
+        }
+        ?>
     </div>
 
     <div class="model-content">
