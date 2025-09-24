@@ -1670,6 +1670,40 @@ add_filter('rank_math/post_types', function ($post_types) {
 });
 
 /* ======================================================================
+ * BREADCRUMBS (Rank Math)
+ * ====================================================================== */
+add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
+  if (!function_exists('rank_math_the_breadcrumbs')) {
+    return $crumbs;
+  }
+
+  if (is_post_type_archive('model') || is_post_type_archive('model_bio')) {
+    return [
+      ['label' => 'Home', 'url' => home_url('/')],
+      ['label' => 'Models', 'url' => ''],
+    ];
+  }
+
+  if (is_singular('model') || is_singular('model_bio')) {
+    $archive_url = get_post_type_archive_link('model');
+    if (!$archive_url) {
+      $archive_url = get_post_type_archive_link('model_bio');
+    }
+    if (!$archive_url) {
+      $archive_url = home_url('/models/');
+    }
+
+    return [
+      ['label' => 'Home', 'url' => home_url('/')],
+      ['label' => 'Models', 'url' => $archive_url],
+      ['label' => get_the_title(), 'url' => ''],
+    ];
+  }
+
+  return $crumbs;
+});
+
+/* ======================================================================
  * MODELS TAXONOMY (new internal slug) + redirects from old /actor/*
  * - Public URLs: /model/{term}/
  * - Keeps old /actor/* and /actors/* working with 301 to the new URL.
