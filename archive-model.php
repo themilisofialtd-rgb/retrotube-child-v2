@@ -4,26 +4,19 @@
  */
 get_header();
 ?>
-<main id="primary" class="site-main">
-    <div class="tmw-layout container model-archive-layout">
-        <section class="tmw-content">
-            <h1 class="tmw-title"><span class="tmw-star">★</span><?php esc_html_e('Models', 'retrotube-child'); ?></h1>
-            <?php
-            $archive_description = get_the_archive_description();
-            if ($archive_description) :
-                ?>
-                <div class="archive-description"><?php echo wp_kses_post($archive_description); ?></div>
-                <?php
-            endif;
+<div class="container">
+  <?php get_template_part('breadcrumb'); ?>
 
-            echo do_shortcode('[actors_flipboxes per_page="16" cols="4" show_pagination="true"]');
-            ?>
-        </section>
+  <?php
+  $models_page = get_page_by_path('models');
+  if ($models_page instanceof WP_Post) {
+    echo '<div class="models-intro">';
+    echo apply_filters('the_content', $models_page->post_content);
+    echo '</div>';
+  }
+  ?>
 
-        <aside class="tmw-sidebar">
-            <?php get_sidebar(); ?>
-        </aside>
-    </div>
-</main>
-
-<?php get_footer(); ?>
+  <?php echo do_shortcode('[actors_flipboxes]'); ?>
+</div>
+<?php
+get_footer();
