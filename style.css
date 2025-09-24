@@ -1,0 +1,192 @@
+/* Theme Name: Retrotube Child (Flipbox Edition) v2
+ Template: retrotube
+ Version: 1.1.4
+ Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
+ Author: Top Models Webcam
+*/
+
+/* =========================
+   HERO (main column only)
+   ========================= */
+.tmw-actor-hero,
+.tmw-model-hero {
+  margin: 0 0 18px;
+  position: relative; /* keeps hero inside main column, not the sidebar */
+}
+.tmw-actor-hero img,
+.tmw-model-hero img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1200 / 350; /* exact requested ratio */
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+.tmw-actor-hero .tmw-actor-name,
+.tmw-model-hero .tmw-model-name {
+  margin: 10px 0 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+/* =========================
+   BIO (20-line clamp + toggle)
+   ========================= */
+.tmw-bio { margin: 14px 0 22px; }
+.tmw-bio-clamp { --tmw-lines: 20; }
+.tmw-bio-clamp.is-clamped .tmw-bio-clamp-inner {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--tmw-lines);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tmw-bio-toggle.button {
+  margin-top: 10px;
+  border-color: #db011a !important;
+  background-color: #db011a !important;
+  color: #fff !important;
+}
+
+/* Hide any tag chips inside the bio area */
+.tmw-bio .tags,
+.tmw-bio .tagcloud,
+.tmw-bio a.tag-cloud-link { display: none !important; }
+
+/* =========================
+   Optional live CTA + socials
+   ========================= */
+.tmw-live { margin: 14px 0; }
+.tmw-live-btn {
+  display: inline-block;
+  padding: .6rem .9rem;
+  border-radius: 8px;
+  background: #db011a;
+  color: #fff !important;
+  text-decoration: none;
+}
+.tmw-actor-social {
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tmw-actor-social .tmw-social {
+  display: inline-block;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+  background: #f2f2f2;
+  color: #333;
+  text-decoration: none;
+}
+
+/* =========================
+   FEATURED FLIPBOXES (plugin slot)
+   ========================= */
+.tmw-featured-slot { margin-top: 28px; }
+.tmw-featured-slot .section-title {
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+
+/* subtle glow on the flipbox CTA */
+.tmw-trigger { box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+
+/* =========================
+   VIDEO META (Model / From / Date)
+   ========================= */
+.video-meta-inline {
+  margin: 10px 0 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ccc;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px; /* space between items */
+}
+
+.video-meta-inline .video-meta-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.video-meta-inline i {
+  margin-right: 6px;
+  color: #db011a; /* accent color */
+}
+
+/* Mobile: stack items vertically */
+@media (max-width: 767px) {
+  .video-meta-inline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .video-meta-inline .video-meta-item {
+    width: 100%;
+  }
+}
+
+/* =========================
+   MOBILE hero height (actors & models)
+   ========================= */
+:root {
+  --tmw-hero-mobile-h: clamp(140px, 22vh, 200px);
+  --tmw-hero-vpos: 50%;
+}
+
+@media (max-width: 840px) {
+  /* wrappers (covers bg-image + ratio hacks) */
+  body[class*="taxonomy-actor"] .tmw-actor-hero,
+  body[class*="taxonomy-actor"] .entry-header,
+  body[class*="taxonomy-actor"] .post-thumbnail,
+  body[class*="taxonomy-actor"] .hero,
+  body[class*="taxonomy-actor"] article > *:first-child,
+  body[class*="taxonomy-model"] .tmw-model-hero,
+  body[class*="taxonomy-model"] .entry-header,
+  body[class*="taxonomy-model"] .post-thumbnail,
+  body[class*="taxonomy-model"] .hero,
+  body[class*="taxonomy-model"] article > *:first-child {
+    height: var(--tmw-hero-mobile-h) !important;
+    min-height: var(--tmw-hero-mobile-h) !important;
+    max-height: var(--tmw-hero-mobile-h) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+    background-size: cover !important;
+    background-position: center var(--tmw-hero-vpos) !important;
+  }
+
+  /* image/picture heroes */
+  body[class*="taxonomy-actor"] .tmw-actor-hero img,
+  body[class*="taxonomy-actor"] .entry-header img,
+  body[class*="taxonomy-actor"] .post-thumbnail img,
+  body[class*="taxonomy-actor"] .hero img,
+  body[class*="taxonomy-actor"] article > *:first-child img,
+  body[class*="taxonomy-actor"] picture img,
+  body[class*="taxonomy-model"] .tmw-model-hero img,
+  body[class*="taxonomy-model"] .entry-header img,
+  body[class*="taxonomy-model"] .post-thumbnail img,
+  body[class*="taxonomy-model"] .hero img,
+  body[class*="taxonomy-model"] article > *:first-child img,
+  body[class*="taxonomy-model"] picture img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center var(--tmw-hero-vpos) !important;
+    aspect-ratio: auto !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* =========================
+   FIX: Remove duplicate meta inside accordion
+   ========================= */
+#video-about #video-models,
+#video-about #video-author,
+#video-about #video-date,
+#video-about #video-actors {
+  display: none !important;
+}
