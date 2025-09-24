@@ -85,6 +85,25 @@ add_action('template_redirect', function () {
   }
 });
 
+/**
+ * Ensure breadcrumb always shows Models
+ */
+add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
+  if (!is_array($crumbs)) return $crumbs;
+
+  foreach ($crumbs as $key => $crumb) {
+    if (!is_array($crumb) || !isset($crumb['label'])) continue;
+
+    $label = strtolower($crumb['label']);
+    if ($label === 'model' || $label === 'model bio') {
+      $crumbs[$key]['label'] = 'Models';
+      $crumbs[$key]['url']   = home_url('/models/');
+    }
+  }
+
+  return $crumbs;
+});
+
 /* ======================================================================
  * SAFE PLACEHOLDER (never 404s)
  * ====================================================================== */
