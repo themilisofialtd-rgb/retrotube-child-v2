@@ -1,6 +1,8 @@
 <?php
 get_header();
 
+get_template_part('breadcrumb');
+
 // Get ACF fields
 $bio = get_field('bio');
 $model_link = get_field('model_link');
