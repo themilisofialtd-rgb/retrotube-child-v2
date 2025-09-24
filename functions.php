@@ -1956,6 +1956,37 @@ add_action('template_redirect', function () {
 });
 
 /* ======================================================================
+ * MODELS BREADCRUMBS + RANK MATH INTEGRATION
+ * ====================================================================== */
+add_action('after_setup_theme', function () {
+    remove_action('retrotube_before_main_content', 'retrotube_breadcrumb', 20);
+
+    add_action('retrotube_before_main_content', function () {
+        $breadcrumb_html = '';
+
+        if (function_exists('rank_math_get_breadcrumbs')) {
+            $breadcrumb_html = rank_math_get_breadcrumbs([
+                'wrap_before' => '',
+                'wrap_after'  => '',
+                'separator'   => '<span class="separator"><i class="fa fa-caret-right"></i></span>',
+            ]);
+        } elseif (function_exists('rank_math_the_breadcrumbs')) {
+            ob_start();
+            rank_math_the_breadcrumbs();
+            $breadcrumb_html = trim(ob_get_clean());
+        }
+
+        if ($breadcrumb_html === '') {
+            return;
+        }
+
+        echo '<div id="breadcrumbs" class="rank-math-breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">';
+        echo $breadcrumb_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '</div>';
+    }, 20);
+});
+
+/* ======================================================================
  * MODELS BREADCRUMBS HELPER
  * ====================================================================== */
 if (!function_exists('tmw_render_models_breadcrumbs')) {
@@ -2059,28 +2090,17 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         return $items;
     }
 
-    $home_crumb = [
-        'label' => esc_html__('Home', 'retrotube-child'),
-        'url'   => home_url('/'),
-    ];
-
-    $models_label = esc_html__('Models', 'retrotube-child');
-    $models_url   = get_post_type_archive_link('model');
-    if (!$models_url) {
-        $models_page = get_page_by_path('models');
-        if ($models_page) {
-            $models_url = get_permalink($models_page);
-        }
-    }
-    if (!$models_url) {
-        $models_url = home_url('/models/');
-    }
+    $home_url   = home_url('/');
+    $models_url = home_url('/models/');
 
     if (is_post_type_archive('model')) {
         return [
-            $home_crumb,
             [
-                'label' => $models_label,
+                'label' => 'Home',
+                'url'   => $home_url,
+            ],
+            [
+                'label' => 'Models',
                 'url'   => '',
             ],
         ];
@@ -2097,9 +2117,12 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         $current_title = wp_strip_all_tags($current_title);
 
         return [
-            $home_crumb,
             [
-                'label' => $models_label,
+                'label' => 'Home',
+                'url'   => $home_url,
+            ],
+            [
+                'label' => 'Models',
                 'url'   => $models_url,
             ],
             [
@@ -2109,17 +2132,22 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = nul
         ];
     }
 
-    foreach ($items as $index => $item) {
-        if (!is_array($item) || !isset($item['label'])) {
-            continue;
-        }
+    if (is_tax('models')) {
+        foreach ($items as $index => $item) {
+            if (!is_array($item) || !isset($item['label'])) {
+                continue;
+            }
 
-        $raw_label  = wp_strip_all_tags((string) $item['label']);
-        $normalized = strtolower(str_replace([' ', '-'], '', $raw_label));
+            $raw_label  = wp_strip_all_tags((string) $item['label']);
+            $normalized = strtolower(str_replace([' ', '-'], '', $raw_label));
 
-        if ($normalized === 'model' || $normalized === 'modelbio') {
-            $items[$index]['label'] = $models_label;
-            $items[$index]['url']   = $models_url;
+            if ($normalized === 'model' || $normalized === 'modelbio' || $normalized === 'models') {
+                $items[$index]['label'] = 'Models';
+                $items[$index]['url']   = $models_url;
+            } elseif ($normalized === 'home') {
+                $items[$index]['label'] = 'Home';
+                $items[$index]['url']   = $home_url;
+            }
         }
     }
 
@@ -2158,16 +2186,7 @@ add_action('template_redirect', function () {
         return;
     }
 
-    $archive_url = get_post_type_archive_link('model');
-    if (!$archive_url) {
-        $models_page = get_page_by_path('models');
-        if ($models_page) {
-            $archive_url = get_permalink($models_page);
-        }
-    }
-    if (!$archive_url) {
-        $archive_url = home_url('/models/');
-    }
+    $archive_url = home_url('/models/');
 
     $paged = (int) get_query_var('paged');
     $paged = $paged > 1 ? $paged : 0;
