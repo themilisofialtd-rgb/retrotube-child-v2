@@ -19,7 +19,7 @@
   height: auto;
   aspect-ratio: 1200 / 350; /* exact requested ratio */
   object-fit: cover;
-  border-radius: 24px;
+  border-radius: 12px;
   display: block;
 }
 .tmw-actor-hero .tmw-actor-name,
@@ -190,5 +190,6 @@
 #video-about #video-actors {
   display: none !important;
 }
+
 
 
