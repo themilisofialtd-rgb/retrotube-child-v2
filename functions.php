@@ -1956,203 +1956,40 @@ add_action('template_redirect', function () {
 });
 
 /* ======================================================================
- * MODELS BREADCRUMBS + RANK MATH INTEGRATION
+ * MODELS BREADCRUMB FIX (RANK MATH ONLY)
  * ====================================================================== */
 add_action('after_setup_theme', function () {
     remove_action('retrotube_before_main_content', 'retrotube_breadcrumb', 20);
 
     add_action('retrotube_before_main_content', function () {
-        $breadcrumb_html = '';
-
-        if (function_exists('rank_math_get_breadcrumbs')) {
-            $breadcrumb_html = rank_math_get_breadcrumbs([
-                'wrap_before' => '',
-                'wrap_after'  => '',
-                'separator'   => '<span class="separator"><i class="fa fa-caret-right"></i></span>',
-            ]);
-        } elseif (function_exists('rank_math_the_breadcrumbs')) {
-            ob_start();
-            rank_math_the_breadcrumbs();
-            $breadcrumb_html = trim(ob_get_clean());
-        }
-
-        if ($breadcrumb_html === '') {
+        if (!function_exists('rank_math_the_breadcrumbs')) {
             return;
         }
 
-        echo '<div id="breadcrumbs" class="rank-math-breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">';
-        echo $breadcrumb_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo '<div id="breadcrumbs">';
+        rank_math_the_breadcrumbs();
         echo '</div>';
     }, 20);
 });
 
-/* ======================================================================
- * MODELS BREADCRUMBS HELPER
- * ====================================================================== */
-if (!function_exists('tmw_render_models_breadcrumbs')) {
-    /**
-     * Print the breadcrumb trail for the Models CPT.
-     *
-     * Defaults to: Home → Models → Current (optional).
-     *
-     * @param array $args {
-     *   Optional arguments to tweak the output.
-     *
-     *   @type string $current      Current item label. Required when show_current is true.
-     *   @type bool   $show_current Whether to append the current item. Default true when $current provided.
-     *   @type bool   $echo         Echo or return the markup. Default true.
-     *   @type string $container_class Optional extra class for the wrapper div.
-     *   @type string $container_style Optional inline style attribute for the wrapper div.
-     * }
-     *
-     * @return string Rendered breadcrumbs markup (also echoed when $echo is true).
-     */
-    function tmw_render_models_breadcrumbs(array $args = []) {
-        $defaults = [
-            'current'        => '',
-            'show_current'   => null,
-            'echo'           => true,
-            'container_class'=> '',
-            'container_style'=> '',
-        ];
-        $args = wp_parse_args($args, $defaults);
-
-        if ($args['show_current'] === null) {
-            $args['show_current'] = ($args['current'] !== '');
-        }
-
-        $items = [];
-        $items[] = [
-            'url'    => home_url('/'),
-            'label'  => esc_html__('Home', 'retrotube-child'),
-        ];
-
-        $models_url = '';
-        if (post_type_exists('model')) {
-            $models_url = get_post_type_archive_link('model');
-        }
-        if (!$models_url) {
-            $models_page = get_page_by_path('models');
-            if ($models_page) {
-                $models_url = get_permalink($models_page);
-            }
-        }
-        if (!$models_url) {
-            $models_url = home_url('/models/');
-        }
-
-        $items[] = [
-            'url'   => $models_url,
-            'label' => esc_html__('Models', 'retrotube-child'),
-        ];
-
-        if ($args['show_current'] && $args['current'] !== '') {
-            $items[] = [
-                'url'   => '',
-                'label' => wp_strip_all_tags($args['current']),
-            ];
-        }
-
-        $position = 1;
-        $count = count($items);
-        $classes = trim((string) $args['container_class']);
-        $styles  = trim((string) $args['container_style']);
-        $class_attr = $classes ? ' class="' . esc_attr($classes) . '"' : '';
-        $style_attr = $styles  ? ' style="' . esc_attr($styles) . '"'  : '';
-
-        $html  = '<div id="breadcrumbs" itemscope itemtype="https://schema.org/BreadcrumbList"' . $class_attr . $style_attr . '>';
-        foreach ($items as $index => $item) {
-            $html .= '<span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">';
-            if (!empty($item['url'])) {
-                $html .= '<a itemprop="item" href="' . esc_url($item['url']) . '"><span itemprop="name">' . esc_html($item['label']) . '</span></a>';
-            } else {
-                $html .= '<span itemprop="name">' . esc_html($item['label']) . '</span>';
-            }
-            $html .= '<meta itemprop="position" content="' . $position . '" />';
-            $html .= '</span>';
-            if ($index < $count - 1) {
-                $html .= '<span class="separator"><i class="fa fa-caret-right"></i></span>';
-            }
-            $position++;
-        }
-        $html .= '</div>';
-
-        if ($args['echo']) {
-            echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        }
-
-        return $html;
-    }
-}
-
-add_filter('rank_math/frontend/breadcrumb/items', function ($items, $class = null) {
-    if (!is_array($items)) {
-        return $items;
-    }
-
-    $home_url   = home_url('/');
-    $models_url = home_url('/models/');
-
+add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
     if (is_post_type_archive('model')) {
         return [
-            [
-                'label' => 'Home',
-                'url'   => $home_url,
-            ],
-            [
-                'label' => 'Models',
-                'url'   => '',
-            ],
+            ['label' => 'Home', 'url' => home_url('/')],
+            ['label' => 'Models', 'url' => ''],
         ];
     }
 
     if (is_singular('model')) {
-        $current_title = single_post_title('', false);
-        if ($current_title === '') {
-            $current_id = get_queried_object_id();
-            if ($current_id) {
-                $current_title = get_the_title($current_id);
-            }
-        }
-        $current_title = wp_strip_all_tags($current_title);
-
         return [
-            [
-                'label' => 'Home',
-                'url'   => $home_url,
-            ],
-            [
-                'label' => 'Models',
-                'url'   => $models_url,
-            ],
-            [
-                'label' => $current_title,
-                'url'   => '',
-            ],
+            ['label' => 'Home', 'url' => home_url('/')],
+            ['label' => 'Models', 'url' => home_url('/models/')],
+            ['label' => get_the_title(), 'url' => ''],
         ];
     }
 
-    if (is_tax('models')) {
-        foreach ($items as $index => $item) {
-            if (!is_array($item) || !isset($item['label'])) {
-                continue;
-            }
-
-            $raw_label  = wp_strip_all_tags((string) $item['label']);
-            $normalized = strtolower(str_replace([' ', '-'], '', $raw_label));
-
-            if ($normalized === 'model' || $normalized === 'modelbio' || $normalized === 'models') {
-                $items[$index]['label'] = 'Models';
-                $items[$index]['url']   = $models_url;
-            } elseif ($normalized === 'home') {
-                $items[$index]['label'] = 'Home';
-                $items[$index]['url']   = $home_url;
-            }
-        }
-    }
-
-    return $items;
-}, 20, 2);
+    return $crumbs;
+});
 
 // Redirect legacy /model/ archive → /models/
 add_action('template_redirect', function () {
