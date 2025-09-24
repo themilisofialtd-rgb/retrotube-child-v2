@@ -1705,27 +1705,31 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
     return $crumbs;
   }
 
+  $models_url = home_url('/models/');
+
   if (is_post_type_archive('model') || is_post_type_archive('model_bio')) {
-    return [
+    $crumbs = [
       ['label' => 'Home', 'url' => home_url('/')],
-      ['label' => 'Models', 'url' => ''],
+      ['label' => 'Models', 'url' => $models_url],
+    ];
+  } elseif (is_singular('model') || is_singular('model_bio')) {
+    $crumbs = [
+      ['label' => 'Home', 'url' => home_url('/')],
+      ['label' => 'Models', 'url' => $models_url],
+      ['label' => get_the_title(), 'url' => ''],
     ];
   }
 
-  if (is_singular('model') || is_singular('model_bio')) {
-    $archive_url = get_post_type_archive_link('model');
-    if (!$archive_url) {
-      $archive_url = get_post_type_archive_link('model_bio');
-    }
-    if (!$archive_url) {
-      $archive_url = home_url('/models/');
+  foreach ($crumbs as $key => $crumb) {
+    if (!is_array($crumb) || !isset($crumb['label'])) {
+      continue;
     }
 
-    return [
-      ['label' => 'Home', 'url' => home_url('/')],
-      ['label' => 'Models', 'url' => $archive_url],
-      ['label' => get_the_title(), 'url' => ''],
-    ];
+    $label = strtolower($crumb['label']);
+    if ($label === 'model' || $label === 'model bio') {
+      $crumbs[$key]['label'] = 'Models';
+      $crumbs[$key]['url']   = $models_url;
+    }
   }
 
   return $crumbs;
