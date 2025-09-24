@@ -1972,23 +1972,22 @@ add_action('after_setup_theme', function () {
     }, 20);
 });
 
-add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
-    if (is_post_type_archive('model')) {
-        return [
-            ['label' => 'Home', 'url' => home_url('/')],
-            ['label' => 'Models', 'url' => ''],
-        ];
-    }
-
-    if (is_singular('model')) {
-        return [
-            ['label' => 'Home', 'url' => home_url('/')],
-            ['label' => 'Models', 'url' => home_url('/models/')],
-            ['label' => get_the_title(), 'url' => ''],
-        ];
-    }
-
-    return $crumbs;
+// Enforce clean breadcrumb items for Models CPT
+add_filter('rank_math/frontend/breadcrumb/items', function($crumbs) {
+  if (is_post_type_archive('model')) {
+    return [
+      ['label' => 'Home', 'url' => home_url('/')],
+      ['label' => 'Models', 'url' => ''],
+    ];
+  }
+  if (is_singular('model')) {
+    return [
+      ['label' => 'Home', 'url' => home_url('/')],
+      ['label' => 'Models', 'url' => home_url('/models/')],
+      ['label' => get_the_title(), 'url' => ''],
+    ];
+  }
+  return $crumbs;
 });
 
 // Redirect legacy /model/ archive → /models/
