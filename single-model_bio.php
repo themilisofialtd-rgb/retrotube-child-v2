@@ -1,22 +1,14 @@
 <?php
-$rt_child_model_bio_embed = isset($rt_child_model_bio_embed) && $rt_child_model_bio_embed;
+/**
+ * Template part for displaying a single model's hero, bio, and supporting meta.
+ */
 
-if (!$rt_child_model_bio_embed) {
-    get_header();
-    ?>
-    <div id="primary" class="content-area container">
-      <div class="row">
-        <main id="main" class="site-main col-md-8 model-bio-page">
-          <?php get_template_part('breadcrumb'); ?>
-    <?php
-}
-
-// Get ACF fields
-$bio              = get_field('bio');
-$model_link_field = get_field('model_link');
-$banner           = get_field('banner_image');
-$flipbox_shortcode = get_field('flipbox_shortcode');
-$model_title      = get_the_title();
+// Get ACF fields.
+$bio               = function_exists('get_field') ? get_field('bio') : '';
+$model_link_field  = function_exists('get_field') ? get_field('model_link') : '';
+$banner            = function_exists('get_field') ? get_field('banner_image') : '';
+$flipbox_shortcode = function_exists('get_field') ? get_field('flipbox_shortcode') : '';
+$model_title       = get_the_title();
 
 $banner_url = '';
 $banner_alt = '';
@@ -35,48 +27,41 @@ if (is_array($model_link_field)) {
 }
 ?>
 
-<div class="model-header" style="text-align: center; margin-bottom: 30px;">
-    <h1><?php the_title(); ?></h1>
+<article <?php post_class('model-bio-page'); ?>>
+  <header class="model-header" style="text-align: center; margin-bottom: 30px;">
+    <h1 class="model-title"><?php the_title(); ?></h1>
 
     <?php if (!empty($banner_url)) : ?>
-        <?php $alt_text = !empty($banner_alt) ? $banner_alt : $model_title; ?>
-        <div class="model-hero">
-            <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($alt_text); ?>" style="max-width:100%; height:auto; margin-top: 15px;">
-        </div>
+      <?php $alt_text = !empty($banner_alt) ? $banner_alt : $model_title; ?>
+      <div class="model-hero">
+        <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($alt_text); ?>" style="max-width:100%; height:auto; margin-top: 15px;">
+      </div>
     <?php endif; ?>
-</div>
+  </header>
 
-<div class="model-content">
+  <div class="model-content">
     <?php if ($bio) : ?>
-        <div class="model-bio" style="margin-bottom: 30px;">
-            <?php echo wp_kses_post($bio); ?>
-        </div>
+      <div class="model-bio" style="margin-bottom: 30px;">
+        <?php echo wp_kses_post($bio); ?>
+      </div>
     <?php endif; ?>
 
     <?php if ($flipbox_shortcode) : ?>
-        <div class="model-flipbox" style="margin: 40px 0;">
-            <?php echo do_shortcode($flipbox_shortcode); ?>
-        </div>
+      <div class="model-flipbox" style="margin: 40px 0;">
+        <?php echo do_shortcode($flipbox_shortcode); ?>
+      </div>
     <?php endif; ?>
 
     <?php if (!empty($model_link_url)) : ?>
-        <div class="model-link" style="text-align: center; margin-top: 40px;">
-            <a href="<?php echo esc_url($model_link_url); ?>" class="btn" target="_blank" rel="nofollow">
-                Visit <?php the_title(); ?> on LiveJasmin
-            </a>
-        </div>
-    <?php endif; ?>
-</div>
-
-<?php
-if (!$rt_child_model_bio_embed) {
-    ?>
-        </main>
-        <aside class="col-md-4">
-          <?php get_sidebar(); ?>
-        </aside>
+      <div class="model-link" style="text-align: center; margin-top: 40px;">
+        <a href="<?php echo esc_url($model_link_url); ?>" class="btn" target="_blank" rel="nofollow">
+          <?php printf(
+            /* translators: %s is the model name */
+            esc_html__('Visit %s on LiveJasmin', 'retrotube-child'),
+            esc_html($model_title)
+          ); ?>
+        </a>
       </div>
-    </div>
-    <?php get_footer(); ?>
-    <?php
-}
+    <?php endif; ?>
+  </div>
+</article>

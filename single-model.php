@@ -8,18 +8,19 @@
 
 get_header();
 ?>
-<div id="primary" class="content-area container">
-  <div class="row">
-    <main id="main" class="site-main col-md-8 model-bio-page">
-      <?php get_template_part('breadcrumb'); ?>
-      <?php
-      $rt_child_model_bio_embed = true;
-      require __DIR__ . '/single-model_bio.php';
-      ?>
+<div id="content" class="site-content row">
+  <div id="primary" class="content-area with-sidebar-right single-model">
+    <main id="main" class="site-main with-sidebar-right" role="main">
+      <?php if (have_posts()) : ?>
+        <?php while (have_posts()) : the_post(); ?>
+          <?php get_template_part('breadcrumb'); ?>
+          <?php get_template_part('single-model_bio'); ?>
+        <?php endwhile; ?>
+      <?php endif; ?>
     </main>
-    <aside class="col-md-4">
-      <?php get_sidebar(); ?>
-    </aside>
   </div>
+  <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">
+    <?php get_sidebar(); ?>
+  </aside>
 </div>
 <?php get_footer(); ?>
