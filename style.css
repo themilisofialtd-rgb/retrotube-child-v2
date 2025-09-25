@@ -206,6 +206,11 @@
   text-transform: uppercase;
   letter-spacing: .05em;
 }
+.tmwfm-heading i.fa-random {
+  margin-right: 6px;
+  color: #db011a;
+  font-size: inherit;
+}
 
 .model-flipbox .tmwfm-grid {
   display: grid;
