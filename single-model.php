@@ -12,7 +12,10 @@ get_header();
   <div class="row">
     <main id="main" class="site-main col-md-8 model-bio-page">
       <?php get_template_part('breadcrumb'); ?>
-      <?php require __DIR__ . '/single-model_bio.php'; ?>
+      <?php
+      $rt_child_model_bio_embed = true;
+      require __DIR__ . '/single-model_bio.php';
+      ?>
     </main>
     <aside class="col-md-4">
       <?php get_sidebar(); ?>
