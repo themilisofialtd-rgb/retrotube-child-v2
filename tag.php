@@ -2,7 +2,7 @@
 /**
  * Tag archive template override for Retrotube Child theme.
  *
- * Delegates rendering to the parent template while injecting the Featured Models block.
+ * Delegates rendering to the parent template; the Featured Models block is now injected globally.
  */
 
 $parent_template = '';
@@ -22,25 +22,6 @@ if ($parent_template) {
     $parent_output = ob_get_clean();
 
     if ($parent_output !== false) {
-        $featured_markup = '';
-
-        if (tmw_should_output_featured_block() && tmw_featured_block_dedup()) {
-            $shortcode = tmw_get_featured_shortcode_for_context();
-            set_query_var('tmw_featured_shortcode', $shortcode);
-            ob_start();
-            get_template_part('partials/featured-models-block');
-            $featured_markup = ob_get_clean();
-            set_query_var('tmw_featured_shortcode', null);
-        }
-
-        if (!empty($featured_markup)) {
-            if (strpos($parent_output, '</main>') !== false) {
-                $parent_output = preg_replace('#</main>#', $featured_markup . '</main>', $parent_output, 1);
-            } else {
-                $parent_output .= $featured_markup;
-            }
-        }
-
         echo $parent_output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         return;
     }
@@ -60,14 +41,6 @@ get_header();
       <?php else : ?>
         <?php get_template_part('template-parts/content', 'none'); ?>
       <?php endif; ?>
-      <?php
-      if (tmw_should_output_featured_block() && tmw_featured_block_dedup()) {
-          $shortcode = tmw_get_featured_shortcode_for_context();
-          set_query_var('tmw_featured_shortcode', $shortcode);
-          get_template_part('partials/featured-models-block');
-          set_query_var('tmw_featured_shortcode', null);
-      }
-      ?>
     </main>
   </div>
   <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">

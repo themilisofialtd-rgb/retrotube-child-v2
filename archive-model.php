@@ -18,14 +18,6 @@ get_header();
         echo '</div>';
       }
       ?>
-      <?php
-      if (tmw_should_output_featured_block() && tmw_featured_block_dedup()) {
-          $shortcode = tmw_get_featured_shortcode_for_context();
-          set_query_var('tmw_featured_shortcode', $shortcode);
-          get_template_part('partials/featured-models-block');
-          set_query_var('tmw_featured_shortcode', null);
-      }
-      ?>
     </main>
     <aside class="col-md-4">
       <?php get_sidebar(); ?>
