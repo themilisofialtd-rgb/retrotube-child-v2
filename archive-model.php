@@ -4,9 +4,9 @@
  */
 get_header();
 ?>
-<div id="primary" class="content-area">
-  <main id="main" class="site-main">
-    <div class="container">
+<div id="primary" class="content-area container">
+  <div class="row">
+    <main id="main" class="site-main col-md-8">
       <?php get_template_part('breadcrumb'); ?>
 
       <?php
@@ -20,8 +20,10 @@ get_header();
       ?>
 
       <?php echo do_shortcode('[actors_flipboxes]'); ?>
-    </div>
-  </main>
+    </main>
+    <aside class="col-md-4">
+      <?php get_sidebar(); ?>
+    </aside>
+  </div>
 </div>
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>

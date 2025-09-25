@@ -8,13 +8,15 @@
 
 get_header();
 ?>
-<div id="primary" class="content-area">
-  <main id="main" class="site-main">
-    <div class="container model-bio-page">
+<div id="primary" class="content-area container">
+  <div class="row">
+    <main id="main" class="site-main col-md-8 model-bio-page">
       <?php get_template_part('breadcrumb'); ?>
       <?php require __DIR__ . '/single-model_bio.php'; ?>
-    </div>
-  </main>
+    </main>
+    <aside class="col-md-4">
+      <?php get_sidebar(); ?>
+    </aside>
+  </div>
 </div>
-<?php get_sidebar(); ?>
 <?php get_footer(); ?>
