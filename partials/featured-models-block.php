@@ -4,41 +4,19 @@
  */
 
 if (!defined('ABSPATH')) {
-  exit;
+    exit;
 }
 
-$model_ids = get_posts([
-  'post_type'         => 'model',
-  'post_status'       => 'publish',
-  'fields'            => 'ids',
-  'posts_per_page'    => 4,
-  'orderby'           => 'rand',
-  'no_found_rows'     => true,
-  'suppress_filters'  => false,
-]);
+$shortcode_to_use = get_query_var('tmw_featured_shortcode', '[tmw_featured_models]');
 
-if (empty($model_ids)) {
-  return;
+if (!is_string($shortcode_to_use)) {
+    return;
 }
 
-$ids = implode(',', array_map('intval', $model_ids));
+$shortcode_to_use = trim($shortcode_to_use);
 
-if (!$ids) {
-  return;
+if ($shortcode_to_use === '') {
+    return;
 }
 
-$shortcode = sprintf('[actors_flipboxes ids="%s"]', esc_attr($ids));
-$flipboxes = do_shortcode($shortcode);
-
-if (trim($flipboxes) === '') {
-  return;
-}
-?>
-<div class="model-flipbox" style="margin:40px 0;">
-  <div class="tmwfm-wrap">
-    <h3 class="tmwfm-heading"><?php esc_html_e('FEATURED MODELS', 'retrotube-child'); ?></h3>
-    <div class="tmwfm-grid">
-      <?php echo $flipboxes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-    </div>
-  </div>
-</div>
+echo do_shortcode($shortcode_to_use);
