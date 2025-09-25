@@ -1996,6 +1996,67 @@ if (!function_exists('tmw_count_terms')) {
 // ... your taxonomy + sync code is here ...
 
 /* ======================================================================
+ * FEATURED MODELS BLOCK
+ * ====================================================================== */
+if (!function_exists('tmw_featured_models_block')) {
+  function tmw_featured_models_block() {
+    static $rendered = false;
+
+    if ($rendered) {
+      return;
+    }
+
+    if (is_front_page()) {
+      return;
+    }
+
+    $video_post_types = ['video', 'videos', 'wpsc-video', 'wp-script-video', 'wpws_video'];
+    foreach ($video_post_types as $video_post_type) {
+      if (is_singular($video_post_type) || is_post_type_archive($video_post_type)) {
+        return;
+      }
+    }
+
+    $model_ids = get_posts([
+      'post_type'      => 'model',
+      'post_status'    => 'publish',
+      'fields'         => 'ids',
+      'posts_per_page' => 4,
+      'orderby'        => 'rand',
+      'no_found_rows'  => true,
+      'suppress_filters' => false,
+    ]);
+
+    if (empty($model_ids)) {
+      return;
+    }
+
+    $ids = implode(',', array_map('intval', $model_ids));
+    if (!$ids) {
+      return;
+    }
+
+    $shortcode = sprintf('[actors_flipboxes ids="%s"]', esc_attr($ids));
+    $flipboxes  = do_shortcode($shortcode);
+
+    if (trim($flipboxes) === '') {
+      return;
+    }
+
+    $rendered = true;
+
+    echo '<div class="model-flipbox" style="margin:40px 0;">';
+    echo '<div class="tmwfm-wrap">';
+    echo '<h3 class="tmwfm-heading">FEATURED MODELS</h3>';
+    echo '<div class="tmwfm-grid">';
+    echo $flipboxes;
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+  }
+}
+
+/* ======================================================================
  * VIDEO FEATURED FLIPBOX META BOX
  * ====================================================================== */
 function tmw_add_flipbox_meta_box() {

@@ -1,15 +1,15 @@
 <?php
 /**
- * Category archive template override for Retrotube Child theme.
+ * Tag archive template override for Retrotube Child theme.
  *
- * Delegates rendering to the parent template and injects a "Featured Models"
- * block just before the closing </main> element.
+ * Delegates rendering to the parent template and injects the global
+ * Featured Models block just before the closing </main> element.
  */
 
 $parent_template = '';
 $parent_dir      = trailingslashit(get_template_directory());
 
-foreach (['category.php', 'archive.php', 'index.php'] as $candidate) {
+foreach (['tag.php', 'archive.php', 'index.php'] as $candidate) {
     $path = $parent_dir . $candidate;
     if (file_exists($path)) {
         $parent_template = $path;
@@ -26,7 +26,7 @@ if ($parent_template) {
     get_header();
     ?>
     <div id="content" class="site-content row">
-      <div id="primary" class="content-area with-sidebar-right category-archive">
+      <div id="primary" class="content-area with-sidebar-right tag-archive">
         <main id="main" class="site-main with-sidebar-right" role="main">
           <?php if (have_posts()) : ?>
             <?php while (have_posts()) : the_post(); ?>
