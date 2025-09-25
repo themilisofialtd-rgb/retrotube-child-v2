@@ -4,20 +4,24 @@
  */
 get_header();
 ?>
-<div class="container">
-  <?php get_template_part('breadcrumb'); ?>
+<div id="primary" class="content-area">
+  <main id="main" class="site-main">
+    <div class="container">
+      <?php get_template_part('breadcrumb'); ?>
 
-  <?php
-  // Pull content from the Page with slug "models"
-  $models_page = get_page_by_path('models');
-  if ($models_page instanceof WP_Post) {
-    echo '<div class="models-intro">';
-    echo apply_filters('the_content', $models_page->post_content);
-    echo '</div>';
-  }
-  ?>
+      <?php
+      // Pull content from the Page with slug "models"
+      $models_page = get_page_by_path('models');
+      if ($models_page instanceof WP_Post) {
+        echo '<div class="models-intro">';
+        echo apply_filters('the_content', $models_page->post_content);
+        echo '</div>';
+      }
+      ?>
 
-  <?php echo do_shortcode('[actors_flipboxes]'); ?>
+      <?php echo do_shortcode('[actors_flipboxes]'); ?>
+    </div>
+  </main>
 </div>
 <?php get_sidebar(); ?>
 <?php get_footer(); ?>
