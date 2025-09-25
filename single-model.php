@@ -17,7 +17,6 @@ get_header();
           <?php get_template_part('single-model_bio'); ?>
         <?php endwhile; ?>
       <?php endif; ?>
-      <?php tmw_featured_models_block(); ?>
     </main>
   </div>
   <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">

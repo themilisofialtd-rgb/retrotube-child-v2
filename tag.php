@@ -2,8 +2,7 @@
 /**
  * Tag archive template override for Retrotube Child theme.
  *
- * Delegates rendering to the parent template and injects the global
- * Featured Models block just before the closing </main> element.
+ * Delegates rendering to the parent template.
  */
 
 $parent_template = '';
@@ -18,51 +17,29 @@ foreach (['tag.php', 'archive.php', 'index.php'] as $candidate) {
 }
 
 if ($parent_template) {
-    ob_start();
     include $parent_template;
-    $parent_output = ob_get_clean();
-} else {
-    ob_start();
-    get_header();
-    ?>
-    <div id="content" class="site-content row">
-      <div id="primary" class="content-area with-sidebar-right tag-archive">
-        <main id="main" class="site-main with-sidebar-right" role="main">
-          <?php if (have_posts()) : ?>
-            <?php while (have_posts()) : the_post(); ?>
-              <?php get_template_part('template-parts/content', get_post_type()); ?>
-            <?php endwhile; ?>
-
-            <?php the_posts_navigation(); ?>
-          <?php else : ?>
-            <?php get_template_part('template-parts/content', 'none'); ?>
-          <?php endif; ?>
-        </main>
-      </div>
-      <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">
-        <?php get_sidebar(); ?>
-      </aside>
-    </div>
-    <?php
-    get_footer();
-    $parent_output = ob_get_clean();
+    return;
 }
 
-$featured_markup = '';
-if (function_exists('tmw_featured_models_block')) {
-    ob_start();
-    tmw_featured_models_block();
-    $featured_markup = ob_get_clean();
-}
+get_header();
+?>
+<div id="content" class="site-content row">
+  <div id="primary" class="content-area with-sidebar-right tag-archive">
+    <main id="main" class="site-main with-sidebar-right" role="main">
+      <?php if (have_posts()) : ?>
+        <?php while (have_posts()) : the_post(); ?>
+          <?php get_template_part('template-parts/content', get_post_type()); ?>
+        <?php endwhile; ?>
 
-if ($featured_markup && trim($featured_markup) !== '') {
-    $updated_output = preg_replace('#</main>#i', $featured_markup . '</main>', $parent_output, 1, $replaced);
-
-    if (!$replaced) {
-        $updated_output = $parent_output . $featured_markup;
-    }
-
-    echo $updated_output;
-} else {
-    echo $parent_output;
-}
+        <?php the_posts_navigation(); ?>
+      <?php else : ?>
+        <?php get_template_part('template-parts/content', 'none'); ?>
+      <?php endif; ?>
+    </main>
+  </div>
+  <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">
+    <?php get_sidebar(); ?>
+  </aside>
+</div>
+<?php
+get_footer();

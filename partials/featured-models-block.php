@@ -36,7 +36,7 @@ if (trim($flipboxes) === '') {
 ?>
 <div class="model-flipbox" style="margin:40px 0;">
   <div class="tmwfm-wrap">
-    <h3 class="tmwfm-heading"><?php esc_html_e('Featured Models', 'retrotube-child'); ?></h3>
+    <h3 class="tmwfm-heading"><?php esc_html_e('FEATURED MODELS', 'retrotube-child'); ?></h3>
     <div class="tmwfm-grid">
       <?php echo $flipboxes; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
     </div>
