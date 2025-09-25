@@ -2036,16 +2036,8 @@ if (!function_exists('tmw_maybe_add_featured_models')) {
       return;
     }
 
-    if (is_singular('model')) {
+    if (is_post_type_archive('model')) {
       return;
-    }
-
-    $video_post_types = ['video', 'videos', 'wpsc-video', 'wp-script-video', 'wpws_video'];
-
-    foreach ($video_post_types as $video_post_type) {
-      if (is_singular($video_post_type) || is_post_type_archive($video_post_type)) {
-        return;
-      }
     }
 
     tmw_featured_models_block();

@@ -18,8 +18,6 @@ get_header();
         echo '</div>';
       }
       ?>
-
-      <?php tmw_featured_models_block(); ?>
     </main>
     <aside class="col-md-4">
       <?php get_sidebar(); ?>

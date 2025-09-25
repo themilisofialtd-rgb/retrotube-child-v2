@@ -1,7 +1,7 @@
 <?php
 /**
  * Single Model (models taxonomy)
- * Banner + Title Block + Bio (toggle) + Sidebar + Featured flipboxes
+ * Banner + Title Block + Bio (toggle) + Sidebar
  * Theme: Retrotube Child (Flipbox Edition)
  */
 get_header();
@@ -13,9 +13,6 @@ $acf_id  = 'models_' . $term_id;
 /* Biography (from ACF) */
 $bio        = function_exists('get_field') ? (get_field('bio', $acf_id) ?: '') : '';
 $read_lines = function_exists('get_field') ? ((int)(get_field('readmore_lines', $acf_id) ?: 20)) : 20;
-
-/* Featured shortcode (from ACF or fallback) */
-$featured_sc = function_exists('get_field') ? (get_field('featured_models_shortcode', $acf_id) ?: '[tmw_featured_models count="4"]') : '[tmw_featured_models count="4"]';
 
 /* Banner image */
 $banner_src = function_exists('tmw_resolve_model_banner_url') ? tmw_resolve_model_banner_url($term_id) : '';
@@ -41,7 +38,6 @@ $pos_y = max(0, min(100, 50 + $by));
       }
       .tmw-bio.js-clamp{display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; -webkit-line-clamp:<?php echo (int)$read_lines; ?>}
       .tmw-bio-toggle{margin-top:.5rem}
-      .tmw-featured-flipboxes{margin-top:24px}
     </style>
 
     <main class="tmw-model-main">
@@ -110,10 +106,6 @@ $pos_y = max(0, min(100, 50 + $by));
         <?php endif; ?>
       </div>
 
-      <section class="tmw-featured-flipboxes" aria-labelledby="featured-models-heading">
-        <h2 id="featured-models-heading" style="margin-bottom:10px;"><?php esc_html_e('Featured models', 'retrotube-child'); ?></h2>
-        <?php echo do_shortcode($featured_sc); ?>
-      </section>
     </main>
 
     <aside class="tmw-model-sidebar">

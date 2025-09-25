@@ -176,13 +176,5 @@ if ( has_post_thumbnail() && wp_get_attachment_url( get_post_thumbnail_id() ) ) 
 		endif;
 	}
 
-	// 🔹 Featured Flipbox under comments
-	$flipbox_sc = get_post_meta( get_the_ID(), 'featured_flipbox_shortcode', true );
-	if ( empty( $flipbox_sc ) ) {
-		$flipbox_sc = '[tmw_featured_models]';
-	}
-	echo '<div class="video-featured-flipbox">';
-	echo do_shortcode( $flipbox_sc );
-	echo '</div>';
-	?>
+        ?>
 </article><!-- #post-## -->
