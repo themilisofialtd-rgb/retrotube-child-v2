@@ -2006,55 +2006,52 @@ if (!function_exists('tmw_featured_models_block')) {
       return;
     }
 
+    $template = locate_template('partials/featured-models-block.php', false, false);
+
+    if (!$template) {
+      return;
+    }
+
+    ob_start();
+    include $template;
+    $output = trim(ob_get_clean());
+
+    if ($output === '') {
+      return;
+    }
+
+    $rendered = true;
+
+    echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+  }
+}
+
+if (!function_exists('tmw_maybe_add_featured_models')) {
+  function tmw_maybe_add_featured_models() {
+    if (!function_exists('tmw_featured_models_block')) {
+      return;
+    }
+
     if (is_front_page()) {
       return;
     }
 
+    if (is_singular('model')) {
+      return;
+    }
+
     $video_post_types = ['video', 'videos', 'wpsc-video', 'wp-script-video', 'wpws_video'];
+
     foreach ($video_post_types as $video_post_type) {
       if (is_singular($video_post_type) || is_post_type_archive($video_post_type)) {
         return;
       }
     }
 
-    $model_ids = get_posts([
-      'post_type'      => 'model',
-      'post_status'    => 'publish',
-      'fields'         => 'ids',
-      'posts_per_page' => 4,
-      'orderby'        => 'rand',
-      'no_found_rows'  => true,
-      'suppress_filters' => false,
-    ]);
-
-    if (empty($model_ids)) {
-      return;
-    }
-
-    $ids = implode(',', array_map('intval', $model_ids));
-    if (!$ids) {
-      return;
-    }
-
-    $shortcode = sprintf('[actors_flipboxes ids="%s"]', esc_attr($ids));
-    $flipboxes  = do_shortcode($shortcode);
-
-    if (trim($flipboxes) === '') {
-      return;
-    }
-
-    $rendered = true;
-
-    echo '<div class="model-flipbox" style="margin:40px 0;">';
-    echo '<div class="tmwfm-wrap">';
-    echo '<h3 class="tmwfm-heading">FEATURED MODELS</h3>';
-    echo '<div class="tmwfm-grid">';
-    echo $flipboxes;
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
+    tmw_featured_models_block();
   }
 }
+add_action('get_footer', 'tmw_maybe_add_featured_models');
 
 /* ======================================================================
  * VIDEO FEATURED FLIPBOX META BOX
