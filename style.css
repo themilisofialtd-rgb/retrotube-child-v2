@@ -192,4 +192,38 @@
 }
 
 
+/* =========================
+   Featured Models block
+   ========================= */
+.model-flipbox {
+  margin: 40px 0;
+}
+
+.model-flipbox .tmwfm-heading {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.model-flipbox .tmwfm-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+
 

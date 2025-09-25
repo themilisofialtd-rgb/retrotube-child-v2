@@ -19,7 +19,7 @@ get_header();
       }
       ?>
 
-      <?php echo do_shortcode('[actors_flipboxes]'); ?>
+      <?php tmw_featured_models_block(); ?>
     </main>
     <aside class="col-md-4">
       <?php get_sidebar(); ?>
