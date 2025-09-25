@@ -1995,91 +1995,6 @@ if (!function_exists('tmw_count_terms')) {
  * ====================================================================== */
 // ... your taxonomy + sync code is here ...
 
-/* ======================================================================
- * FEATURED MODELS BLOCK
- * ====================================================================== */
-if (!function_exists('tmw_featured_models_block')) {
-  function tmw_featured_models_block() {
-    static $rendered = false;
-
-    if ($rendered) {
-      return;
-    }
-
-    $template = locate_template('partials/featured-models-block.php', false, false);
-
-    if (!$template) {
-      return;
-    }
-
-    ob_start();
-    include $template;
-    $output = trim(ob_get_clean());
-
-    if ($output === '') {
-      return;
-    }
-
-    $rendered = true;
-
-    echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-  }
-}
-
-if (!function_exists('tmw_maybe_add_featured_models')) {
-  function tmw_maybe_add_featured_models() {
-    if (!function_exists('tmw_featured_models_block')) {
-      return;
-    }
-
-    if (is_front_page()) {
-      return;
-    }
-
-    if (is_post_type_archive('model')) {
-      return;
-    }
-
-    tmw_featured_models_block();
-  }
-}
-add_action('get_footer', 'tmw_maybe_add_featured_models');
-
-/* ======================================================================
- * VIDEO FEATURED FLIPBOX META BOX
- * ====================================================================== */
-function tmw_add_flipbox_meta_box() {
-    // Attach to multiple possible video CPTs (Retrotube / WP-Script variations)
-    $screens = ['video','videos','wpsc-video','wp-script-video','wpws_video','post'];
-    foreach ($screens as $screen) {
-        add_meta_box(
-            'tmw_flipbox_meta',
-            'Featured Flipbox Shortcode',
-            'tmw_flipbox_meta_callback',
-            $screen,
-            'normal',
-            'default'
-        );
-    }
-}
-add_action( 'add_meta_boxes', 'tmw_add_flipbox_meta_box' );
-
-function tmw_flipbox_meta_callback( $post ) {
-    $value = get_post_meta( $post->ID, 'featured_flipbox_shortcode', true );
-    echo '<label for="featured_flipbox_shortcode"><strong>Enter shortcode</strong> (leave empty for default <code>[tmw_featured_models]</code>):</label><br>';
-    echo '<input type="text" id="featured_flipbox_shortcode" name="featured_flipbox_shortcode" value="' . esc_attr( $value ) . '" style="width:100%; max-width:600px;">';
-}
-
-function tmw_save_flipbox_meta( $post_id ) {
-    if ( array_key_exists( 'featured_flipbox_shortcode', $_POST ) ) {
-        update_post_meta(
-            $post_id,
-            'featured_flipbox_shortcode',
-            sanitize_text_field( $_POST['featured_flipbox_shortcode'] )
-        );
-    }
-}
-add_action( 'save_post', 'tmw_save_flipbox_meta' );
 // Auto-create Model CPT posts for each 'models' taxonomy term
 add_action('admin_init', function () {
     if (!post_type_exists('model')) {
@@ -2216,3 +2131,228 @@ add_action('template_redirect', function () {
     wp_safe_redirect($target, 301);
     exit;
 });
+
+/* ======================================================================
+ * FEATURED MODELS SHORTCODE HELPERS
+ * ====================================================================== */
+if (!function_exists('tmw_clean_featured_shortcode')) {
+  function tmw_clean_featured_shortcode($value) {
+    $value = is_string($value) ? trim($value) : '';
+    if ($value === '') {
+      return '';
+    }
+    if (substr($value, 0, 1) !== '[' || substr($value, -1) !== ']') {
+      return '';
+    }
+
+    return $value;
+  }
+}
+
+if (!function_exists('tmw_get_featured_shortcode_for_context')) {
+  function tmw_get_featured_shortcode_for_context() {
+    $default = '[tmw_featured_models]';
+    $shortcode = $default;
+
+    if (is_singular()) {
+      $post_id = get_queried_object_id();
+      if ($post_id) {
+        $meta = get_post_meta($post_id, 'tmw_featured_shortcode', true);
+        $meta = tmw_clean_featured_shortcode($meta);
+        if ($meta !== '') {
+          $shortcode = $meta;
+        } else {
+          $legacy = get_post_meta($post_id, 'featured_flipbox_shortcode', true);
+          $legacy = tmw_clean_featured_shortcode($legacy);
+          if ($legacy !== '') {
+            $shortcode = $legacy;
+          }
+        }
+      }
+    } elseif (is_category() || is_tag()) {
+      $term = get_queried_object();
+      if ($term instanceof WP_Term && !is_wp_error($term)) {
+        $meta = get_term_meta($term->term_id, 'tmw_featured_shortcode', true);
+        $meta = tmw_clean_featured_shortcode($meta);
+        if ($meta !== '') {
+          $shortcode = $meta;
+        }
+      }
+    }
+
+    return $shortcode;
+  }
+}
+
+if (!function_exists('tmw_should_output_featured_block')) {
+  function tmw_should_output_featured_block() {
+    if (is_front_page() || is_home()) {
+      return false;
+    }
+
+    if (is_post_type_archive('model') || is_tax('models')) {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+if (!function_exists('tmw_featured_block_dedup')) {
+  function tmw_featured_block_dedup() {
+    if (!is_singular()) {
+      return true;
+    }
+
+    $shortcode = tmw_get_featured_shortcode_for_context();
+    $post_id   = get_queried_object_id();
+    if (!$post_id) {
+      return true;
+    }
+
+    $post = get_post($post_id);
+    if (!$post instanceof WP_Post) {
+      return true;
+    }
+
+    return strpos($post->post_content, $shortcode) === false;
+  }
+}
+
+/* ======================================================================
+ * FEATURED MODELS SHORTCODE META BOX
+ * ====================================================================== */
+if (!function_exists('tmw_featured_shortcode_meta_box_cb')) {
+  function tmw_featured_shortcode_meta_box_cb($post) {
+    $value = get_post_meta($post->ID, 'tmw_featured_shortcode', true);
+    $value = is_string($value) ? $value : '';
+
+    wp_nonce_field('tmw_featured_shortcode_save', 'tmw_featured_shortcode_nonce');
+    ?>
+    <p>
+      <label for="tmw_featured_shortcode_field" class="screen-reader-text"><?php esc_html_e('Featured Models shortcode (optional)', 'retrotube-child'); ?></label>
+      <input type="text" name="tmw_featured_shortcode" id="tmw_featured_shortcode_field" value="<?php echo esc_attr($value); ?>" class="widefat" />
+    </p>
+    <p class="description"><?php esc_html_e('Leave blank to use [tmw_featured_models].', 'retrotube-child'); ?></p>
+    <?php
+  }
+}
+
+add_action('add_meta_boxes', function () {
+  $post_types = ['post', 'page', 'model', 'video', 'videos', 'wpsc-video', 'wp-script-video', 'wpws_video'];
+  $post_types = array_unique($post_types);
+  foreach ($post_types as $post_type) {
+    if (!post_type_exists($post_type)) {
+      continue;
+    }
+
+    add_meta_box(
+      'tmw-featured-shortcode',
+      __('Featured Models shortcode (optional)', 'retrotube-child'),
+      'tmw_featured_shortcode_meta_box_cb',
+      $post_type,
+      'side',
+      'default'
+    );
+  }
+});
+
+add_action('save_post', function ($post_id) {
+  if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+    return;
+  }
+
+  if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+    return;
+  }
+
+  if (!isset($_POST['tmw_featured_shortcode_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tmw_featured_shortcode_nonce'])), 'tmw_featured_shortcode_save')) {
+    return;
+  }
+
+  if (!current_user_can('edit_post', $post_id)) {
+    return;
+  }
+
+  $value = '';
+  if (isset($_POST['tmw_featured_shortcode'])) {
+    $value = tmw_clean_featured_shortcode(wp_unslash($_POST['tmw_featured_shortcode']));
+  }
+
+  if ($value !== '') {
+    update_post_meta($post_id, 'tmw_featured_shortcode', $value);
+  } else {
+    delete_post_meta($post_id, 'tmw_featured_shortcode');
+  }
+});
+
+/* ======================================================================
+ * FEATURED MODELS SHORTCODE TERM META
+ * ====================================================================== */
+if (!function_exists('tmw_featured_shortcode_term_add_field')) {
+  function tmw_featured_shortcode_term_add_field($taxonomy) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+    wp_nonce_field('tmw_featured_shortcode_term_save', 'tmw_featured_shortcode_term_nonce');
+    ?>
+    <div class="form-field term-featured-shortcode-wrap">
+      <label for="tmw_featured_shortcode_term_field"><?php esc_html_e('Featured Models shortcode (optional)', 'retrotube-child'); ?></label>
+      <input type="text" name="tmw_featured_shortcode" id="tmw_featured_shortcode_term_field" value="" class="regular-text" />
+      <p class="description"><?php esc_html_e('Leave blank to use [tmw_featured_models].', 'retrotube-child'); ?></p>
+    </div>
+    <?php
+  }
+}
+
+if (!function_exists('tmw_featured_shortcode_term_edit_field')) {
+  function tmw_featured_shortcode_term_edit_field($term) {
+    $value = get_term_meta($term->term_id, 'tmw_featured_shortcode', true);
+    $value = is_string($value) ? $value : '';
+
+    wp_nonce_field('tmw_featured_shortcode_term_save', 'tmw_featured_shortcode_term_nonce');
+    ?>
+    <tr class="form-field term-featured-shortcode-wrap">
+      <th scope="row"><label for="tmw_featured_shortcode_term_field"><?php esc_html_e('Featured Models shortcode (optional)', 'retrotube-child'); ?></label></th>
+      <td>
+        <input type="text" name="tmw_featured_shortcode" id="tmw_featured_shortcode_term_field" value="<?php echo esc_attr($value); ?>" class="regular-text" />
+        <p class="description"><?php esc_html_e('Leave blank to use [tmw_featured_models].', 'retrotube-child'); ?></p>
+      </td>
+    </tr>
+    <?php
+  }
+}
+
+add_action('category_add_form_fields', 'tmw_featured_shortcode_term_add_field');
+add_action('post_tag_add_form_fields', 'tmw_featured_shortcode_term_add_field');
+add_action('category_edit_form_fields', 'tmw_featured_shortcode_term_edit_field');
+add_action('post_tag_edit_form_fields', 'tmw_featured_shortcode_term_edit_field');
+
+if (!function_exists('tmw_save_featured_shortcode_term_meta')) {
+  function tmw_save_featured_shortcode_term_meta($term_id) {
+    if (!is_admin()) {
+      return;
+    }
+
+    if (!isset($_POST['tmw_featured_shortcode_term_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['tmw_featured_shortcode_term_nonce'])), 'tmw_featured_shortcode_term_save')) {
+      return;
+    }
+
+    if (!current_user_can('manage_categories')) {
+      return;
+    }
+
+    $value = '';
+    if (isset($_POST['tmw_featured_shortcode'])) {
+      $value = tmw_clean_featured_shortcode(wp_unslash($_POST['tmw_featured_shortcode']));
+    }
+
+    if ($value !== '') {
+      update_term_meta($term_id, 'tmw_featured_shortcode', $value);
+    } else {
+      delete_term_meta($term_id, 'tmw_featured_shortcode');
+    }
+  }
+}
+
+add_action('created_category', 'tmw_save_featured_shortcode_term_meta');
+add_action('edited_category', 'tmw_save_featured_shortcode_term_meta');
+add_action('created_post_tag', 'tmw_save_featured_shortcode_term_meta');
+add_action('edited_post_tag', 'tmw_save_featured_shortcode_term_meta');

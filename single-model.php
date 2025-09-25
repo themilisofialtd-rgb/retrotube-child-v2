@@ -17,6 +17,14 @@ get_header();
           <?php get_template_part('single-model_bio'); ?>
         <?php endwhile; ?>
       <?php endif; ?>
+      <?php
+      if (tmw_should_output_featured_block() && tmw_featured_block_dedup()) {
+          $shortcode = tmw_get_featured_shortcode_for_context();
+          set_query_var('tmw_featured_shortcode', $shortcode);
+          get_template_part('partials/featured-models-block');
+          set_query_var('tmw_featured_shortcode', null);
+      }
+      ?>
     </main>
   </div>
   <aside id="sidebar" class="widget-area with-sidebar-right" role="complementary">

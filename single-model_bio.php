@@ -7,7 +7,6 @@
 $bio               = function_exists('get_field') ? get_field('bio') : '';
 $model_link_field  = function_exists('get_field') ? get_field('model_link') : '';
 $banner            = function_exists('get_field') ? get_field('banner_image') : '';
-$flipbox_shortcode = function_exists('get_field') ? get_field('flipbox_shortcode') : '';
 $model_title       = get_the_title();
 
 $banner_url = '';
@@ -43,12 +42,6 @@ if (is_array($model_link_field)) {
     <?php if ($bio) : ?>
       <div class="model-bio" style="margin-bottom: 30px;">
         <?php echo wp_kses_post($bio); ?>
-      </div>
-    <?php endif; ?>
-
-    <?php if ($flipbox_shortcode) : ?>
-      <div class="model-flipbox" style="margin: 40px 0;">
-        <?php echo do_shortcode($flipbox_shortcode); ?>
       </div>
     <?php endif; ?>
 
