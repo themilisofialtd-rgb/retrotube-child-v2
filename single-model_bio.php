@@ -11,9 +11,11 @@ $model_title       = get_the_title();
 
 $banner_url = '';
 $banner_alt = '';
+$banner_id  = 0;
 if (is_array($banner)) {
     $banner_url = isset($banner['url']) && is_string($banner['url']) ? $banner['url'] : '';
     $banner_alt = isset($banner['alt']) ? $banner['alt'] : '';
+    $banner_id  = isset($banner['ID']) ? (int) $banner['ID'] : 0;
 } elseif (is_string($banner)) {
     $banner_url = $banner;
 }
@@ -30,10 +32,30 @@ if (is_array($model_link_field)) {
   <header class="model-header" style="text-align: center; margin-bottom: 30px;">
     <h1 class="model-title"><?php the_title(); ?></h1>
 
-    <?php if (!empty($banner_url)) : ?>
+    <?php if (!empty($banner_url) || $banner_id) : ?>
       <?php $alt_text = !empty($banner_alt) ? $banner_alt : $model_title; ?>
       <div class="model-hero">
-        <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($alt_text); ?>" style="max-width:100%; height:auto; margin-top: 15px;">
+        <?php
+        if ($banner_id) {
+            echo wp_get_attachment_image(
+                $banner_id,
+                'full',
+                false,
+                [
+                    'class'         => 'model-hero-img',
+                    'alt'           => $alt_text,
+                    'loading'       => 'eager',
+                    'decoding'      => 'async',
+                    'fetchpriority' => 'high',
+                    'style'         => 'max-width:100%;height:auto;margin-top:15px;',
+                ]
+            );
+        } else {
+            ?>
+            <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($alt_text); ?>" loading="eager" decoding="async" fetchpriority="high" style="max-width:100%; height:auto; margin-top: 15px;">
+            <?php
+        }
+        ?>
       </div>
     <?php endif; ?>
   </header>
