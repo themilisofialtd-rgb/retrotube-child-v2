@@ -1,7 +1,14 @@
 <?php
-// Child theme override of RetroTube breadcrumb using Rank Math
-if (function_exists('rank_math_the_breadcrumbs')) {
-  echo '<div id="breadcrumbs">';
-  rank_math_the_breadcrumbs();
-  echo '</div>';
+if (!defined('ABSPATH')) {
+  exit;
+}
+
+if (function_exists('tmw_output_rank_math_breadcrumbs')) {
+  tmw_output_rank_math_breadcrumbs();
+  return;
+}
+
+$parent_template = trailingslashit(get_template_directory()) . 'breadcrumb.php';
+if (is_readable($parent_template)) {
+  load_template($parent_template, false);
 }
