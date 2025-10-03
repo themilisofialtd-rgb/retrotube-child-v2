@@ -2523,3 +2523,22 @@ add_action('created_category', 'tmw_save_featured_shortcode_term_meta');
 add_action('edited_category', 'tmw_save_featured_shortcode_term_meta');
 add_action('created_post_tag', 'tmw_save_featured_shortcode_term_meta');
 add_action('edited_post_tag', 'tmw_save_featured_shortcode_term_meta');
+/**
+ * Fix: Prevent PHP warnings in canonical.php
+ * Avoids "Undefined array key host/scheme" and strtolower(null) notices.
+ */
+add_filter( 'redirect_canonical', function( $redirect_url, $requested_url ) {
+    // If empty or not a string, cancel redirect
+    if ( empty( $redirect_url ) || ! is_string( $redirect_url ) ) {
+        return false;
+    }
+
+    $parts = wp_parse_url( $redirect_url );
+
+    // Cancel redirect if host/scheme missing
+    if ( empty( $parts['host'] ) || empty( $parts['scheme'] ) ) {
+        return false;
+    }
+
+    return $redirect_url;
+}, 10, 2 );
