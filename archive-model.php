@@ -4,24 +4,35 @@
  */
 get_header();
 ?>
-<div id="primary" class="content-area container">
-  <div class="row">
-    <main id="main" class="site-main col-md-8">
-      <?php get_template_part('breadcrumb'); ?>
+<div class="tmw-title">
+  <span class="tmw-star">★</span>
+  <h1 class="tmw-title-text">Models</h1>
+</div>
+<div class="tmw-layout">
+  <main id="primary" class="site-main">
+    <?php get_template_part('breadcrumb'); ?>
+    <?php
+    $has_models = false;
 
-      <?php
-      // Pull content from the Page with slug "models"
-      $models_page = get_page_by_path('models');
-      if ($models_page instanceof WP_Post) {
-        echo '<div class="models-intro">';
-        echo apply_filters('the_content', $models_page->post_content);
-        echo '</div>';
-      }
-      ?>
-    </main>
-    <aside class="col-md-4">
-      <?php get_sidebar(); ?>
-    </aside>
-  </div>
+    if (function_exists('tmw_count_terms')) {
+      $has_models = tmw_count_terms('models', false) > 0;
+    } else {
+      $term_check = get_terms([
+        'taxonomy'   => 'models',
+        'hide_empty' => false,
+        'number'     => 1,
+        'fields'     => 'ids',
+      ]);
+      $has_models = !is_wp_error($term_check) && !empty($term_check);
+    }
+
+    if ($has_models) {
+      echo do_shortcode('[actors_flipboxes per_page="12" cols="3" show_pagination="true" page_var="pg"]');
+    } else {
+      echo '<p class="no-models-found">No models found.</p>';
+    }
+    ?>
+  </main>
+  <?php get_sidebar(); ?>
 </div>
 <?php get_footer(); ?>
