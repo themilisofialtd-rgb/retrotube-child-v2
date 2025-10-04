@@ -2559,7 +2559,7 @@ add_filter( 'redirect_canonical', function( $redirect_url, $requested_url ) {
 }, 10, 2 );
 
 add_filter( 'widget_display_callback', function( $instance, $widget, $args ) {
-  if ( is_page( 'videos' ) && $widget instanceof wpst_WP_Widget_Videos_Block ) {
+  if ( $widget instanceof wpst_WP_Widget_Videos_Block ) {
     ob_start();
     $widget->widget( $args, $instance );
     $output = ob_get_clean();
