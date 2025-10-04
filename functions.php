@@ -8,17 +8,6 @@
  * IMPORTANT: Single PHP block. Do not add another <?php inside this file.
  */
 
-/**
- * Guard Videos page from parent pre_get_posts modifications.
- */
-function tmw_videos_page_guard( $query ) {
-  if ( ! is_admin() && $query->is_main_query() && is_page( 'videos' ) ) {
-    // Prevent parent from hijacking the main query
-    remove_action( 'pre_get_posts', 'wpst_pre_get_posts', 10 );
-  }
-}
-add_action( 'pre_get_posts', 'tmw_videos_page_guard', 1 );
-
 /* ======================================================================
  * ONE-TIME MIGRATIONS
  * ====================================================================== */
