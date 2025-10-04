@@ -230,106 +230,103 @@ get_header();
           ?>
 
           <article <?php post_class('single-model__article'); ?>>
-            <header class="model-hero">
-              <h1 class="model-hero__title text-center"><?php echo esc_html($display_title); ?></h1>
+            <header class="tmw-model-hero">
+              <?php if ($display_title !== '') : ?>
+                <h2 class="tmw-model-hero__title text-center"><?php echo esc_html($display_title); ?></h2>
+              <?php endif; ?>
               <?php if ($hero_src) : ?>
-                <figure class="model-hero__figure">
-                  <img class="model-hero__image" src="<?php echo esc_url($hero_src); ?>" alt="<?php echo esc_attr($hero_alt); ?>" loading="lazy">
+                <figure class="tmw-model-hero__figure">
+                  <img class="tmw-model-hero__image" src="<?php echo esc_url($hero_src); ?>" alt="<?php echo esc_attr($hero_alt); ?>" loading="lazy">
                 </figure>
               <?php endif; ?>
             </header>
 
-            <div class="model-accordion">
-              <div class="accordion" id="modelAccordion">
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingModelAbout">
-                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModelAbout" aria-expanded="true" aria-controls="collapseModelAbout">
-                      <?php printf(esc_html__('About %s', 'retrotube-child'), esc_html($display_title)); ?>
-                    </button>
-                  </h2>
-                  <div id="collapseModelAbout" class="accordion-collapse collapse show" aria-labelledby="headingModelAbout" data-bs-parent="#modelAccordion">
-                    <div class="accordion-body">
-                      <?php echo $about_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                      <?php if ($live_link_url) : ?>
-                        <div class="model-live-link">
-                          <a class="button model-live-link__button" href="<?php echo esc_url($live_link_url); ?>" target="_blank" rel="noopener noreferrer nofollow">
-                            <?php esc_html_e('Visit Live Show', 'retrotube-child'); ?>
-                          </a>
-                        </div>
-                      <?php endif; ?>
-                    </div>
-                  </div>
-                </div>
+            <div class="title-block box-shadow">
+              <h1 class="entry-title"><?php echo esc_html($display_title); ?></h1>
+            </div>
 
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingModelTags">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModelTags" aria-expanded="false" aria-controls="collapseModelTags">
-                      <?php esc_html_e('Tags', 'retrotube-child'); ?>
-                    </button>
-                  </h2>
-                  <div id="collapseModelTags" class="accordion-collapse collapse" aria-labelledby="headingModelTags" data-bs-parent="#modelAccordion">
-                    <div class="accordion-body">
-                      <?php if (!empty($tags)) : ?>
-                        <ul class="tags-list">
-                          <?php foreach ($tags as $tag) :
-                              $tag_link = get_term_link($tag);
-                              if (is_wp_error($tag_link)) {
-                                  continue;
+            <div class="video-meta-inline"></div>
+
+            <div id="video-tabs" class="tabs">
+              <button class="tab-link active about" data-tab-id="tab-about">
+                <i class="fa fa-info-circle"></i> <?php esc_html_e('About', 'retrotube-child'); ?>
+              </button>
+              <button class="tab-link tags" data-tab-id="tab-tags">
+                <i class="fa fa-tags"></i> <?php esc_html_e('Tags', 'retrotube-child'); ?>
+              </button>
+              <button class="tab-link videos" data-tab-id="tab-videos">
+                <i class="fa fa-film"></i> <?php esc_html_e('Model Videos', 'retrotube-child'); ?>
+              </button>
+            </div>
+
+            <div class="entry-content tab-content">
+              <div id="tab-about" class="tab-pane active">
+                <div class="tmw-model-about">
+                  <?php echo $about_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                </div>
+                <?php if ($live_link_url) : ?>
+                  <div class="model-live-link">
+                    <a class="button model-live-link__button" href="<?php echo esc_url($live_link_url); ?>" target="_blank" rel="noopener noreferrer nofollow">
+                      <?php esc_html_e('Visit Live Show', 'retrotube-child'); ?>
+                    </a>
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <div id="tab-tags" class="tab-pane">
+                <?php if (!empty($tags)) : ?>
+                  <div class="tags">
+                    <ul class="tags-list">
+                      <?php foreach ($tags as $tag) :
+                          $tag_link = get_term_link($tag);
+                          if (is_wp_error($tag_link)) {
+                              continue;
+                          }
+                          ?>
+                          <li class="tags-list__item">
+                            <a href="<?php echo esc_url($tag_link); ?>"><?php echo esc_html($tag->name); ?></a>
+                          </li>
+                      <?php endforeach; ?>
+                    </ul>
+                  </div>
+                <?php else : ?>
+                  <p class="tags-list__empty"><?php esc_html_e('No tags available.', 'retrotube-child'); ?></p>
+                <?php endif; ?>
+              </div>
+
+              <div id="tab-videos" class="tab-pane">
+                <?php if ($model_videos instanceof WP_Query && $model_videos->have_posts()) : ?>
+                  <div class="box box-related box-shadow">
+                    <div class="box-title"><span><?php esc_html_e('Model Videos', 'retrotube-child'); ?></span></div>
+                    <div class="videos">
+                      <?php while ($model_videos->have_posts()) : $model_videos->the_post(); ?>
+                        <?php $video_title = get_the_title(); ?>
+                        <article <?php post_class('video'); ?>>
+                          <a class="video-thumb" href="<?php the_permalink(); ?>" title="<?php the_title_attribute(); ?>">
+                            <div class="video-image">
+                              <?php
+                              if (has_post_thumbnail()) {
+                                  echo get_the_post_thumbnail(get_the_ID(), 'medium_large', [
+                                      'loading' => 'lazy',
+                                      'alt'     => esc_attr($video_title),
+                                  ]);
+                              } else {
+                                  $placeholder = function_exists('tmw_placeholder_image_url') ? tmw_placeholder_image_url() : '';
+                                  if ($placeholder) {
+                                      echo '<img src="' . esc_url($placeholder) . '" alt="' . esc_attr($video_title) . '" loading="lazy">';
+                                  }
                               }
                               ?>
-                              <li class="tags-list__item">
-                                <a href="<?php echo esc_url($tag_link); ?>"><?php echo esc_html($tag->name); ?></a>
-                              </li>
-                          <?php endforeach; ?>
-                        </ul>
-                      <?php else : ?>
-                        <p class="tags-list__empty"><?php esc_html_e('No tags available.', 'retrotube-child'); ?></p>
-                      <?php endif; ?>
+                            </div>
+                            <h3 class="video-title"><?php echo esc_html($video_title); ?></h3>
+                          </a>
+                        </article>
+                      <?php endwhile; ?>
                     </div>
                   </div>
-                </div>
-
-                <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingModelVideos">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseModelVideos" aria-expanded="false" aria-controls="collapseModelVideos">
-                      <?php printf(esc_html__('Model %s Videos', 'retrotube-child'), esc_html($display_title)); ?>
-                    </button>
-                  </h2>
-                  <div id="collapseModelVideos" class="accordion-collapse collapse" aria-labelledby="headingModelVideos" data-bs-parent="#modelAccordion">
-                    <div class="accordion-body">
-                      <?php if ($model_videos instanceof WP_Query && $model_videos->have_posts()) : ?>
-                        <div class="model-videos__grid">
-                          <?php while ($model_videos->have_posts()) : $model_videos->the_post(); ?>
-                            <?php $video_title = get_the_title(); ?>
-                            <article <?php post_class('model-videos__item'); ?>>
-                              <a class="model-videos__link" href="<?php the_permalink(); ?>">
-                                <div class="model-videos__thumb">
-                                  <?php
-                                  if (has_post_thumbnail()) {
-                                      echo get_the_post_thumbnail(get_the_ID(), 'medium_large', [
-                                          'loading' => 'lazy',
-                                          'class'   => 'model-videos__image',
-                                          'alt'     => esc_attr($video_title),
-                                      ]);
-                                  } else {
-                                      $placeholder = function_exists('tmw_placeholder_image_url') ? tmw_placeholder_image_url() : '';
-                                      if ($placeholder) {
-                                          echo '<img class="model-videos__image" src="' . esc_url($placeholder) . '" alt="' . esc_attr($video_title) . '" loading="lazy">';
-                                      }
-                                  }
-                                  ?>
-                                </div>
-                                <h3 class="model-videos__title"><?php echo esc_html($video_title); ?></h3>
-                              </a>
-                            </article>
-                          <?php endwhile; ?>
-                        </div>
-                      <?php else : ?>
-                        <p class="model-videos__empty"><?php esc_html_e('No videos found for this model yet.', 'retrotube-child'); ?></p>
-                      <?php endif; ?>
-                    </div>
-                  </div>
-                </div>
+                <?php else : ?>
+                  <p class="model-videos__empty"><?php esc_html_e('No videos found for this model yet.', 'retrotube-child'); ?></p>
+                <?php endif; ?>
               </div>
             </div>
 
