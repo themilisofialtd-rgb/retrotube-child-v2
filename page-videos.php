@@ -13,6 +13,9 @@ get_header(); ?>
 
         <?php
         // Use RetroTube's own homepage blocks
+        if ( is_page( 'videos' ) ) {
+            require_once locate_template( 'inc/widgets/widget-videos-block.php', true, true );
+        }
         if ( function_exists( 'widget_videos_block' ) ) {
             // Videos being watched
             widget_videos_block( array(
