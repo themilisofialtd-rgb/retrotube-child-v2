@@ -29,7 +29,7 @@ get_header(); ?>
             } elseif ( 'longest' === $filter ) {
                 $instance = array(
                     'title'          => __( 'Longest videos', 'retrotube-child' ),
-                    'video_type'     => 'longest',
+                    'video_type'     => 'duration',
                     'video_number'   => 12,
                     'video_category' => 0,
                 );
