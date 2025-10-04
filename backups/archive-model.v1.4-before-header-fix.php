@@ -6,12 +6,13 @@
 
 get_header();
 ?>
+<header class="entry-header">
+  <h1 class="widget-title"><i class="fa fa-star"></i> ★ Models</h1>
+</header>
 <main id="primary" class="site-main">
   <div class="tmw-layout container">
     <section class="tmw-content">
-      <header class="entry-header">
-        <h1 class="widget-title"><i class="fa fa-star"></i> ★ Models</h1>
-      </header>
+      <h1 class="section-title">Models</h1>
       <?php
       // Edit banner file at /assets/models-banner.html or pass banner_* via shortcode below.
       $tmw_flipbox_link_filter = function ($link, $term) {
