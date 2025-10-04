@@ -10,7 +10,7 @@ get_header();
   <div class="tmw-layout container">
     <section class="tmw-content">
       <header class="entry-header">
-        <h1 class="widget-title">Models</h1>
+        <h1 class="widget-title"><i class="fa fa-star"></i> ★ Models</h1>
       </header>
       <?php
       // Edit banner file at /assets/models-banner.html or pass banner_* via shortcode below.
