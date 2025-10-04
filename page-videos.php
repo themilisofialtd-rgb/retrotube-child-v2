@@ -21,50 +21,38 @@ get_header(); ?>
                 'paged'               => $current_page,
             );
 
-            switch ( $filter ) {
-                case 'latest':
-                    $query_args['orderby'] = 'date';
-                    $query_args['order']   = 'DESC';
-                    break;
-
-                case 'random':
-                    $query_args['orderby'] = 'rand';
-                    break;
-
-                case 'longest':
-                    $query_args['meta_key']   = 'duration';
-                    $query_args['orderby']    = 'meta_value_num';
-                    $query_args['order']      = 'DESC';
-                    $query_args['meta_type']  = 'NUMERIC';
-                    $query_args['meta_query'] = array(
-                        array(
-                            'key'     => 'duration',
-                            'compare' => 'EXISTS',
-                        ),
-                    );
-                    break;
-
-                case 'popular':
-                    $query_args['meta_key']   = 'post_views_count';
-                    $query_args['orderby']    = 'meta_value_num';
-                    $query_args['order']      = 'DESC';
-                    $query_args['meta_type']  = 'NUMERIC';
-                    $query_args['meta_query'] = array(
-                        array(
-                            'key'     => 'post_views_count',
-                            'compare' => 'EXISTS',
-                        ),
-                    );
-                    break;
-
-                default:
-                    $filter = '';
-                    break;
+            if ( 'latest' === $filter ) {
+                $query_args['orderby'] = 'date';
+                $query_args['order']   = 'DESC';
+            } elseif ( 'random' === $filter ) {
+                $query_args['orderby'] = 'rand';
+            } elseif ( 'longest' === $filter ) {
+                $query_args['meta_key']   = 'duration';
+                $query_args['orderby']    = 'meta_value_num';
+                $query_args['order']      = 'DESC';
+                $query_args['meta_type']  = 'NUMERIC';
+                $query_args['meta_query'] = array(
+                    array(
+                        'key'     => 'duration',
+                        'compare' => 'EXISTS',
+                    ),
+                );
+            } elseif ( 'popular' === $filter ) {
+                $query_args['meta_key']   = 'post_views_count';
+                $query_args['orderby']    = 'meta_value_num';
+                $query_args['order']      = 'DESC';
+                $query_args['meta_type']  = 'NUMERIC';
+                $query_args['meta_query'] = array(
+                    array(
+                        'key'     => 'post_views_count',
+                        'compare' => 'EXISTS',
+                    ),
+                );
+            } elseif ( is_numeric( $filter ) ) {
+                $query_args['cat'] = absint( $filter );
             }
 
-            if ( $filter ) {
-                $filter_query = new WP_Query( $query_args );
-            }
+            $filter_query = new WP_Query( $query_args );
         }
         ?>
 
