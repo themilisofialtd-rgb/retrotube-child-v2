@@ -29,7 +29,7 @@ get_header(); ?>
             } elseif ( 'longest' === $filter ) {
                 $instance = array(
                     'title'          => __( 'Longest videos', 'retrotube-child' ),
-                    'video_type'     => 'duration',
+                    'video_type'     => 'longest',
                     'video_number'   => 12,
                     'video_category' => 0,
                 );
@@ -120,7 +120,7 @@ get_header(); ?>
                 'wpst_WP_Widget_Videos_Block',
                 array(
                     'title'          => 'Longest videos',
-                    'video_type'     => 'duration',
+                    'video_type'     => 'longest',
                     'video_number'   => 12,
                     'video_category' => 0,
                 ),
