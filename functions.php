@@ -408,6 +408,21 @@ add_action('wp_head', function(){
   <?php
 }, 90);
 
+/**
+ * Override parent query mods for /videos/?filter=longest to prevent 404.
+ */
+function tmw_videos_page_override( $query ) {
+  if ( ! is_admin() && $query->is_main_query() && is_page( 'videos' ) ) {
+    // Neutralize parent meta query that causes empty results
+    $query->set( 'meta_key', '' );
+    $query->set( 'orderby', 'none' );
+    $query->is_page = true;
+    $query->is_home = false;
+    $query->is_404  = false;
+  }
+}
+add_action( 'pre_get_posts', 'tmw_videos_page_override', 20 );
+
 /* ======================================================================
  * GLOBAL OVERRIDES: TRUE CENTERING + UNIFIED COLORS (wins against theme)
  * ====================================================================== */
