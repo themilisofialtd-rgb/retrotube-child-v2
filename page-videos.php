@@ -11,63 +11,59 @@ get_header(); ?>
             <h1 class="entry-title"><i class="fa fa-video-camera"></i> Videos</h1>
         </header>
 
-        <?php
-        global $wp_widget_factory;
+        <?php if ( is_page( 'videos' ) ) : ?>
 
-        $videos_widget_class = '';
-        $registered_widgets  = array();
+            <?php
+            the_widget(
+                'wpst_WP_Widget_Videos_Block',
+                array(
+                    'title'          => 'Videos being watched',
+                    'video_type'     => 'random',
+                    'video_number'   => 8,
+                    'video_category' => 0,
+                ),
+                array(
+                    'before_widget' => '<section class="widget widget_videos_block">',
+                    'after_widget'  => '</section>',
+                    'before_title'  => '<h2 class="widget-title">',
+                    'after_title'   => '</h2>',
+                )
+            );
 
-        if ( is_object( $wp_widget_factory ) && isset( $wp_widget_factory->widgets ) ) {
-            $registered_widgets = $wp_widget_factory->widgets;
-        }
+            the_widget(
+                'wpst_WP_Widget_Videos_Block',
+                array(
+                    'title'          => 'Latest videos',
+                    'video_type'     => 'latest',
+                    'video_number'   => 6,
+                    'video_category' => 0,
+                ),
+                array(
+                    'before_widget' => '<section class="widget widget_videos_block">',
+                    'after_widget'  => '</section>',
+                    'before_title'  => '<h2 class="widget-title">',
+                    'after_title'   => '</h2>',
+                )
+            );
 
-        if ( isset( $registered_widgets['RetroTube_Videos_Block_Widget'] ) ) {
-            $videos_widget_class = 'RetroTube_Videos_Block_Widget';
-        } elseif ( isset( $registered_widgets['Retrotube_Videos_Block_Widget'] ) ) {
-            $videos_widget_class = 'Retrotube_Videos_Block_Widget';
-        } elseif ( isset( $registered_widgets['Video_Block_Widget'] ) ) {
-            $videos_widget_class = 'Video_Block_Widget';
-        }
+            the_widget(
+                'wpst_WP_Widget_Videos_Block',
+                array(
+                    'title'          => 'Longest videos',
+                    'video_type'     => 'longest',
+                    'video_number'   => 12,
+                    'video_category' => 0,
+                ),
+                array(
+                    'before_widget' => '<section class="widget widget_videos_block">',
+                    'after_widget'  => '</section>',
+                    'before_title'  => '<h2 class="widget-title">',
+                    'after_title'   => '</h2>',
+                )
+            );
+            ?>
 
-        $videos_widget_args = array(
-            array(
-                'title' => __( 'Videos being watched', 'retrotube' ),
-                'orderby' => 'rand',
-                'posts_per_page' => 12,
-                'columns' => 4,
-            ),
-            array(
-                'title' => __( 'Latest videos', 'retrotube' ),
-                'orderby' => 'date',
-                'posts_per_page' => 12,
-                'columns' => 4,
-            ),
-            array(
-                'title' => __( 'Longest videos', 'retrotube' ),
-                'orderby' => 'duration',
-                'posts_per_page' => 12,
-                'columns' => 4,
-            ),
-        );
-
-        $videos_widget_display_args = array(
-            'before_widget' => '<div class="widget videos-block">',
-            'after_widget'  => '</div>',
-            'before_title'  => '<h2 class="widget-title">',
-            'after_title'   => '</h2>',
-        );
-
-        foreach ( $videos_widget_args as $widget_args ) {
-            if ( $videos_widget_class ) {
-                the_widget( $videos_widget_class, $widget_args, $videos_widget_display_args );
-                continue;
-            }
-
-            if ( function_exists( 'widget_videos_block' ) ) {
-                widget_videos_block( $widget_args );
-            }
-        }
-        ?>
+        <?php endif; ?>
 
     </main><!-- #main -->
 </div><!-- #primary -->
