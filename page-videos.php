@@ -8,15 +8,17 @@ get_header(); ?>
     <main id="main" class="site-main with-sidebar-right" role="main">
 
         <?php
-        $filter       = isset( $_GET['filter'] ) ? sanitize_key( wp_unslash( $_GET['filter'] ) ) : '';
+        $filter       = isset( $_GET['filter'] ) ? sanitize_text_field( wp_unslash( $_GET['filter'] ) ) : '';
         $filter_query = null;
 
         if ( $filter ) {
+            $current_page = max( 1, (int) get_query_var( 'paged' ), (int) get_query_var( 'page' ) );
             $query_args = array(
                 'post_type'           => 'video',
                 'post_status'         => 'publish',
-                'posts_per_page'      => max( 1, (int) get_option( 'posts_per_page', 12 ) ),
+                'posts_per_page'      => 12,
                 'ignore_sticky_posts' => true,
+                'paged'               => $current_page,
             );
 
             switch ( $filter ) {
@@ -30,17 +32,29 @@ get_header(); ?>
                     break;
 
                 case 'longest':
-                    $query_args['meta_key'] = 'duration';
-                    $query_args['orderby']  = 'meta_value_num';
-                    $query_args['order']    = 'DESC';
-                    $query_args['meta_type'] = 'NUMERIC';
+                    $query_args['meta_key']   = 'duration';
+                    $query_args['orderby']    = 'meta_value_num';
+                    $query_args['order']      = 'DESC';
+                    $query_args['meta_type']  = 'NUMERIC';
+                    $query_args['meta_query'] = array(
+                        array(
+                            'key'     => 'duration',
+                            'compare' => 'EXISTS',
+                        ),
+                    );
                     break;
 
                 case 'popular':
-                    $query_args['meta_key'] = 'post_views_count';
-                    $query_args['orderby']  = 'meta_value_num';
-                    $query_args['order']    = 'DESC';
-                    $query_args['meta_type'] = 'NUMERIC';
+                    $query_args['meta_key']   = 'post_views_count';
+                    $query_args['orderby']    = 'meta_value_num';
+                    $query_args['order']      = 'DESC';
+                    $query_args['meta_type']  = 'NUMERIC';
+                    $query_args['meta_query'] = array(
+                        array(
+                            'key'     => 'post_views_count',
+                            'compare' => 'EXISTS',
+                        ),
+                    );
                     break;
 
                 default:
@@ -61,11 +75,25 @@ get_header(); ?>
         <?php if ( $filter && $filter_query instanceof WP_Query ) : ?>
 
             <?php if ( $filter_query->have_posts() ) : ?>
+                <section class="videos-filter-results">
+                    <?php
+                    while ( $filter_query->have_posts() ) :
+                        $filter_query->the_post();
+                        get_template_part( 'template-parts/loop', 'video' );
+                    endwhile;
+                    ?>
+                </section>
+
                 <?php
-                while ( $filter_query->have_posts() ) :
-                    $filter_query->the_post();
-                    get_template_part( 'template-parts/loop', 'video' );
-                endwhile;
+                the_posts_pagination(
+                    array(
+                        'total'   => (int) $filter_query->max_num_pages,
+                        'current' => isset( $current_page ) ? $current_page : 1,
+                        'add_args' => array(
+                            'filter' => $filter,
+                        ),
+                    )
+                );
                 ?>
             <?php else : ?>
                 <p><?php esc_html_e( 'No videos found for this filter.', 'retrotube-child' ); ?></p>
