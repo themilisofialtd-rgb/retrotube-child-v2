@@ -2548,7 +2548,15 @@ add_filter( 'widget_display_callback', function( $instance, $widget, $args ) {
     ob_start();
     $widget->widget( $args, $instance );
     $output = ob_get_clean();
-    echo str_replace( '/?filter=', '/videos/?filter=', $output );
+
+    $patterns = array(
+      '#https?://'.preg_quote( wp_parse_url( home_url(), PHP_URL_HOST ), '#' ).'/\?filter=#i',
+      '#/\?filter=#',
+    );
+
+    $output = preg_replace( $patterns, home_url( '/videos/?filter=' ), $output );
+
+    echo $output;
     return false;
   }
 

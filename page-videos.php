@@ -30,14 +30,14 @@ get_header(); ?>
                     break;
 
                 case 'longest':
-                    $query_args['meta_key'] = '_duration';
+                    $query_args['meta_key'] = 'duration';
                     $query_args['orderby']  = 'meta_value_num';
                     $query_args['order']    = 'DESC';
                     $query_args['meta_type'] = 'NUMERIC';
                     break;
 
                 case 'popular':
-                    $query_args['meta_key'] = '_views';
+                    $query_args['meta_key'] = 'post_views_count';
                     $query_args['orderby']  = 'meta_value_num';
                     $query_args['order']    = 'DESC';
                     $query_args['meta_type'] = 'NUMERIC';
@@ -66,11 +66,12 @@ get_header(); ?>
                     $filter_query->the_post();
                     get_template_part( 'template-parts/loop', 'video' );
                 endwhile;
-                wp_reset_postdata();
                 ?>
             <?php else : ?>
                 <p><?php esc_html_e( 'No videos found for this filter.', 'retrotube-child' ); ?></p>
             <?php endif; ?>
+
+            <?php wp_reset_postdata(); ?>
 
         <?php elseif ( is_page( 'videos' ) ) : ?>
 
