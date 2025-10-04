@@ -120,7 +120,7 @@ get_header(); ?>
                 'wpst_WP_Widget_Videos_Block',
                 array(
                     'title'          => 'Longest videos',
-                    'video_type'     => 'longest',
+                    'video_type'     => 'duration',
                     'video_number'   => 12,
                     'video_category' => 0,
                 ),
