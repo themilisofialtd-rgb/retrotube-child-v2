@@ -2576,3 +2576,50 @@ add_filter( 'widget_display_callback', function( $instance, $widget, $args ) {
 
   return $instance;
 }, 10, 3 );
+
+/**
+ * Sync LiveJasmin performer profiles with Retrotube Model CPT
+ * Triggered automatically after each imported video is linked to a model
+ */
+add_action( 'lvjm_model_profile_attached_video', 'rt_child_sync_model_profile', 10, 2 );
+
+function rt_child_sync_model_profile( $model_post_id, $video_post_id ) {
+    if ( ! $model_post_id || ! $video_post_id ) {
+        return;
+    }
+
+    $model_post = get_post( $model_post_id );
+    if ( ! $model_post || $model_post->post_status === 'trash' ) {
+        return;
+    }
+
+    // Get performer terms attached to this video
+    $performers = wp_get_post_terms( $video_post_id, 'models', [ 'fields' => 'names' ] );
+    $performer_name = ! empty( $performers ) ? $performers[0] : $model_post->post_title;
+
+    // Update title if needed
+    if ( $model_post->post_title !== $performer_name ) {
+        wp_update_post([
+            'ID'         => $model_post_id,
+            'post_title' => $performer_name,
+        ]);
+    }
+
+    // Ensure featured image or placeholder
+    if ( ! has_post_thumbnail( $model_post_id ) ) {
+        $placeholder = get_post_meta( $model_post_id, 'lvjm_model_placeholder_image', true );
+        if ( $placeholder && filter_var( $placeholder, FILTER_VALIDATE_URL ) ) {
+            // Store placeholder as external featured image meta
+            update_post_meta( $model_post_id, '_external_thumbnail_url', esc_url( $placeholder ) );
+        }
+    }
+
+    // Link related videos (avoid duplicates)
+    $related = (array) get_post_meta( $model_post_id, 'rt_model_videos', true );
+    if ( ! in_array( $video_post_id, $related, true ) ) {
+        $related[] = $video_post_id;
+        update_post_meta( $model_post_id, 'rt_model_videos', $related );
+    }
+
+    error_log('[ModelSync] Synced performer “' . $performer_name . '” (' . $model_post_id . ') with video ' . $video_post_id);
+}
