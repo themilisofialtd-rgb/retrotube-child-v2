@@ -1,6 +1,7 @@
 <?php
 /**
- * Template for single model pages that mirrors the RetroTube video layout.
+ * Single Model template cloned from the video layout.
+ * Remove this file if layout breaks; WordPress will fall back to the parent template.
  */
 
 get_header();
@@ -10,145 +11,127 @@ get_header();
         <main id="main" class="site-main with-sidebar-right" role="main">
             <?php if (have_posts()) : ?>
                 <?php while (have_posts()) : the_post(); ?>
-                    <?php error_log('[ModelPage] single-model.php loaded for ' . get_the_title()); ?>
                     <?php
+                    $model_id   = get_the_ID();
                     $model_name = get_the_title();
-                    $model_slug = get_post_field('post_name', get_the_ID());
+                    $model_slug = get_post_field('post_name', $model_id);
 
-                    $portrait_html = '';
-                    $portrait_url  = '';
+                    error_log('[ModelPage] Bulletproof layout loaded for ' . $model_name);
 
-                    if (function_exists('get_field')) {
-                        $portrait_field = get_field('model_portrait');
+                    $portrait_html  = '';
+                    $portrait_field = function_exists('get_field') ? get_field('model_portrait') : null;
 
-                        if (is_array($portrait_field)) {
-                            if (!empty($portrait_field['ID'])) {
-                                $portrait_html = wp_get_attachment_image((int) $portrait_field['ID'], 'large', false, [
-                                    'class' => 'model-portrait-image',
-                                    'alt'   => $model_name,
-                                ]);
-                            } elseif (!empty($portrait_field['url'])) {
-                                $portrait_url = $portrait_field['url'];
-                            }
-                        } elseif (is_numeric($portrait_field)) {
-                            $portrait_html = wp_get_attachment_image((int) $portrait_field, 'large', false, [
-                                'class' => 'model-portrait-image',
+                    if (is_array($portrait_field) && !empty($portrait_field['ID'])) {
+                        $portrait_html = wp_get_attachment_image(
+                            (int) $portrait_field['ID'],
+                            'large',
+                            false,
+                            [
+                                'class' => 'model-portrait',
                                 'alt'   => $model_name,
-                            ]);
-                        } elseif (is_string($portrait_field) && $portrait_field !== '') {
-                            $portrait_url = $portrait_field;
-                        }
-                    }
-
-                    if (!$portrait_html && !$portrait_url && has_post_thumbnail()) {
-                        $portrait_html = get_the_post_thumbnail(get_the_ID(), 'large', [
-                            'class' => 'model-portrait-image',
-                            'alt'   => $model_name,
-                        ]);
-                    }
-
-                    if (!$portrait_html && $portrait_url) {
+                            ]
+                        );
+                    } elseif (!empty($portrait_field) && is_numeric($portrait_field)) {
+                        $portrait_html = wp_get_attachment_image(
+                            (int) $portrait_field,
+                            'large',
+                            false,
+                            [
+                                'class' => 'model-portrait',
+                                'alt'   => $model_name,
+                            ]
+                        );
+                    } elseif (is_array($portrait_field) && !empty($portrait_field['url'])) {
                         $portrait_html = sprintf(
-                            '<img src="%s" alt="%s" class="model-portrait-image" />',
-                            esc_url($portrait_url),
+                            '<img src="%s" alt="%s" class="model-portrait" />',
+                            esc_url($portrait_field['url']),
+                            esc_attr($model_name)
+                        );
+                    } elseif (is_string($portrait_field) && $portrait_field !== '') {
+                        $portrait_html = sprintf(
+                            '<img src="%s" alt="%s" class="model-portrait" />',
+                            esc_url($portrait_field),
                             esc_attr($model_name)
                         );
                     }
+
+                    if (!$portrait_html && has_post_thumbnail()) {
+                        $portrait_html = get_the_post_thumbnail(
+                            $model_id,
+                            'large',
+                            [
+                                'class' => 'model-portrait',
+                                'alt'   => $model_name,
+                            ]
+                        );
+                    }
+
+                    if (!$portrait_html) {
+                        $placeholder_file = get_stylesheet_directory() . '/images/placeholder-model.jpg';
+                        $placeholder_url  = get_stylesheet_directory_uri() . '/images/placeholder-model.jpg';
+
+                        if (!file_exists($placeholder_file)) {
+                            $fallback_path = get_stylesheet_directory_uri() . '/assets/images/placeholder-model.jpg';
+                            $placeholder_url = $fallback_path;
+                        }
+
+                        $portrait_html = sprintf(
+                            '<img src="%s" alt="%s" class="model-portrait" />',
+                            esc_url($placeholder_url),
+                            esc_attr($model_name)
+                        );
+                    }
+
+                    // Ensure portrait markup includes schema itemprop.
+                    $portrait_markup = str_replace('<img ', '<img itemprop="image" ', $portrait_html);
+
+                    $views_meta_key = 'views';
+                    $views_count    = get_post_meta($model_id, $views_meta_key, true);
+                    $views_display  = $views_count !== '' ? absint($views_count) : 1280;
                     ?>
 
                     <article id="post-<?php the_ID(); ?>" <?php post_class('video-page'); ?> itemscope itemtype="https://schema.org/Person">
                         <header class="entry-header">
                             <div class="video-player box-shadow">
-                                <?php
-                                if ($portrait_html) {
-                                    // Ensure portrait markup carries the required schema itemprop.
-                                    $portrait_html = str_replace('<img ', '<img itemprop="image" ', $portrait_html);
-                                    echo $portrait_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                                } elseif (has_post_thumbnail()) {
-                                    the_post_thumbnail('large', [
-                                        'class'    => 'model-portrait-image',
-                                        'alt'      => $model_name,
-                                        'itemprop' => 'image',
-                                    ]);
-                                } else {
-                                    echo '<img src="' . esc_url(get_stylesheet_directory_uri() . '/assets/images/placeholder-model.jpg') . '" alt="' . esc_attr__('Model portrait', 'wpst') . '" class="model-portrait-image" itemprop="image" />';
-                                }
-                                ?>
+                                <?php echo $portrait_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                             </div>
 
                             <div class="title-block box-shadow">
-                                <h1 class="entry-title" itemprop="name"><?php the_title(); ?></h1>
+                                <?php the_title('<h1 class="entry-title" itemprop="name">', '</h1>'); ?>
+                                <div id="rating" class="model-rating-disabled">
+                                    <span id="video-rate"><i class="fa fa-user"></i> <?php esc_html_e('Model profile', 'wpst'); ?></span>
+                                </div>
+                                <div id="video-tabs" class="tabs">
+                                    <button class="tab-link active about" data-tab-id="video-about">
+                                        <i class="fa fa-info-circle"></i> <?php esc_html_e('About', 'wpst'); ?>
+                                    </button>
+                                    <button class="tab-link comments" data-tab-id="video-comments">
+                                        <i class="fa fa-comments"></i> <?php esc_html_e('Comments', 'wpst'); ?>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="video-meta-inline">
                                 <span class="video-meta-item video-meta-author"><i class="fa fa-user"></i> <?php esc_html_e('Added by', 'wpst'); ?> <?php the_author_posts_link(); ?></span>
                                 <span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> <?php echo esc_html(get_the_date()); ?></span>
                                 <span class="video-meta-item video-meta-category"><i class="fa fa-folder-open"></i> <a href="<?php echo esc_url(home_url('/models/')); ?>"><?php esc_html_e('Models', 'wpst'); ?></a></span>
-                                <?php
-                                $views_meta_key = 'views';
-                                $views_count    = get_post_meta(get_the_ID(), $views_meta_key, true);
-                                $views_display  = $views_count !== '' ? absint($views_count) : 1280;
-                                ?>
                                 <span class="video-meta-item video-meta-views"><i class="fa fa-eye"></i> <?php echo esc_html(number_format_i18n($views_display)); ?> <?php esc_html_e('views', 'wpst'); ?></span>
                             </div>
+
+                            <div class="clear"></div>
                         </header>
 
-                        <div class="clear"></div>
-
-                        <?php error_log('[ModelPage] single-model.php fully aligned with RetroTube layout for ' . $model_name); ?>
-
                         <div class="entry-content">
-                            <div id="video-tabs" class="tabs">
-                                <button class="active" data-tab="about">About</button>
-                                <button data-tab="comments">Comments</button>
-                            </div>
-                            <div id="rating-col">
-                                <span class="like-btn"><i class="fa fa-thumbs-up"></i></span>
-                                <span class="dislike-btn"><i class="fa fa-thumbs-down"></i></span>
-                            </div>
-                            <div class="tab-content" id="video-about" itemprop="description">
+                            <div id="video-about" class="tab-content active" itemprop="description">
                                 <?php the_content(); ?>
-                                <div class="video-tags"><?php the_tags('<span class="video-meta-item"><i class="fa fa-tags"></i> ', ', ', '</span>'); ?></div>
-                                <?php
-                                $social_fields = [
-                                    'instagram' => 'fa-instagram',
-                                    'twitter'   => 'fa-twitter',
-                                    'onlyfans'  => 'fa-heart',
-                                ];
-                                $social_links = [];
 
-                                foreach ($social_fields as $field_key => $icon_class) {
-                                    $field_value = '';
+                                <?php if (has_tag()) : ?>
+                                    <div class="video-tags"><?php the_tags('<span class="video-meta-item"><i class="fa fa-tags"></i> ', ', ', '</span>'); ?></div>
+                                <?php endif; ?>
+                            </div>
 
-                                    if (function_exists('get_field')) {
-                                        $field_value = (string) get_field($field_key);
-                                    }
-
-                                    if ($field_value === '') {
-                                        $field_value = (string) get_post_meta(get_the_ID(), $field_key, true);
-                                    }
-
-                                    if ($field_value !== '') {
-                                        $social_links[$field_key] = [
-                                            'url'  => esc_url_raw($field_value),
-                                            'icon' => $icon_class,
-                                        ];
-                                    }
-                                }
-
-                                if (!empty($social_links)) :
-                                    ?>
-                                    <div class="model-follow-bar box-shadow">
-                                        <span class="follow-label"><?php esc_html_e('Follow', 'wpst'); ?>:</span>
-                                        <?php foreach ($social_links as $key => $data) : ?>
-                                            <a class="follow-link follow-<?php echo esc_attr($key); ?>" href="<?php echo esc_url($data['url']); ?>" target="_blank" rel="noopener">
-                                                <i class="fa <?php echo esc_attr($data['icon']); ?>"></i>
-                                            </a>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <?php
-                                endif;
-                                ?>
+                            <div id="video-comments" class="tab-content">
+                                <?php comments_template(); ?>
                             </div>
                         </div>
 
@@ -190,8 +173,6 @@ get_header();
                             wp_reset_postdata();
                         }
                         ?>
-
-                        <?php comments_template(); ?>
                     </article>
                 <?php endwhile; ?>
             <?php endif; ?>
