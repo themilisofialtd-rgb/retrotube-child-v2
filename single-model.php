@@ -57,25 +57,45 @@ get_header();
                     ?>
 
                     <article id="post-<?php the_ID(); ?>" <?php post_class('video-page'); ?>>
-                        <div class="title-block box-shadow">
-                            <h1 class="entry-title"><?php the_title(); ?></h1>
-                        </div>
+                        <header class="entry-header">
+                            <div class="video-player box-shadow">
+                                <?php
+                                if ($portrait_html) {
+                                    echo $portrait_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                                } elseif (has_post_thumbnail()) {
+                                    the_post_thumbnail('large', [
+                                        'class' => 'model-portrait-image',
+                                        'alt'   => $model_name,
+                                    ]);
+                                }
+                                ?>
+                            </div>
 
-                        <div class="video-meta-inline">
-                            <span class="meta-author"><?php esc_html_e('Added by', 'wpst'); ?> <?php the_author_posts_link(); ?></span>
-                            <span class="meta-date"><i class="fa fa-calendar"></i> <?php the_time(get_option('date_format')); ?></span>
-                        </div>
+                            <div class="title-block box-shadow">
+                                <h1 class="entry-title"><?php the_title(); ?></h1>
+                            </div>
 
-                        <div class="video-player box-shadow">
-                            <?php
-                            if ($portrait_html) {
-                                echo $portrait_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                            }
-                            ?>
-                        </div>
+                            <div class="video-meta-inline">
+                                <span class="video-meta-item video-meta-author"><i class="fa fa-user"></i> <?php esc_html_e('Added by', 'wpst'); ?> <?php the_author_posts_link(); ?></span>
+                                <span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> <?php the_time(get_option('date_format')); ?></span>
+                            </div>
+                        </header>
+
+                        <div class="clear"></div>
+
+                        <?php error_log('[ModelPage] single-model.php fully aligned with RetroTube layout for ' . $model_name); ?>
 
                         <div class="entry-content">
-                            <?php the_content(); ?>
+                            <div id="video-tabs" class="tabs">
+                                <button class="active" data-tab="about">About</button>
+                                <button data-tab="comments">Comments</button>
+                            </div>
+
+                            <div id="rating-col"></div>
+
+                            <div class="tab-content" id="video-about">
+                                <?php the_content(); ?>
+                            </div>
                         </div>
 
                         <?php
