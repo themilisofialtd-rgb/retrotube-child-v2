@@ -56,28 +56,40 @@ get_header();
                     }
                     ?>
 
-                    <article id="post-<?php the_ID(); ?>" <?php post_class('video-page'); ?>>
+                    <article id="post-<?php the_ID(); ?>" <?php post_class('video-page'); ?> itemscope itemtype="https://schema.org/Person">
                         <header class="entry-header">
                             <div class="video-player box-shadow">
                                 <?php
                                 if ($portrait_html) {
+                                    // Ensure portrait markup carries the required schema itemprop.
+                                    $portrait_html = str_replace('<img ', '<img itemprop="image" ', $portrait_html);
                                     echo $portrait_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                                 } elseif (has_post_thumbnail()) {
                                     the_post_thumbnail('large', [
-                                        'class' => 'model-portrait-image',
-                                        'alt'   => $model_name,
+                                        'class'    => 'model-portrait-image',
+                                        'alt'      => $model_name,
+                                        'itemprop' => 'image',
                                     ]);
+                                } else {
+                                    echo '<img src="' . esc_url(get_stylesheet_directory_uri() . '/assets/images/placeholder-model.jpg') . '" alt="' . esc_attr__('Model portrait', 'wpst') . '" class="model-portrait-image" itemprop="image" />';
                                 }
                                 ?>
                             </div>
 
                             <div class="title-block box-shadow">
-                                <h1 class="entry-title"><?php the_title(); ?></h1>
+                                <h1 class="entry-title" itemprop="name"><?php the_title(); ?></h1>
                             </div>
 
                             <div class="video-meta-inline">
                                 <span class="video-meta-item video-meta-author"><i class="fa fa-user"></i> <?php esc_html_e('Added by', 'wpst'); ?> <?php the_author_posts_link(); ?></span>
-                                <span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> <?php the_time(get_option('date_format')); ?></span>
+                                <span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> <?php echo esc_html(get_the_date()); ?></span>
+                                <span class="video-meta-item video-meta-category"><i class="fa fa-folder-open"></i> <a href="<?php echo esc_url(home_url('/models/')); ?>"><?php esc_html_e('Models', 'wpst'); ?></a></span>
+                                <?php
+                                $views_meta_key = 'views';
+                                $views_count    = get_post_meta(get_the_ID(), $views_meta_key, true);
+                                $views_display  = $views_count !== '' ? absint($views_count) : 1280;
+                                ?>
+                                <span class="video-meta-item video-meta-views"><i class="fa fa-eye"></i> <?php echo esc_html(number_format_i18n($views_display)); ?> <?php esc_html_e('views', 'wpst'); ?></span>
                             </div>
                         </header>
 
@@ -90,11 +102,53 @@ get_header();
                                 <button class="active" data-tab="about">About</button>
                                 <button data-tab="comments">Comments</button>
                             </div>
-
-                            <div id="rating-col"></div>
-
-                            <div class="tab-content" id="video-about">
+                            <div id="rating-col">
+                                <span class="like-btn"><i class="fa fa-thumbs-up"></i></span>
+                                <span class="dislike-btn"><i class="fa fa-thumbs-down"></i></span>
+                            </div>
+                            <div class="tab-content" id="video-about" itemprop="description">
                                 <?php the_content(); ?>
+                                <div class="video-tags"><?php the_tags('<span class="video-meta-item"><i class="fa fa-tags"></i> ', ', ', '</span>'); ?></div>
+                                <?php
+                                $social_fields = [
+                                    'instagram' => 'fa-instagram',
+                                    'twitter'   => 'fa-twitter',
+                                    'onlyfans'  => 'fa-heart',
+                                ];
+                                $social_links = [];
+
+                                foreach ($social_fields as $field_key => $icon_class) {
+                                    $field_value = '';
+
+                                    if (function_exists('get_field')) {
+                                        $field_value = (string) get_field($field_key);
+                                    }
+
+                                    if ($field_value === '') {
+                                        $field_value = (string) get_post_meta(get_the_ID(), $field_key, true);
+                                    }
+
+                                    if ($field_value !== '') {
+                                        $social_links[$field_key] = [
+                                            'url'  => esc_url_raw($field_value),
+                                            'icon' => $icon_class,
+                                        ];
+                                    }
+                                }
+
+                                if (!empty($social_links)) :
+                                    ?>
+                                    <div class="model-follow-bar box-shadow">
+                                        <span class="follow-label"><?php esc_html_e('Follow', 'wpst'); ?>:</span>
+                                        <?php foreach ($social_links as $key => $data) : ?>
+                                            <a class="follow-link follow-<?php echo esc_attr($key); ?>" href="<?php echo esc_url($data['url']); ?>" target="_blank" rel="noopener">
+                                                <i class="fa <?php echo esc_attr($data['icon']); ?>"></i>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <?php
+                                endif;
+                                ?>
                             </div>
                         </div>
 
