@@ -121,6 +121,88 @@ add_action('admin_bar_menu', function ($admin_bar) {
 }, 100);
 
 /* ======================================================================
+ * MODEL TERM → CPT SYNC
+ * ====================================================================== */
+if (!function_exists('tmw_sync_model_term_to_post')) {
+  function tmw_sync_model_term_to_post($term_id, $tt_id) {
+    $term = get_term($term_id, 'models');
+    if (is_wp_error($term) || !$term) return;
+
+    $slug     = sanitize_title(isset($term->slug) ? $term->slug : $term->name);
+    $title    = sanitize_text_field($term->name);
+    $desc     = term_description($term_id, 'models');
+    $content  = wp_strip_all_tags($desc);
+    $existing = get_page_by_path($slug, OBJECT, 'model');
+
+    if ($existing instanceof WP_Post) {
+      $needs_update = false;
+      $update_data  = ['ID' => $existing->ID];
+
+      if ($title && $existing->post_title !== $title) {
+        $update_data['post_title'] = $title;
+        $needs_update              = true;
+      }
+
+      if ($content && $existing->post_content !== $content) {
+        $update_data['post_content'] = $content;
+        $needs_update                = true;
+      }
+
+      if ($needs_update) {
+        $result = wp_update_post($update_data, true);
+        if (!is_wp_error($result)) {
+          error_log("[ModelSync] Updated CPT model for {$title} (slug: {$slug})");
+        } else {
+          error_log('[ModelSync] Failed to update model post for ' . $slug . ': ' . $result->get_error_message());
+        }
+      } else {
+        error_log("[ModelSync] Model post already up to date for {$slug}");
+      }
+
+      return;
+    }
+
+    $post_id = wp_insert_post([
+      'post_title'   => $title,
+      'post_name'    => $slug,
+      'post_content' => $content,
+      'post_type'    => 'model',
+      'post_status'  => 'publish',
+    ]);
+
+    if (!is_wp_error($post_id)) {
+      error_log("[ModelSync] Created CPT model for term {$title} (slug: {$slug})");
+    } else {
+      error_log('[ModelSync] Failed to create model post for ' . $slug . ': ' . $post_id->get_error_message());
+    }
+  }
+}
+
+add_action('created_models', 'tmw_sync_model_term_to_post', 10, 2);
+add_action('edited_models',  'tmw_sync_model_term_to_post', 10, 2);
+
+add_action('init', function () {
+  if (get_option('tmw_models_synced')) return;
+
+  $terms = get_terms([
+    'taxonomy'   => 'models',
+    'hide_empty' => false,
+  ]);
+
+  if (is_wp_error($terms)) {
+    error_log('[ModelSync] Failed to fetch models terms for retroactive sync: ' . $terms->get_error_message());
+    return;
+  }
+
+  foreach ($terms as $term) {
+    tmw_sync_model_term_to_post($term->term_id, $term->term_taxonomy_id);
+  }
+
+  update_option('tmw_models_synced', true);
+  error_log('[ModelSync] Retroactive sync completed for existing taxonomy terms.');
+}, 20);
+
+/* ======================================================================
  * SAFE PLACEHOLDER (never 404s)
  * ====================================================================== */
 if (!function_exists('tmw_placeholder_image_url')) {
