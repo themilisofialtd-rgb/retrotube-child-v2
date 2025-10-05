@@ -1929,7 +1929,7 @@ add_filter('rank_math/frontend/breadcrumb/items', function ($crumbs) {
  * - Flushes permalinks once.
  * ====================================================================== */
 if (!defined('TMW_TAX_SLUG')) define('TMW_TAX_SLUG', 'models');   // taxonomy key
-if (!defined('TMW_URL_SLUG')) define('TMW_URL_SLUG', 'model');    // public URL base
+if (!defined('TMW_URL_SLUG')) define('TMW_URL_SLUG', 'model-tag'); // public URL base (no CPT collision)
 
 add_action('init', function () {
   $labels = [
@@ -1975,27 +1975,37 @@ add_action('init', function () {
   }
 }, 20);
 
+add_filter('template_include', function ($template) {
+  if (is_singular('model')) {
+    $custom = locate_template('single-model.php');
+    if ($custom) {
+      error_log('[ModelFix] Using single-model.php for CPT model: ' . get_post_field('post_name', get_the_ID()));
+      return $custom;
+    }
+  }
+  return $template;
+}, 100);
+
 add_action('template_redirect', function () {
   if (is_tax(TMW_TAX_SLUG)) {
-    $req = $_SERVER['REQUEST_URI'] ?? '';
-    if (strpos($req, '/actor/') !== false || strpos($req, '/actors/') !== false) {
-      $term = get_queried_object();
-      if ($term && !is_wp_error($term)) {
-        $canonical = tmw_get_model_link_for_term($term);
-        if (!$canonical) {
-          $canonical = get_term_link($term, TMW_TAX_SLUG);
-          if (is_wp_error($canonical)) {
-            $canonical = '';
-          }
-        }
-        if ($canonical) {
-          wp_safe_redirect($canonical, 301);
-          exit;
-        }
+    $term = get_queried_object();
+    if (!is_wp_error($term) && !empty($term->slug)) {
+      $maybe = get_page_by_path($term->slug, OBJECT, 'model');
+      if ($maybe) {
+        $to = get_permalink($maybe);
+        error_log('[ModelFix] Redirecting taxonomy term to CPT: ' . $term->slug . ' → ' . $to);
+        wp_redirect($to, 301);
+        exit;
       }
     }
   }
-}, 1);
+});
+
+add_action('after_switch_theme', function () {
+  flush_rewrite_rules();
+  error_log('[ModelFix] Flushed rewrite rules after theme switch.');
+});
+
 // 1) Always show a Model/Models line on single video pages.
 // Prefers your 'models' taxonomy; falls back to legacy 'actors'.
 add_filter('the_content', function ($content) {
