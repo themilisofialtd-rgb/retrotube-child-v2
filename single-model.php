@@ -35,8 +35,12 @@ while (have_posts()) : the_post();
 
     <!-- Banner -->
     <?php if ($banner_image): ?>
+      <?php
+        // Handle both array or string formats
+        $banner_url = is_array($banner_image) ? $banner_image['url'] : $banner_image;
+      ?>
       <div class="video-player box-shadow">
-        <img src="<?php echo esc_url($banner_image['url']); ?>" alt="<?php echo esc_attr($model_name); ?>" class="aligncenter"/>
+        <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($model_name); ?>" class="aligncenter"/>
       </div>
     <?php endif; ?>
 

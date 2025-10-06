@@ -2715,3 +2715,8 @@ function rt_child_sync_model_profile( $model_post_id, $video_post_id ) {
 
     error_log('[ModelSync] Synced performer “' . $performer_name . '” (' . $model_post_id . ') with video ' . $video_post_id);
 }
+
+add_action('after_switch_theme', function () {
+    flush_rewrite_rules();
+    error_log('[ModelFix] Flushed rewrite rules after theme activation.');
+});
