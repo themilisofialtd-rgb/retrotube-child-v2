@@ -1,14 +1,13 @@
 <?php
 /**
- * Template for displaying single Model posts
- * Fully matches RetroTube video layout but uses ACF model fields
+ * Template: Single Model (Full RetroTube Layout with Sidebar)
+ * Mirrors single-video.php structure and includes ACF integration
  */
 
 get_header();
 
 if (have_posts()) :
 while (have_posts()) : the_post();
-
   $model_id   = get_the_ID();
   $model_name = get_the_title();
 
@@ -18,12 +17,8 @@ while (have_posts()) : the_post();
   $flipbox_shortcode = get_field('flipbox_shortcode', $model_id);
   $bio               = get_field('model', $model_id);
 
-  // Debug logging
-  error_log('[ModelLayout] single-model.php loaded for ' . $model_name);
-  if (!$banner_image)      error_log('[ModelLayout] No banner_image for ' . $model_name);
-  if (!$model_link)        error_log('[ModelLayout] No model_link for ' . $model_name);
-  if (!$flipbox_shortcode) error_log('[ModelLayout] No flipbox_shortcode for ' . $model_name);
-  if (!$bio)               error_log('[ModelLayout] No model bio (ACF field "model") for ' . $model_name);
+  // Debug
+  error_log('[ModelLayout] Full layout WITH SIDEBAR loaded for ' . $model_name);
 ?>
 <div id="primary" class="content-area">
   <main id="main" class="site-main" role="main">
@@ -35,10 +30,7 @@ while (have_posts()) : the_post();
 
     <!-- Banner -->
     <?php if ($banner_image): ?>
-      <?php
-        // Handle both array or string formats
-        $banner_url = is_array($banner_image) ? $banner_image['url'] : $banner_image;
-      ?>
+      <?php $banner_url = is_array($banner_image) ? $banner_image['url'] : $banner_image; ?>
       <div class="video-player box-shadow">
         <img src="<?php echo esc_url($banner_url); ?>" alt="<?php echo esc_attr($model_name); ?>" class="aligncenter"/>
       </div>
@@ -48,7 +40,7 @@ while (have_posts()) : the_post();
     <div class="video-meta-inline">
       <ul class="meta-list">
         <?php if ($model_link): ?>
-          <li><a href="<?php echo esc_url($model_link); ?>" class="btn btn-primary" target="_blank">
+          <li><a href="<?php echo esc_url($model_link); ?>" target="_blank" class="btn btn-primary">
             <i class="fa fa-video-camera"></i> <?php esc_html_e('Watch Live', 'retrotube'); ?>
           </a></li>
         <?php endif; ?>
@@ -65,7 +57,7 @@ while (have_posts()) : the_post();
 
       <div class="tab-content">
 
-        <!-- Tab: About -->
+        <!-- About Tab -->
         <div id="tab-description" class="tab active">
           <div class="entry-content">
             <?php
@@ -87,13 +79,13 @@ while (have_posts()) : the_post();
           </div>
         </div>
 
-        <!-- Tab: Videos -->
+        <!-- Videos Tab -->
         <div id="tab-videos" class="tab">
           <?php
           $related = new WP_Query([
-            'post_type' => 'video',
+            'post_type'      => 'video',
             'posts_per_page' => 6,
-            'meta_query' => [
+            'meta_query'     => [
               [
                 'key'     => 'related_model',
                 'value'   => $model_name,
@@ -101,6 +93,7 @@ while (have_posts()) : the_post();
               ]
             ]
           ]);
+
           if ($related->have_posts()) :
             echo '<div class="related-videos-grid">';
             while ($related->have_posts()) : $related->the_post();
@@ -109,12 +102,12 @@ while (have_posts()) : the_post();
             echo '</div>';
             wp_reset_postdata();
           else :
-            echo '<p>' . esc_html__('No videos found for this model.', 'retrotube') . '</p>';
+            echo '<p>' . esc_html__('No videos found for this model yet.', 'retrotube') . '</p>';
           endif;
           ?>
         </div>
 
-        <!-- Tab: Comments -->
+        <!-- Comments Tab -->
         <div id="tab-comments" class="tab">
           <?php comments_template(); ?>
         </div>
@@ -122,8 +115,11 @@ while (have_posts()) : the_post();
       </div><!-- .tab-content -->
     </div><!-- #video-tabs -->
 
-  </main>
-</div>
+  </main><!-- #main -->
+</div><!-- #primary -->
+
+<!-- Sidebar -->
+<?php get_sidebar(); ?>
 
 <?php
 endwhile;
