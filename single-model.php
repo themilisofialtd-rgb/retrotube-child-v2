@@ -61,85 +61,10 @@ if ( have_posts() ) :
 					</span>
 				</div>
 
-			</header><!-- .entry-header -->
+                        </header><!-- .entry-header -->
 
-			<!-- RetroTube Accordion/Tabs -->
-			<div class="video-content">
-				<div id="video-tabs" class="tabs">
-					<ul class="tab-buttons">
-						<li class="active"><a href="#tab-description"><?php esc_html_e( 'About', 'retrotube' ); ?></a></li>
-						<li><a href="#tab-videos"><?php esc_html_e( 'Videos', 'retrotube' ); ?></a></li>
-						<li><a href="#tab-comments"><?php esc_html_e( 'Comments', 'retrotube' ); ?></a></li>
-					</ul>
-
-					<div class="tab-content">
-
-						<!-- About Tab -->
-						<div id="tab-description" class="tab active">
-							<div class="video-description entry-content">
-								<?php
-									if ( $bio ) {
-										echo wpautop( $bio );
-									} else {
-										the_content();
-									}
-
-									if ( $flipbox_shortcode ) {
-										echo '<div class="model-flipbox">';
-										echo do_shortcode( $flipbox_shortcode );
-										echo '</div>';
-									}
-								?>
-
-								<?php if ( has_tag() ) : ?>
-									<div class="post-tags">
-										<?php the_tags( '<strong>' . esc_html__( 'Tags:', 'retrotube' ) . '</strong> ', ', ' ); ?>
-									</div>
-								<?php endif; ?>
-							</div>
-						</div>
-
-						<!-- Videos Tab -->
-						<div id="tab-videos" class="tab">
-							<div class="under-video-block">
-								<h2 class="widget-title"><?php esc_html_e( 'Model’s Videos', 'retrotube' ); ?></h2>
-
-								<?php
-								$related = new WP_Query( [
-									'post_type'      => 'video',
-									'posts_per_page' => 6,
-									'meta_query'     => [
-										[
-											'key'     => 'related_model',
-											'value'   => $model_name,
-											'compare' => 'LIKE',
-										],
-									],
-								] );
-
-								if ( $related->have_posts() ) :
-									echo '<div class="related-videos-grid">';
-									while ( $related->have_posts() ) :
-										$related->the_post();
-										get_template_part( 'template-parts/loop', 'video' );
-									endwhile;
-									echo '</div>';
-									wp_reset_postdata();
-								else :
-									echo '<p>' . esc_html__( 'No related videos found for this model.', 'retrotube' ) . '</p>';
-								endif;
-								?>
-							</div>
-						</div>
-
-						<!-- Comments Tab -->
-						<div id="tab-comments" class="tab">
-							<?php comments_template(); ?>
-						</div>
-
-					</div><!-- .tab-content -->
-				</div><!-- #video-tabs -->
-			</div><!-- .video-content -->
+                        <?php error_log('[ModelLayout] Loaded parent accordion partial for ' . get_the_title()); ?>
+                        <?php get_template_part( 'template-parts/single', 'video-content' ); ?>
 
 		</article>
 
