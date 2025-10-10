@@ -54,21 +54,9 @@ if ( empty( $cta_label ) ) {
                         <?php endif; ?>
                 </div>
 
-                <?php if ( get_post_meta( $post->ID, 'unique_ad_under_player', true ) != '' ) : ?>
-                        <div class="happy-under-player">
-                                <?php echo get_post_meta( $post->ID, 'unique_ad_under_player', true ); ?>
-                        </div>
-                <?php elseif ( xbox_get_field_value( 'wpst-options', 'under-player-ad-desktop' ) != '' ) : ?>
-                        <div class="happy-under-player">
-                                <?php echo wpst_display_ad_or_error_message( xbox_get_field_value( 'wpst-options', 'under-player-ad-desktop' ) ); ?>
-                        </div>
-                <?php endif; ?>
-
-                <?php if ( xbox_get_field_value( 'wpst-options', 'under-player-ad-mobile' ) != '' ) : ?>
-                        <div class="happy-under-player-mobile">
-                                <?php echo wpst_display_ad_or_error_message( xbox_get_field_value( 'wpst-options', 'under-player-ad-mobile' ) ); ?>
-                        </div>
-                <?php endif; ?>
+                <div class="tmw-slot-banner" style="margin-top:15px;margin-bottom:25px;text-align:center;">
+                        <?php echo do_shortcode( '[tmw_slot_machine]' ); ?>
+                </div>
 
                 <div class="title-block box-shadow">
                         <?php the_title( '<h1 class="entry-title" itemprop="name">', '</h1>' ); ?>
