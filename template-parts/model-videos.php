@@ -43,9 +43,12 @@ if ( false === $video_ids ) {
 
 if ( empty( $video_ids ) ) return;
 
+$video_ids = array_map( 'intval', $video_ids );
+
 $query = new WP_Query(array(
     'post_type'      => 'video',
     'post__in'       => $video_ids,
+    'orderby'        => 'post__in',
     'posts_per_page' => 12,
 ));
 
