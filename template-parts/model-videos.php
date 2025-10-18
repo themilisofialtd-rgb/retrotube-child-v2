@@ -27,6 +27,9 @@ $video_ids = [];
 $possible_taxonomies = ['models', 'model', 'actors', 'pornstar', 'video_model'];
 $existing_taxonomy   = '';
 
+$transient_key     = 'tmw_model_videos_meta_key';
+$detected_meta_key = get_transient($transient_key);
+
 foreach ($possible_taxonomies as $tax) {
     if (taxonomy_exists($tax)) {
         $existing_taxonomy = $tax;
@@ -58,14 +61,69 @@ if ($existing_taxonomy !== '') {
     }
 }
 
-if (count($video_ids) < $max_items) {
-    $remaining     = $max_items - count($video_ids);
-    $meta_args     = [
+if ($detected_meta_key === false) {
+    error_log('Model video debug for ' . $model_name . ': ' . print_r(get_post_meta(get_the_ID()), true));
+
+    $scan_args = [
         'post_type'      => 'video',
         'post_status'    => 'publish',
         'fields'         => 'ids',
-        'posts_per_page' => $remaining,
+        'posts_per_page' => 1,
         'meta_query'     => [
+            [
+                'key'     => false,
+                'value'   => $model_name,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ];
+
+    $scan_posts = get_posts($scan_args);
+    $found_key  = '';
+
+    if (!empty($scan_posts)) {
+        $video_meta = get_post_meta($scan_posts[0]);
+
+        foreach ($video_meta as $meta_key => $meta_values) {
+            foreach ((array) $meta_values as $meta_value) {
+                $meta_value = maybe_unserialize($meta_value);
+
+                if (is_array($meta_value)) {
+                    $meta_value = wp_json_encode($meta_value);
+                }
+
+                if (stripos((string) $meta_value, $model_name) !== false) {
+                    $found_key = $meta_key;
+                    break 2;
+                }
+            }
+        }
+    }
+
+    if ($found_key !== '') {
+        set_transient($transient_key, $found_key, DAY_IN_SECONDS);
+        error_log("Model video debug for {$model_name}: found meta key '{$found_key}'");
+        $detected_meta_key = $found_key;
+    } else {
+        set_transient($transient_key, '__not_found__', HOUR_IN_SECONDS);
+        error_log('Model video debug for ' . $model_name . ': no matching video meta key found');
+        $detected_meta_key = '__not_found__';
+    }
+}
+
+if (count($video_ids) < $max_items) {
+    $remaining = $max_items - count($video_ids);
+
+    if (!empty($detected_meta_key) && $detected_meta_key !== '__not_found__') {
+        $meta_query = [
+            [
+                'key'     => $detected_meta_key,
+                'value'   => $model_name,
+                'compare' => 'LIKE',
+            ],
+        ];
+    } else {
+        $meta_query = [
             'relation' => 'OR',
             [
                 'key'     => 'model_name',
@@ -77,8 +135,17 @@ if (count($video_ids) < $max_items) {
                 'value'   => $model_name,
                 'compare' => 'LIKE',
             ],
-        ],
+        ];
+    }
+
+    $meta_args = [
+        'post_type'      => 'video',
+        'post_status'    => 'publish',
+        'fields'         => 'ids',
+        'posts_per_page' => $remaining,
+        'meta_query'     => $meta_query,
     ];
+
     $meta_posts = get_posts($meta_args);
 
     if (!empty($meta_posts)) {
