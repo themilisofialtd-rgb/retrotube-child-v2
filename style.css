@@ -1,0 +1,427 @@
+/* Theme Name: Retrotube Child (Flipbox Edition) v2
+ Template: retrotube
+ Version: 1.1.6
+ Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
+ Author: Top Models Webcam
+*/
+
+/* =========================
+   1. Variables
+   ========================= */
+:root {
+  --offset-x: 50%;
+  --offset-y: 0px;
+  --tmw-hero-mobile-h: clamp(140px, 22vh, 200px);
+  --tmw-hero-vpos: 50%;
+}
+
+/* =========================
+   2. Hero / Banner
+   ========================= */
+.tmw-actor-hero,
+.tmw-model-hero {
+  margin: 0 0 18px;
+  position: relative;
+}
+
+.tmw-model-hero {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tmw-banner-container,
+.tmw-banner-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1035px;
+  aspect-ratio: 1035 / 350;
+  overflow: hidden;
+  background: #000;
+  margin: 0 auto 25px auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+}
+
+.tmw-banner-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% calc(50% + var(--offset-y, 0px));
+  display: block;
+  transform: none;
+}
+
+.tmw-banner-frame .no-banner-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+#tmw-banner-preview,
+#tmwBannerPreview {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+#tmw-banner-preview .ph,
+#tmwBannerPreview .ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.tmw-actor-hero .tmw-actor-name,
+.tmw-model-hero .tmw-model-name {
+  margin: 10px 0 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+/* =========================
+   3. Bio
+   ========================= */
+.tmw-bio {
+  margin: 14px 0 22px;
+}
+
+.tmw-bio-clamp {
+  --tmw-lines: 20;
+}
+
+.tmw-bio-clamp.is-clamped .tmw-bio-clamp-inner {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--tmw-lines);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tmw-bio-toggle.button {
+  margin-top: 10px;
+  border-color: #db011a !important;
+  background-color: #db011a !important;
+  color: #fff !important;
+}
+
+.tmw-bio .tags,
+.tmw-bio .tagcloud,
+.tmw-bio a.tag-cloud-link {
+  display: none !important;
+}
+
+/* =========================
+   4. Live / Socials
+   ========================= */
+.tmw-live {
+  margin: 14px 0;
+}
+
+.tmw-live-btn {
+  display: inline-block;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: #db011a;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.tmw-actor-social {
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tmw-actor-social .tmw-social {
+  display: inline-block;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: #f2f2f2;
+  color: #333;
+  text-decoration: none;
+}
+
+/* =========================
+   5. Flipboxes
+   ========================= */
+.tmw-featured-slot {
+  margin-top: 28px;
+}
+
+.tmw-featured-slot .section-title {
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+
+.tmw-trigger {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.tmw-grid .tmw-flip,
+.tmwfm-grid .tmw-flip {
+  position: relative;
+  display: block;
+  perspective: 1000px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tmw-grid .tmw-flip::before,
+.tmwfm-grid .tmw-flip::before {
+  content: "";
+  display: block;
+  padding-top: 150%;
+}
+
+.tmw-grid .tmw-flip .tmw-flip-inner,
+.tmwfm-grid .tmw-flip .tmw-flip-inner,
+.tmw-grid .tmw-flip .tmw-flip-front,
+.tmwfm-grid .tmw-flip .tmw-flip-front,
+.tmw-grid .tmw-flip .tmw-flip-back,
+.tmwfm-grid .tmw-flip .tmw-flip-back {
+  position: absolute;
+  inset: 0;
+}
+
+.tmw-grid .tmw-flip-front,
+.tmwfm-grid .tmw-flip-front,
+.tmw-grid .tmw-flip-back,
+.tmwfm-grid .tmw-flip-back {
+  background-size: var(--tmw-bgsize, cover);
+  background-position: var(--tmw-bgpos, 50% 50%);
+  background-repeat: no-repeat;
+  border-radius: 12px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.tmw-grid .tmw-flip-inner,
+.tmwfm-grid .tmw-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.55s ease;
+}
+
+.tmw-grid .tmw-flip-front,
+.tmwfm-grid .tmw-flip-front {
+  transform: rotateY(0deg);
+}
+
+.tmw-grid .tmw-flip-back,
+.tmwfm-grid .tmw-flip-back {
+  transform: rotateY(180deg);
+}
+
+.tmw-grid .tmw-flip:hover .tmw-flip-inner,
+.tmw-grid .tmw-flip:focus .tmw-flip-inner,
+.tmwfm-grid .tmw-flip:hover .tmw-flip-inner,
+.tmwfm-grid .tmw-flip:focus .tmw-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.model-flipbox {
+  margin: 40px 0;
+}
+
+.model-flipbox .tmwfm-heading {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tmwfm-heading i.fa-random {
+  margin-right: 6px;
+  color: #db011a;
+  font-size: inherit;
+}
+
+.model-flipbox .tmwfm-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* =========================
+   6. Video meta
+   ========================= */
+.video-meta-inline {
+  margin: 10px 0 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ccc;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.video-meta-inline .video-meta-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.video-meta-inline i {
+  margin-right: 6px;
+  color: #db011a;
+}
+
+@media (max-width: 767px) {
+  .video-meta-inline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .video-meta-inline .video-meta-item {
+    width: 100%;
+  }
+}
+
+/* =========================
+   7. Mobile
+   ========================= */
+@media (max-width: 840px) {
+  body[class*="taxonomy-actor"] .tmw-actor-hero,
+  body[class*="taxonomy-actor"] .entry-header,
+  body[class*="taxonomy-actor"] .post-thumbnail,
+  body[class*="taxonomy-actor"] .hero,
+  body[class*="taxonomy-actor"] article > *:first-child,
+  body[class*="taxonomy-model"] .tmw-model-hero,
+  body[class*="taxonomy-model"] .entry-header,
+  body[class*="taxonomy-model"] .post-thumbnail,
+  body[class*="taxonomy-model"] .hero,
+  body[class*="taxonomy-model"] article > *:first-child {
+    height: var(--tmw-hero-mobile-h) !important;
+    min-height: var(--tmw-hero-mobile-h) !important;
+    max-height: var(--tmw-hero-mobile-h) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+    background-size: cover !important;
+    background-position: center var(--tmw-hero-vpos) !important;
+  }
+
+  body[class*="taxonomy-actor"] .tmw-actor-hero img,
+  body[class*="taxonomy-actor"] .entry-header img,
+  body[class*="taxonomy-actor"] .post-thumbnail img,
+  body[class*="taxonomy-actor"] .hero img,
+  body[class*="taxonomy-actor"] article > *:first-child img,
+  body[class*="taxonomy-actor"] picture img,
+  body[class*="taxonomy-model"] .tmw-model-hero img,
+  body[class*="taxonomy-model"] .entry-header img,
+  body[class*="taxonomy-model"] .post-thumbnail img,
+  body[class*="taxonomy-model"] .hero img,
+  body[class*="taxonomy-model"] article > *:first-child img,
+  body[class*="taxonomy-model"] picture img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center var(--tmw-hero-vpos) !important;
+    aspect-ratio: auto !important;
+    border-radius: 14px !important;
+  }
+
+  body.single-model .tmw-model-banner-frame,
+  body.single-model .tmw-banner-frame,
+  body.single-model .tmw-model-hero {
+    max-width: 100% !important;
+    border-radius: 12px;
+  }
+}
+
+/* =========================
+   8. Utilities
+   ========================= */
+#video-about #video-models,
+#video-about #video-author,
+#video-about #video-date,
+#video-about #video-actors {
+  display: none !important;
+}
+
+body.tmw-no-embed .player,
+.entry-content .player,
+.post__text .player,
+.video__desc .player {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.tmw-no-embed .post__about,
+body.tmw-no-embed .about,
+body.tmw-no-embed .video__desc,
+body.tmw-no-embed .post__text,
+body.tmw-no-embed .entry-content,
+body.tmw-no-embed .rt-entry-content,
+body.tmw-no-embed .post-desc {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  min-height: 0 !important;
+}
+
+body.tmw-no-embed .post__about:before,
+body.tmw-no-embed .about:before,
+body.tmw-no-embed .video__desc:before,
+body.tmw-no-embed .entry-content:before {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  #tmw-banner-preview,
+  #tmwBannerPreview,
+  .tmw-banner-preview,
+  .tmw-model-banner-frame,
+  .tmw-banner-frame {
+    max-width: 100%;
+  }
+}
+
+/* === Inline Like/Dislike with Model Name === */
+.single-model .model-header-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.single-model .model-header-inline .entry-title {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.3;
+}
+
+.single-model .model-header-inline .post-like-inline {
+  margin-top: 0 !important;
+  display: flex;
+  align-items: center;
+}
