@@ -97,7 +97,23 @@ if ( empty( $cta_label ) ) {
         </div><!-- .entry-content -->
 
         <?php if ( xbox_get_field_value( 'wpst-options', 'display-related-videos' ) == 'on' ) : ?>
-                <?php get_template_part( 'template-parts/content', 'related' ); ?>
+                <?php
+                ob_start();
+                get_template_part( 'template-parts/content', 'related' );
+                $related_markup = ob_get_clean();
+
+                if ( $related_markup ) {
+                        $related_markup = preg_replace(
+                                '#<div\s+class="show-more">\s*<a[^>]*id="load-more-related"[^>]*>.*?</a>\s*</div>#is',
+                                '',
+                                $related_markup
+                        );
+
+                        if ( '' !== trim( $related_markup ) ) {
+                                echo $related_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        }
+                }
+                ?>
         <?php endif; ?>
 
         <?php
