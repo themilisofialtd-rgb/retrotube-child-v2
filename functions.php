@@ -3440,3 +3440,40 @@ if (!function_exists('tmw_debug_banner_ratio')) {
     }
   });
 }
+if (defined('WP_CLI') && WP_CLI) {
+  /**
+   * Audit video post meta usage for locating model references.
+   */
+  WP_CLI::add_command('tmw audit-video-meta', function () {
+    global $wpdb;
+
+    $sql = $wpdb->prepare(
+      "SELECT pm.meta_key, COUNT(*) AS total, AVG(CHAR_LENGTH(pm.meta_value)) AS avg_len
+       FROM {$wpdb->postmeta} pm
+       INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+       WHERE p.post_type = %s
+       GROUP BY pm.meta_key
+       ORDER BY total DESC",
+      'video'
+    );
+
+    $rows = $wpdb->get_results($sql, ARRAY_A);
+
+    if (empty($rows)) {
+      WP_CLI::warning('No video meta entries were found.');
+      return;
+    }
+
+    foreach ($rows as $row) {
+      $key     = isset($row['meta_key']) ? (string) $row['meta_key'] : '';
+      $total   = isset($row['total']) ? (int) $row['total'] : 0;
+      $avg_len = isset($row['avg_len']) ? (float) $row['avg_len'] : 0.0;
+
+      $avg_str = number_format_i18n($avg_len, 1);
+      $label   = $key !== '' ? $key : '(empty key)';
+
+      WP_CLI::log(sprintf('[Model Video Audit] %s (%d videos, avg_len=%s)', $label, $total, $avg_str));
+    }
+  });
+}
+
