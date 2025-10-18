@@ -407,21 +407,41 @@ body.tmw-no-embed .entry-content:before {
   }
 }
 
-/* === Inline Like/Dislike with Model Name === */
-.single-model .model-header-inline {
+/* === Remove legacy model rating/view visuals === */
+.single-model #rating-col,
+.single-model .rating-col,
+.single-model .rating-bar,
+.single-model .rating-bar-meter,
+.single-model .rating-result,
+.single-model #video-views,
+.single-model .video-views {
+  display: none !important;
+}
+
+/* === Keep Like/Dislike with model name === */
+.single-model .tmw-model-header {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-.single-model .model-header-inline .entry-title {
+.single-model .tmw-model-header .model-name {
   margin: 0;
   font-size: 1.6rem;
   line-height: 1.3;
 }
 
-.single-model .model-header-inline .post-like-inline {
-  margin-top: 0 !important;
-  display: flex;
+.single-model .tmw-model-header .tmw-model-actions {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+}
+
+.single-model .tmw-model-header .tmw-model-actions #video-rate,
+.single-model .tmw-model-header .tmw-model-actions .like,
+.single-model .tmw-model-header .tmw-model-actions .dislike {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
