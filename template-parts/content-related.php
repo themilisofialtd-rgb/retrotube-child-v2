@@ -1,78 +1,22 @@
 <?php
 /**
- * Child override to remove the "Show more related videos" button on model pages.
- *
- * @package RetroTube_Child
+ * Child override: render parent related-videos markup but remove "Show more" button on model pages.
  */
 
-if ( ! function_exists( 'tmw_child_include_parent_related_template' ) ) {
-    /**
-     * Attempt to load the first available parent related template and optionally filter the markup.
-     *
-     * @param callable|null $filter Optional filter callback applied to the captured markup.
-     * @return bool Whether a parent template was rendered.
-     */
-    function tmw_child_include_parent_related_template( $filter = null ) {
-        $parent_dir = trailingslashit( get_template_directory() );
-        $templates  = array(
-            'template-parts/content-related.php',
-            'template-parts/related.php',
-        );
+ob_start();
 
-        foreach ( $templates as $template ) {
-            $parent_path = $parent_dir . ltrim( $template, '/' );
+// Run the parent related template normally
+get_template_part('template-parts/related');
 
-            if ( ! file_exists( $parent_path ) ) {
-                continue;
-            }
+$related_markup = ob_get_clean();
 
-            if ( null === $filter ) {
-                include $parent_path;
-                return true;
-            }
-
-            ob_start();
-            include $parent_path;
-            $markup = ob_get_clean();
-
-            if ( false === $markup ) {
-                continue;
-            }
-
-            $filtered = call_user_func( $filter, $markup );
-
-            if ( false === $filtered ) {
-                return true;
-            }
-
-            echo $filtered; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            return true;
-        }
-
-        return false;
-    }
-}
-
-if ( ! is_singular( 'model' ) ) {
-    if ( function_exists( 'tmw_try_parent_template' ) ) {
-        if ( tmw_try_parent_template( array( 'template-parts/content-related.php', 'template-parts/related.php' ) ) ) {
-            return;
-        }
-    }
-
-    if ( tmw_child_include_parent_related_template() ) {
-        return;
-    }
-
-    return;
-}
-
-$filter_markup = static function ( $markup ) {
-    return preg_replace(
-        '#<div\s+class="show-more">\s*<a[^>]*id="load-more-related"[^>]*>.*?</a>\s*</div>#is',
+// Remove the button if this is a model page
+if ( is_singular('model') ) {
+    $related_markup = preg_replace(
+        '#<div class="show-more">.*?</div>#is',
         '',
-        $markup
+        $related_markup
     );
-};
+}
 
-tmw_child_include_parent_related_template( $filter_markup );
+echo $related_markup;
