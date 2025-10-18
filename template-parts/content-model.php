@@ -90,6 +90,8 @@ if ( empty( $cta_label ) ) {
                                 <?php endif; ?>
                         </div>
 
+                        <?php get_template_part( 'template-parts/model-videos' ); ?>
+
                         <?php if ( xbox_get_field_value( 'wpst-options', 'enable-video-share' ) == 'on' ) : ?>
                                 <?php get_template_part( 'template-parts/content', 'share-buttons' ); ?>
                         <?php endif; ?>
