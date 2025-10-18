@@ -1,12 +1,77 @@
 <?php
 /**
  * Template Part: Model Videos Section — Auto-Discovery Version
- * v2.7.2
+ * v2.7.4
  */
 
 global $post, $wpdb;
-$model_name = get_the_title($post->ID);
-$detected_meta_key = get_transient('tmw_detected_model_meta_key');
+$model_name          = get_the_title($post->ID);
+$model_slug          = sanitize_title($model_name);
+$detected_meta_key   = get_transient('tmw_detected_model_meta_key');
+$detected_taxonomy   = get_transient('tmw_detected_model_taxonomy');
+$deep_scan_completed = get_transient('tmw_model_scan_done');
+
+// === Deep Model–Video Relationship Scan (one-time helper) ===
+if ( ! $deep_scan_completed ) {
+    error_log('[Model Video Audit] Deep scan started for ' . $model_name);
+
+    $meta_candidates = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT DISTINCT meta_key, meta_value
+             FROM {$wpdb->postmeta}
+             WHERE post_id IN (
+                 SELECT ID FROM {$wpdb->posts}
+                 WHERE post_type = 'video' AND post_status = 'publish'
+             )
+             AND meta_value LIKE %s
+             LIMIT 15",
+            '%' . $wpdb->esc_like($model_name) . '%'
+        )
+    );
+
+    if ( $meta_candidates ) {
+        $unique_meta_keys = array_unique(wp_list_pluck($meta_candidates, 'meta_key'));
+
+        foreach ( $meta_candidates as $row ) {
+            $val = substr(strip_tags($row->meta_value), 0, 80);
+            error_log('[Model Video Audit] Possible meta match: ' . $row->meta_key . ' → ' . $val);
+        }
+
+        if ( ! $detected_meta_key && 1 === count($unique_meta_keys) ) {
+            $detected_meta_key = reset($unique_meta_keys);
+            set_transient('tmw_detected_model_meta_key', $detected_meta_key, DAY_IN_SECONDS);
+        }
+    } else {
+        error_log('[Model Video Audit] No meta matches found for ' . $model_name);
+    }
+
+    $taxonomies = get_object_taxonomies('video');
+
+    if ( $taxonomies ) {
+        foreach ( $taxonomies as $tax ) {
+            $term = get_term_by('slug', $model_slug, $tax);
+
+            if ( ! $term ) {
+                $term = get_term_by('name', $model_name, $tax);
+            }
+
+            if ( $term ) {
+                error_log('[Model Video Audit] Possible taxonomy match: ' . $tax . ' → ' . $term->slug);
+
+                if ( ! $detected_taxonomy ) {
+                    $detected_taxonomy = [
+                        'taxonomy' => $tax,
+                        'term'     => $term->slug,
+                    ];
+                    set_transient('tmw_detected_model_taxonomy', $detected_taxonomy, DAY_IN_SECONDS);
+                }
+            }
+        }
+    }
+
+    set_transient('tmw_model_scan_done', true, 6 * HOUR_IN_SECONDS);
+    error_log('[Model Video Audit] Deep scan finished for ' . $model_name);
+}
 
 // === Auto-detect correct meta key if not cached ===
 if ( ! $detected_meta_key ) {
@@ -32,28 +97,39 @@ if ( ! $detected_meta_key ) {
 }
 
 // === Build dynamic query ===
-$meta_query = $detected_meta_key ? [
-    [
-        'key'     => $detected_meta_key,
-        'value'   => $model_name,
-        'compare' => 'LIKE',
-    ]
-] : [
-    [
-        'key'     => false,
-        'value'   => $model_name,
-        'compare' => 'LIKE',
-    ]
-];
-
-$args = [
+$query_args = [
     'post_type'      => 'video',
     'posts_per_page' => 8,
-    'meta_query'     => $meta_query,
 ];
 
+if ( $detected_meta_key ) {
+    $query_args['meta_query'] = [
+        [
+            'key'     => $detected_meta_key,
+            'value'   => $model_name,
+            'compare' => 'LIKE',
+        ],
+    ];
+} elseif ( $detected_taxonomy && isset($detected_taxonomy['taxonomy'], $detected_taxonomy['term']) ) {
+    $query_args['tax_query'] = [
+        [
+            'taxonomy' => $detected_taxonomy['taxonomy'],
+            'field'    => 'slug',
+            'terms'    => $detected_taxonomy['term'],
+        ],
+    ];
+} else {
+    $query_args['meta_query'] = [
+        [
+            'key'     => false,
+            'value'   => $model_name,
+            'compare' => 'LIKE',
+        ],
+    ];
+}
+
 // === Execute query ===
-$query = new WP_Query($args);
+$query = new WP_Query($query_args);
 
 if ($query->have_posts()) :
 ?>
