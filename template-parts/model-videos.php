@@ -1,0 +1,108 @@
+<?php
+/**
+ * Template Part: Model Videos Section
+ * Shows videos tagged to the same model.
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+global $post;
+
+if (!($post instanceof WP_Post)) {
+    return;
+}
+
+$model_name = get_the_title($post->ID);
+
+if ($model_name === '') {
+    return;
+}
+
+$max_items = 8;
+
+$video_ids = [];
+
+$taxonomy_args = [
+    'post_type'      => 'video',
+    'post_status'    => 'publish',
+    'fields'         => 'ids',
+    'posts_per_page' => $max_items,
+    'tax_query'      => [
+        [
+            'taxonomy' => 'models',
+            'field'    => 'name',
+            'terms'    => $model_name,
+        ],
+    ],
+];
+
+$taxonomy_posts = get_posts($taxonomy_args);
+
+if (!empty($taxonomy_posts)) {
+    $video_ids = $taxonomy_posts;
+}
+
+if (count($video_ids) < $max_items) {
+    $remaining     = $max_items - count($video_ids);
+    $meta_args     = [
+        'post_type'      => 'video',
+        'post_status'    => 'publish',
+        'fields'         => 'ids',
+        'posts_per_page' => $remaining,
+        'meta_query'     => [
+            [
+                'key'     => 'model_name',
+                'value'   => $model_name,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ];
+    $meta_posts = get_posts($meta_args);
+
+    if (!empty($meta_posts)) {
+        $video_ids = array_merge($video_ids, $meta_posts);
+    }
+}
+
+$video_ids = array_values(array_unique($video_ids));
+
+if (empty($video_ids)) {
+    return;
+}
+
+if (count($video_ids) > $max_items) {
+    $video_ids = array_slice($video_ids, 0, $max_items);
+}
+
+$query_args = [
+    'post_type'           => 'video',
+    'post_status'         => 'publish',
+    'post__in'            => $video_ids,
+    'orderby'             => 'post__in',
+    'posts_per_page'      => count($video_ids),
+    'ignore_sticky_posts' => true,
+];
+
+$videos_query = new WP_Query($query_args);
+
+if (!$videos_query->have_posts()) {
+    wp_reset_postdata();
+    return;
+}
+?>
+<section class="tmw-model-videos">
+    <div class="tmw-section-header"><span>🎬 Videos with <?php echo esc_html($model_name); ?></span></div>
+    <div class="tmw-grid tmw-cols-4">
+        <?php
+        while ($videos_query->have_posts()) :
+            $videos_query->the_post();
+            get_template_part('template-parts/content', 'video');
+        endwhile;
+        ?>
+    </div>
+</section>
+<?php
+wp_reset_postdata();
+

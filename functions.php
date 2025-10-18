@@ -830,6 +830,17 @@ add_action('wp_enqueue_scripts', function () {
     $child_version
   );
 
+  $model_videos_path = get_stylesheet_directory() . '/assets/css/style.css';
+  if (file_exists($model_videos_path)) {
+    $model_videos_ver = filemtime($model_videos_path) ?: $child_version;
+    wp_enqueue_style(
+      'retrotube-model-videos',
+      get_stylesheet_directory_uri() . '/assets/css/style.css',
+      ['retrotube-child-style'],
+      $model_videos_ver
+    );
+  }
+
   $flipboxes_path = get_stylesheet_directory() . '/assets/flipboxes.css';
   $flipboxes_ver  = file_exists($flipboxes_path) ? filemtime($flipboxes_path) : $child_version;
 
