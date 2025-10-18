@@ -1,142 +1,125 @@
 <?php
 /**
- * Template Part: Model Videos Section — Auto-Discovery Version
+ * Template Part: Model Videos Section — Deep Meta Scan
  * v2.7.5
  */
 
 global $post, $wpdb;
-$model_name          = get_the_title($post->ID);
-$model_slug          = sanitize_title($model_name);
-$detected_meta_key   = get_transient('tmw_detected_model_meta_key');
-$detected_taxonomy   = get_transient('tmw_detected_model_taxonomy');
-$deep_scan_completed = get_transient('tmw_model_scan_done');
+$model_name        = get_the_title($post->ID);
+$model_slug        = sanitize_title($model_name);
+$meta_cache_key    = 'tmw_detected_model_meta_key_' . $model_slug;
+$tax_cache_key     = 'tmw_detected_model_taxonomy_' . $model_slug;
+$detected_meta_key = get_transient($meta_cache_key);
+$detected_taxonomy = get_transient($tax_cache_key);
+$no_meta_key_cache = false;
 
-// === Deep Model–Video Relationship Scan (one-time helper) ===
-if ( ! $deep_scan_completed ) {
-    error_log('[Model Video Audit] Deep scan started for ' . $model_name);
+if ('__no_match__' === $detected_meta_key) {
+    $no_meta_key_cache = true;
+    $detected_meta_key = false;
+}
 
-    $meta_candidates = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT DISTINCT meta_key, meta_value
-             FROM {$wpdb->postmeta}
-             WHERE post_id IN (
-                 SELECT ID FROM {$wpdb->posts}
-                 WHERE post_type = 'video' AND post_status = 'publish'
-             )
-             AND meta_value LIKE %s
-             LIMIT 15",
-            '%' . $wpdb->esc_like($model_name) . '%'
-        )
-    );
+if ( ! function_exists('tmw_model_audit_trim_value') ) {
+    function tmw_model_audit_trim_value($value) {
+        $value = is_string($value) ? trim((function_exists('wp_strip_all_tags') ? wp_strip_all_tags($value) : strip_tags($value))) : '';
 
-    if ( $meta_candidates ) {
-        $unique_meta_keys = array_unique(wp_list_pluck($meta_candidates, 'meta_key'));
-
-        foreach ( $meta_candidates as $row ) {
-            $val = substr(strip_tags($row->meta_value), 0, 80);
-            error_log('[Model Video Audit] Possible meta match: ' . $row->meta_key . ' → ' . $val);
+        if (strlen($value) > 80) {
+            $value = (function_exists('mb_substr') ? mb_substr($value, 0, 77) : substr($value, 0, 77)) . '…';
         }
 
-        if ( ! $detected_meta_key && 1 === count($unique_meta_keys) ) {
-            $detected_meta_key = reset($unique_meta_keys);
-            set_transient('tmw_detected_model_meta_key', $detected_meta_key, DAY_IN_SECONDS);
-        }
-    } else {
-        error_log('[Model Video Audit] No meta matches found for ' . $model_name);
+        return $value;
     }
+}
 
-    if ( ! function_exists('tmw_model_audit_trim_value') ) {
-        function tmw_model_audit_trim_value($value) {
-            $value = is_string($value) ? trim((function_exists('wp_strip_all_tags') ? wp_strip_all_tags($value) : strip_tags($value))) : '';
+if ( ! function_exists('tmw_model_audit_format_path') ) {
+    function tmw_model_audit_format_path($path, $value) {
+        if (empty($path)) {
+            $value = tmw_model_audit_trim_value($value);
 
-            if (strlen($value) > 80) {
-                $value = (function_exists('mb_substr') ? mb_substr($value, 0, 77) : substr($value, 0, 77)) . '…';
+            if (preg_match('/model[^a-z0-9]*[\"\':=]+\s*(\"?)([^"\';]+)\1/i', $value, $match)) {
+                return 'model=' . tmw_model_audit_trim_value($match[2]);
             }
 
             return $value;
         }
-    }
 
-    if ( ! function_exists('tmw_model_audit_format_path') ) {
-        function tmw_model_audit_format_path($path, $value) {
-            if (empty($path)) {
-                return tmw_model_audit_trim_value($value);
-            }
+        $segments = array_map(
+            function ($segment) {
+                return is_string($segment) ? $segment : '[' . $segment . ']';
+            },
+            $path
+        );
 
-            $segments = array_map(
-                function ($segment) {
-                    return is_string($segment) ? $segment : '[' . $segment . ']';
-                },
-                $path
-            );
+        $last = array_pop($segments);
+        $last .= '=' . tmw_model_audit_trim_value($value);
 
-            $last = array_pop($segments);
-            $last .= '=' . tmw_model_audit_trim_value($value);
+        if ($segments) {
+            $segments[] = $last;
 
-            if ($segments) {
-                $segments[] = $last;
-
-                return implode(' → ', $segments);
-            }
-
-            return $last;
+            return implode(' → ', $segments);
         }
+
+        return $last;
     }
+}
 
-    if ( ! function_exists('tmw_model_audit_collect_matches') ) {
-        function tmw_model_audit_collect_matches($data, $needle, $path = []) {
-            $matches = [];
+if ( ! function_exists('tmw_model_audit_collect_matches') ) {
+    function tmw_model_audit_collect_matches($data, $needle, $path = []) {
+        $matches = [];
 
-            if (is_array($data)) {
-                foreach ($data as $key => $value) {
-                    $segment = is_int($key) ? '[' . $key . ']' : (string) $key;
-                    $matches = array_merge(
-                        $matches,
-                        tmw_model_audit_collect_matches($value, $needle, array_merge($path, [$segment]))
-                    );
-                }
-
-                return $matches;
-            }
-
-            if (is_object($data)) {
-                return tmw_model_audit_collect_matches(get_object_vars($data), $needle, $path);
-            }
-
-            if (!is_string($data)) {
-                return $matches;
-            }
-
-            if (false !== stripos($data, $needle)) {
-                $matches[] = tmw_model_audit_format_path($path, $data);
-
-                return $matches;
-            }
-
-            $maybe_serialized = maybe_unserialize($data);
-
-            if ($maybe_serialized !== $data) {
-                $matches = array_merge($matches, tmw_model_audit_collect_matches($maybe_serialized, $needle, $path));
-            }
-
-            $decoded = null;
-            $trimmed = trim($data);
-
-            if ($trimmed) {
-                $maybe_first = substr($trimmed, 0, 1);
-
-                if (in_array($maybe_first, ['{', '[', '"'], true)) {
-                    $decoded = json_decode($trimmed, true);
-
-                    if (JSON_ERROR_NONE === json_last_error() && $decoded !== $data) {
-                        $matches = array_merge($matches, tmw_model_audit_collect_matches($decoded, $needle, $path));
-                    }
-                }
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $segment = is_int($key) ? '[' . $key . ']' : (string) $key;
+                $matches = array_merge(
+                    $matches,
+                    tmw_model_audit_collect_matches($value, $needle, array_merge($path, [$segment]))
+                );
             }
 
             return $matches;
         }
+
+        if (is_object($data)) {
+            return tmw_model_audit_collect_matches(get_object_vars($data), $needle, $path);
+        }
+
+        if (!is_string($data)) {
+            return $matches;
+        }
+
+        if (false !== stripos($data, $needle)) {
+            $matches[] = tmw_model_audit_format_path($path, $data);
+
+            return $matches;
+        }
+
+        $maybe_serialized = maybe_unserialize($data);
+
+        if ($maybe_serialized !== $data) {
+            $matches = array_merge($matches, tmw_model_audit_collect_matches($maybe_serialized, $needle, $path));
+        }
+
+        $decoded = null;
+        $trimmed = trim($data);
+
+        if ($trimmed) {
+            $maybe_first = substr($trimmed, 0, 1);
+
+            if (in_array($maybe_first, ['{', '[', '"'], true)) {
+                $decoded = json_decode($trimmed, true);
+
+                if (JSON_ERROR_NONE === json_last_error() && $decoded !== $data) {
+                    $matches = array_merge($matches, tmw_model_audit_collect_matches($decoded, $needle, $path));
+                }
+            }
+        }
+
+        return $matches;
     }
+}
+
+// === Deep Model–Video Relationship Scan ===
+if (false === $detected_meta_key && ! $no_meta_key_cache) {
+    error_log('[Model Video Audit] Deep scan started for ' . $model_name);
 
     $deep_meta_rows = $wpdb->get_results(
         "SELECT pm.meta_key, pm.meta_value
@@ -145,12 +128,12 @@ if ( ! $deep_scan_completed ) {
          WHERE p.post_type = 'video' AND p.post_status = 'publish'"
     );
 
-    if ($deep_meta_rows) {
-        $deep_logged = [];
+    $match_found = false;
 
+    if ($deep_meta_rows) {
         foreach ($deep_meta_rows as $row) {
-            $raw_value   = $row->meta_value;
-            $structures = [];
+            $raw_value = $row->meta_value;
+            $structures = [$raw_value];
             $unserialized = maybe_unserialize($raw_value);
 
             if ($unserialized !== $raw_value) {
@@ -174,20 +157,27 @@ if ( ! $deep_scan_completed ) {
                     continue;
                 }
 
-                foreach ($matches as $match) {
-                    $hash = $row->meta_key . '|' . $match;
+                $match_found      = true;
+                $detected_meta_key = $row->meta_key;
+                set_transient($meta_cache_key, $detected_meta_key, WEEK_IN_SECONDS);
+                error_log('[Model Video Audit] Deep meta match: ' . $row->meta_key . ' → ' . reset($matches));
 
-                    if (isset($deep_logged[$hash])) {
-                        continue;
-                    }
-
-                    $deep_logged[$hash] = true;
-                    error_log('[Model Video Audit] Deep meta match: ' . $row->meta_key . ' → ' . $match);
-                }
+                break 2;
             }
         }
     }
 
+    if (! $match_found) {
+        set_transient($meta_cache_key, '__no_match__', WEEK_IN_SECONDS);
+        error_log('[Model Video Audit] Deep scan found no serialized or JSON match for ' . $model_name);
+    }
+}
+
+if (false === $detected_meta_key && $no_meta_key_cache) {
+    $detected_meta_key = false;
+}
+
+if ( ! $detected_taxonomy ) {
     $taxonomies = get_object_taxonomies('video');
 
     if ( $taxonomies ) {
@@ -199,21 +189,18 @@ if ( ! $deep_scan_completed ) {
             }
 
             if ( $term ) {
+                $detected_taxonomy = [
+                    'taxonomy' => $tax,
+                    'term'     => $term->slug,
+                ];
+
+                set_transient($tax_cache_key, $detected_taxonomy, DAY_IN_SECONDS);
                 error_log('[Model Video Audit] Possible taxonomy match: ' . $tax . ' → ' . $term->slug);
 
-                if ( ! $detected_taxonomy ) {
-                    $detected_taxonomy = [
-                        'taxonomy' => $tax,
-                        'term'     => $term->slug,
-                    ];
-                    set_transient('tmw_detected_model_taxonomy', $detected_taxonomy, DAY_IN_SECONDS);
-                }
+                break;
             }
         }
     }
-
-    set_transient('tmw_model_scan_done', true, 6 * HOUR_IN_SECONDS);
-    error_log('[Model Video Audit] Deep scan finished for ' . $model_name);
 }
 
 // === Auto-detect correct meta key if not cached ===
@@ -231,7 +218,7 @@ if ( ! $detected_meta_key ) {
     );
 
     if ( $meta_key ) {
-        set_transient('tmw_detected_model_meta_key', $meta_key, DAY_IN_SECONDS);
+        set_transient($meta_cache_key, $meta_key, WEEK_IN_SECONDS);
         error_log('[Model Video Audit] Found model link for '.$model_name.' under meta key: '.$meta_key);
         $detected_meta_key = $meta_key;
     } else {
