@@ -871,39 +871,6 @@ add_action('wp_head', function(){
   echo '<script>document.addEventListener("DOMContentLoaded",function(){var i=document.querySelector(".video-grid img, .tmw-grid img");if(i){i.setAttribute("fetchpriority","high");i.setAttribute("decoding","async");i.removeAttribute("loading");}});</script>';
 });
 
-/* === Force-remove JS-injected “Show more related videos” button on model pages === */
-add_action('wp_footer', function () {
-  if (!is_singular('model')) {
-    return;
-  }
-
-  ?>
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const removeButtons = () => {
-      document
-        .querySelectorAll('#load-more-related, .tmw-load-more, .show-more')
-        .forEach((btn) => btn.remove());
-    };
-
-    removeButtons();
-
-    if (!('MutationObserver' in window)) {
-      return;
-    }
-
-    const observer = new MutationObserver(() => {
-      removeButtons();
-    });
-
-    if (document.body) {
-      observer.observe(document.body, { childList: true, subtree: true });
-    }
-  });
-  </script>
-  <?php
-});
-
 /* ======================================================================
  * TEMPLATE HELPERS
  * ====================================================================== */
