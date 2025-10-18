@@ -849,6 +849,13 @@ add_action('wp_enqueue_scripts', function () {
   wp_deregister_script('wp-embed');
 }, 20);
 
+add_action('wp_enqueue_scripts', function () {
+  if (is_singular('model')) {
+    wp_dequeue_style('retrotube-rating');
+    wp_dequeue_script('retrotube-rating');
+  }
+}, 100);
+
 add_filter('post_thumbnail_html', function($html){
   static $done = false;
   if (!$done && (is_home() || is_archive())) {
