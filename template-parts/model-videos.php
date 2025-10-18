@@ -24,24 +24,38 @@ $max_items = 8;
 
 $video_ids = [];
 
-$taxonomy_args = [
-    'post_type'      => 'video',
-    'post_status'    => 'publish',
-    'fields'         => 'ids',
-    'posts_per_page' => $max_items,
-    'tax_query'      => [
-        [
-            'taxonomy' => 'models',
-            'field'    => 'name',
-            'terms'    => $model_name,
+$possible_taxonomies = ['models', 'model', 'actors', 'pornstar', 'video_model'];
+$existing_taxonomy   = '';
+
+foreach ($possible_taxonomies as $tax) {
+    if (taxonomy_exists($tax)) {
+        $existing_taxonomy = $tax;
+        break;
+    }
+}
+
+$taxonomy_posts = [];
+
+if ($existing_taxonomy !== '') {
+    $taxonomy_args = [
+        'post_type'      => 'video',
+        'post_status'    => 'publish',
+        'fields'         => 'ids',
+        'posts_per_page' => $max_items,
+        'tax_query'      => [
+            [
+                'taxonomy' => $existing_taxonomy,
+                'field'    => 'name',
+                'terms'    => $model_name,
+            ],
         ],
-    ],
-];
+    ];
 
-$taxonomy_posts = get_posts($taxonomy_args);
+    $taxonomy_posts = get_posts($taxonomy_args);
 
-if (!empty($taxonomy_posts)) {
-    $video_ids = $taxonomy_posts;
+    if (!empty($taxonomy_posts)) {
+        $video_ids = $taxonomy_posts;
+    }
 }
 
 if (count($video_ids) < $max_items) {
@@ -52,8 +66,14 @@ if (count($video_ids) < $max_items) {
         'fields'         => 'ids',
         'posts_per_page' => $remaining,
         'meta_query'     => [
+            'relation' => 'OR',
             [
                 'key'     => 'model_name',
+                'value'   => $model_name,
+                'compare' => 'LIKE',
+            ],
+            [
+                'key'     => 'video_model',
                 'value'   => $model_name,
                 'compare' => 'LIKE',
             ],
