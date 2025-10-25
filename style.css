@@ -445,6 +445,7 @@ body.tmw-no-embed .entry-content:before {
   align-items: center;
   gap: 6px;
 }
+
 /* Hide accidental numeric post IDs printed under thumbnails */
 article[id^="post-"]::before {
   display: none !important;
@@ -452,7 +453,6 @@ article[id^="post-"]::before {
 }
 
 /* === v2.7.7-remove-video-id === */
-/* Hide numeric post IDs on model video items (model pages only) */
 .single-model .tmw-model-video-item .post-id,
 .single-model .tmw-model-video-item .video-meta,
 .single-model .tmw-model-video-item span,
@@ -461,13 +461,12 @@ article[id^="post-"]::before {
 }
 
 /* === v2.7.8-video-thumb-gap-fix === */
-/* Tighten space between video thumbnail and title on model pages */
 .single-model .tmw-model-video-item .video-title {
-    margin-top: 3px !important;   /* reduce vertical space */
+    margin-top: 3px !important;
     line-height: 1.2em;
 }
 
-/* [TMW-MODEL-TAGS-AUDIT] Synced with video tag style (v3.3.1) */
+/* [TMW-MODEL-TAGS-AUDIT] base rules */
 .tmw-model-tags.post-tags.entry-tags {
   margin-top: 15px;
   padding: 12px 0;
@@ -613,6 +612,7 @@ article[id^="post-"]::before {
 .single-model #content {
     margin-top: 1em;
 }
+
 /* === TMW v3.0.8 — Apply RetroTube .label Style to .tag-link (Model Pages) === */
 .tags .tags-list .tag-link,
 a.tag-link {
@@ -631,27 +631,26 @@ a.tag-link {
 }
 
 /* ============================================================
-   v2.8.4 — Model tag spacing (minimum padding, icons kept)
+   v2.8.6 — Model tags: smaller text + tighter left/right (icons kept)
    ============================================================ */
 .single-model .tmw-model-tags a,
 .single-model .tmw-model-tags a.label {
-  line-height: 1.33;   /* compact height */
-  padding: 2px 8px;    /* MIN padding: top/bottom, left/right */
-  margin: 0 6px 6px 0; /* compact gap between pills */
+  font-size: 0.85em !important;  /* smaller letters on model page */
+  line-height: 1.28 !important;  /* shorter pill height */
+  padding: 2px 6px !important;   /* top/bottom, left/right = tighter */
+  margin: 0 6px 6px 0 !important;
   border-radius: 3px;
 }
 
-/* keep the small white tag icon and align baseline */
 .single-model .tmw-model-tags a.label i,
 .single-model .tmw-model-tags a i.fa {
-  display: inline-block;
-  margin-right: 6px;
+  font-size: 0.85em !important;  /* scale icon with text */
+  margin-right: 5px;
   line-height: 1;
   vertical-align: -1px;
-  font-size: 0.9em;
 }
 
-/* align the overall block spacing with video .tags */
+/* keep overall block spacing aligned with video .tags */
 .single-model .tmw-model-tags.post-tags.entry-tags {
   padding: 0;
   margin: 0 0 12px 0;
@@ -661,8 +660,9 @@ a.tag-link {
 @media (max-width: 600px) {
   .single-model .tmw-model-tags a,
   .single-model .tmw-model-tags a.label {
-    line-height: 1.33;
-    padding: 2px 8px;
-    margin: 0 6px 6px 0;
+    font-size: 0.85em !important;
+    line-height: 1.28 !important;
+    padding: 2px 6px !important;
+    margin: 0 6px 6px 0 !important;
   }
 }
