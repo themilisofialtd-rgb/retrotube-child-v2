@@ -716,3 +716,31 @@ nav, .main-navigation, #site-navigation {} /* anchor scope helper */
 #site-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before {
   content: "\f008";
 }
+
+/* v3.4.4 — Videos nav icon via CSS (no PHP) */
+:root { --tmw-videos-icon: "\f03d"; } /* FA “video camera” (FA4/FA5 compatible) */
+
+/* Target common header nav containers (theme uses one of these). */
+#site-navigation .menu > li > a[href$="/videos/"]::before,
+#site-navigation .menu > li > a[href$="/videos"]::before,
+.main-navigation .menu > li > a[href$="/videos/"]::before,
+.main-navigation .menu > li > a[href$="/videos"]::before {
+  content: var(--tmw-videos-icon);
+  font-family: "Font Awesome 5 Free","FontAwesome"; /* FA5 then FA4 fallback */
+  font-weight: 900;                                   /* needed for FA5 solid */
+  display: inline-block;
+  margin-right: .35em;
+  line-height: 1;
+  speak: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Keep icon visible on active/hovered state */
+#site-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
+#site-navigation .menu > li.current-menu-item > a[href$="/videos"]::before,
+.main-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
+.main-navigation .menu > li.current-menu-item > a[href$="/videos"]::before {
+  opacity: 1;
+}
+
