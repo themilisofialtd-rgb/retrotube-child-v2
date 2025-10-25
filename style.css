@@ -629,3 +629,42 @@ a.tag-link {
         font-size: .9em !important;
     }
 }
+
+/* ============================================================
+   v2.8.3 — Model tag spacing parity (icons kept)
+   Tightens model chips without affecting video chips.
+   ============================================================ */
+.single-model .tmw-model-tags a,
+.single-model .tmw-model-tags a.label {
+  /* tighter vertical + horizontal spacing to match video feel */
+  line-height: 1.4;
+  padding: 4px 10px;      /* was 0.5em 1em */
+  margin: 0 8px 8px 0;    /* standard chip gap */
+  border-radius: 3px;
+}
+
+/* keep the small white tag icon and align baseline */
+.single-model .tmw-model-tags a.label i,
+.single-model .tmw-model-tags a i.fa {
+  display: inline-block;
+  margin-right: 6px;
+  line-height: 1;
+  vertical-align: -1px;
+  font-size: 0.9em;
+}
+
+/* align the overall block spacing with video .tags */
+.single-model .tmw-model-tags.post-tags.entry-tags {
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+/* mobile: retain the tighter spacing on models too */
+@media (max-width: 600px) {
+  .single-model .tmw-model-tags a,
+  .single-model .tmw-model-tags a.label {
+    line-height: 1.4;
+    padding: 4px 10px;
+    margin: 0 8px 8px 0;
+  }
+}
