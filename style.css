@@ -197,6 +197,25 @@
 }
 
 .tmw-grid .tmw-flip-front,
+.tmwfm-grid .tmw-flip-front,
+.tmw-grid .tmw-flip-back,
+.tmwfm-grid .tmw-flip-back {
+  background-size: var(--tmw-bgsize, cover);
+  background-position: var(--tmw-bgpos, 50% 50%);
+  background-repeat: no-repeat;
+  border-radius: 12px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.tmw-grid .tmw-flip-inner,
+.tmwfm-grid .tmw-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.55s ease;
+}
+
+.tmw-grid .tmw-flip-front,
 .tmwfm-grid .tmw-flip-front {
   transform: rotateY(0deg);
 }
@@ -468,12 +487,8 @@ article[id^="post-"]::before {
   font-size: 14px;
 }
 
-/* ============================================================
-   TAG CHIPS — unify video + model (no margins; grey hover)
-   ============================================================ */
 .single-video .video-tags a,
 .single-video .tags a,
-.single-model .tmw-model-tags a,
 .single-model .tmw-model-tags a.label,
 .single-model .tags a,
 .tmw-model-tags a,
@@ -481,59 +496,59 @@ article[id^="post-"]::before {
 .single-model a.tag-cloud-link,
 .tags .tags-list .tag-link {
   background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
-  background-color: #db011a !important;
-  border: 1px solid #db011a !important;
+  background-color: #db011a;
+  border: 1px solid #db011a;
   color: #fff;
   padding: 0.5em 1em;
   font-size: 0.9em;
-  margin: 0 !important;                 /* NO MARGINS */
+  margin: 0 .6em .6em 0;
   display: inline-block;
   text-align: center;
   text-decoration: none;
   border-radius: 3px;
   box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease;
+  transition: all 0.25s ease-in-out;
 }
 
 .single-video .video-tags a:hover,
 .single-video .tags a:hover,
-.single-model .tmw-model-tags a:hover,
 .single-model .tmw-model-tags a.label:hover,
 .single-model .tags a:hover,
 .tmw-model-tags a:hover,
 .tmw-model-tags a.label:hover,
 .single-model a.tag-cloud-link:hover,
 .tags .tags-list .tag-link:hover {
-  background-image: none !important;
-  background-color: #3a3a3a !important; /* GREY HOVER */
-  border-color: #3a3a3a !important;
-  color: #fff !important;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.25);
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
+  background-color: #db011a;
+  border-color: #db011a;
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
   text-decoration: none;
 }
 
-/* Optional: icon spacing inside tag chips */
-.single-model .tmw-model-tags a i.fa,
-.single-model .tmw-model-tags a.label i,
-.tags .tags-list .tag-link i.fa {
-  margin-right: .3em;
+.single-model .tmw-model-tags a.label i {
+  margin-right: 5px;
 }
 
-/* Keep mobile identical (no margins) */
+.tmw-model-tags.no-tags {
+  opacity: 0.7;
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
 @media (max-width: 600px) {
   .single-video .video-tags a,
   .single-video .tags a,
-  .single-model .tmw-model-tags a,
   .single-model .tmw-model-tags a.label,
   .single-model .tags a,
   .tmw-model-tags a,
   .tmw-model-tags a.label,
   .single-model a.tag-cloud-link,
   .tags .tags-list .tag-link {
-    margin: 0 !important;              /* NO MARGINS ON MOBILE */
+    margin: 0 1em 1em 0;
     padding: 0.5em 1em;
     font-size: 0.9em;
-    line-height: 1.5;
   }
 }
 
@@ -604,17 +619,50 @@ a.tag-link {
     font-size: .9em;
     line-height: 1.5;
     padding: .5em 1em;
-    margin: 0 !important;              /* NO MARGINS */
+    margin: 0 .6em .6em 0;
 }
 
 @media only screen and (max-width: 767.98px) {
     .tags .tags-list .tag-link {
-        margin: 0 !important;          /* NO MARGINS MOBILE */
+        margin: 0 1em 1em 0 !important;
         padding: .5em 1em !important;
         font-size: .9em !important;
     }
 }
 
 /* ============================================================
-   REMOVED previous v2.8.6 smaller-tag overrides to keep 1:1 sizing
+   v2.8.6 — Model tags: smaller text + tighter left/right (icons kept)
    ============================================================ */
+.single-model .tmw-model-tags a,
+.single-model .tmw-model-tags a.label {
+  font-size: 0.85em !important;  /* smaller letters on model page */
+  line-height: 1.28 !important;  /* shorter pill height */
+  padding: 2px 6px !important;   /* top/bottom, left/right = tighter */
+  margin: 0 6px 6px 0 !important;
+  border-radius: 3px;
+}
+
+.single-model .tmw-model-tags a.label i,
+.single-model .tmw-model-tags a i.fa {
+  font-size: 0.85em !important;  /* scale icon with text */
+  margin-right: 5px;
+  line-height: 1;
+  vertical-align: -1px;
+}
+
+/* keep overall block spacing aligned with video .tags */
+.single-model .tmw-model-tags.post-tags.entry-tags {
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+/* mobile: keep the tighter spacing */
+@media (max-width: 600px) {
+  .single-model .tmw-model-tags a,
+  .single-model .tmw-model-tags a.label {
+    font-size: 0.85em !important;
+    line-height: 1.28 !important;
+    padding: 2px 6px !important;
+    margin: 0 6px 6px 0 !important;
+  }
+}
