@@ -5,10 +5,10 @@
 /* Theme accent (red) */
 .tmw-grid{ --tmw-accent:#db001a; }
 
-/* v3.5.5 — Flipbox CTA offset variables */
+/* v3.5.6 — Flipbox CTA bottom offsets */
 :root {
-  --tmw-flip-cta-top-desktop: 4px;
-  --tmw-flip-cta-top-mobile: 14px;
+  --tmw-flip-cta-bottom-desktop: 24px; /* tweak if you want it tighter/looser */
+  --tmw-flip-cta-bottom-mobile: 16px;
 }
 
 /* ---------- GRID ---------- */
@@ -110,9 +110,9 @@
 /* BACK: centered “View profile” in red */
 .tmw-view{
   position:absolute; left:50%;
-  top:var(--tmw-flip-cta-top-desktop);
-  bottom:auto;
-  transform:translate(-50%,0);
+  bottom:var(--tmw-flip-cta-bottom-desktop);
+  top:auto;
+  transform:translateX(-50%);
   padding:5px 10px; border-radius:8px;
   font-weight:800; font-size:.90rem;
   color:var(--tmw-accent); background:rgba(0,0,0,.55);
@@ -120,7 +120,7 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  max-width:88%;
+  max-width:calc(100% - 24px);
 }
 
 /* Optional: slightly smaller on very small screens */
@@ -296,7 +296,8 @@
     text-overflow: ellipsis;
     max-width: 92%;
     cursor: pointer;
-    top: var(--tmw-flip-cta-top-mobile);
+    bottom: var(--tmw-flip-cta-bottom-mobile);
+    top: auto;
   }
   /* Scale arrows if present on the back label (harmless if none) */
   .tmw-view::after{
