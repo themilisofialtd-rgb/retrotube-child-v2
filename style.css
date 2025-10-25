@@ -347,34 +347,32 @@
 }
 /* ===== /TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
 
-/* ===== TMW HERO/BANNER — Mobile Parity v3.6.2 ===== */
+/* ===== TMW HERO/BANNER — Mobile Parity v3.6.4 (desktop untouched) ===== */
 @media (max-width: 840px) {
-  /* 1) Enforce per-model offset on <img> (beats earlier mobile rules) */
+  /* Apply per-model offset to <img> banners on mobile (mirror desktop) */
   .single-model .entry-header .tmw-banner-frame > img,
   .single-model .tmw-banner-frame > img {
     object-fit: cover;
-    /* Use same formula as desktop, but force it to win on mobile */
     object-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
   }
 
-  /* 2) If a banner renders as a background-image, mirror the exact offset */
-  .single-model .tmw-banner-frame,
-  .single-model .entry-header .tmw-banner-frame {
+  /* Apply the same offset to background-image banners on mobile */
+  .single-model .entry-header .tmw-banner-frame,
+  .single-model .tmw-banner-frame {
     background-size: cover;
     background-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
   }
 
-  /* 3) Last-resort fallback for engines that misapply object-position on mobile.
-        Applies only if the engine claims not to support object-position. */
+  /* Fallback for engines that mis-handle object-position on mobile */
   @supports not (object-position: 0 0) {
     .single-model .tmw-banner-frame > img {
-      /* Keep cover and nudge via transform; frame must have overflow:hidden */
+      /* Frame must be overflow:hidden in existing CSS */
       transform: translateY(var(--offset-y, 0px));
       will-change: transform;
     }
   }
 }
-/* ===== /TMW HERO/BANNER — Mobile Parity v3.6.2 ===== */
+/* ===== /TMW HERO/BANNER — Mobile Parity v3.6.4 ===== */
 
 /* =========================
    8. Utilities
