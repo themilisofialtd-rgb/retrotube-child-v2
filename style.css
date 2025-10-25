@@ -694,4 +694,52 @@ a.tag-link {
   /* do NOT set text-align on parent containers */
 }
 
+/* =========================
+   Flipbox: "View profile" CTA safe offset
+   v3.5.4 — keep the ribbon fully visible on back face
+   ========================= */
+:root {
+  /* Fine-tune if needed without touching selectors */
+  --tmw-flip-cta-top-desktop: 24px;
+  --tmw-flip-cta-top-mobile: 14px;
+}
+
+/* Ensure the back face is a positioning context */
+.tmw-flip .flip-back,
+.tmw-flipbox .flip-back,
+.flipbox .flip-back,
+.tmw-model-card .back,
+.card-back {
+  position: relative;
+}
+
+/* Nudge the CTA ribbon down a bit on the BACK side only */
+.tmw-flip .flip-back .view-profile,
+.tmw-flipbox .flip-back .view-profile,
+.flipbox .flip-back .view-profile,
+.tmw-model-card .back .view-profile,
+.card-back .view-profile {
+  position: absolute;
+  top: var(--tmw-flip-cta-top-desktop) !important; /* down from the very top */
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  /* Safety: ignore any previous "center-on-edge" tricks */
+  bottom: auto !important;
+  transform: none !important;
+  /* Keep pill inside rounded edges */
+  max-width: calc(100% - 24px);
+}
+
+@media (max-width: 768px) {
+  .tmw-flip .flip-back .view-profile,
+  .tmw-flipbox .flip-back .view-profile,
+  .flipbox .flip-back .view-profile,
+  .tmw-model-card .back .view-profile,
+  .card-back .view-profile {
+    top: var(--tmw-flip-cta-top-mobile) !important;
+  }
+}
+
 
