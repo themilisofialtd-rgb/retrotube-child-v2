@@ -25,7 +25,7 @@ add_filter('comment_form_default_fields', function (array $fields) {
         unset($fields['url']);
     }
     return $fields;
-}, 10);
+}, 999);
 
 /** Hardening: even if some plugin re-injects it, neutralize the URL field output */
 add_filter('comment_form_field_url', function ($field) {
@@ -33,5 +33,5 @@ add_filter('comment_form_field_url', function ($field) {
         return $field;
     }
     return ''; // delete at source
-}, 10);
+}, 999);
 
