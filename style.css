@@ -1,6 +1,6 @@
 /* Theme Name: Retrotube Child (Flipbox Edition) v2
  Template: retrotube
- Version: 1.1.8
+ Version: 1.1.9
  Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
  Author: Top Models Webcam
 */
@@ -339,6 +339,50 @@
     padding-bottom: 0 !important;
   }
 
+}
+
+/* v3.6.7 – Mobile hero parity (≤840px); desktop untouched */
+@media (max-width: 840px) {
+  .single-model .tmw-banner-container,
+  .single-model .tmw-model-hero,
+  .single-model .tmw-banner-frame {
+    overflow: hidden;
+  }
+
+  .single-model .entry-header .tmw-banner-frame > img,
+  .single-model .entry-header .tmw-banner-frame picture > img,
+  .single-model .tmw-banner-frame > img,
+  .single-model .tmw-banner-frame picture > img,
+  .single-model .tmw-model-hero > img,
+  .single-model .tmw-model-hero picture > img,
+  .single-model .entry-header .wp-post-image,
+  .single-model .tmw-banner-frame .wp-post-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
+  }
+
+  .single-model .entry-header .tmw-banner-frame,
+  .single-model .tmw-banner-frame,
+  .single-model .tmw-model-hero,
+  .single-model .tmw-banner-container,
+  .single-model .tmw-banner-frame::before,
+  .single-model .tmw-model-hero::before {
+    background-size: cover !important;
+    background-position-x: 50% !important;
+    background-position-y: calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
+  }
+
+  @supports not (object-position: 0 0) {
+    .single-model .tmw-banner-frame > img,
+    .single-model .tmw-banner-frame picture > img,
+    .single-model .tmw-model-hero > img,
+    .single-model .tmw-model-hero picture > img {
+      transform: translateY(var(--offset-y, 0px));
+      will-change: transform;
+    }
+  }
 }
 /* ===== /TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
 
