@@ -695,36 +695,3 @@ a.tag-link {
 }
 
 
-/* v3.3.0 — TMW: Sidebar banner gap fix (videos page sidebar) */
-#secondary .widget_text .textwidget > p,
-#secondary .widget_custom_html .textwidget > p {
-  margin: 0 !important;           /* kill default paragraph gap inside banner widgets */
-}
-#secondary .widget_text .textwidget > p:empty,
-#secondary .widget_custom_html .textwidget > p:empty {
-  display: none;
-}
-
-/* Ensure media banners (img/iframe) don’t inject extra space */
-#secondary .widget_text img,
-#secondary .widget_text iframe,
-#secondary .widget_custom_html img,
-#secondary .widget_custom_html iframe {
-  display: block;
-  margin: 0 !important;
-}
-
-/* Slightly tighten only these widget wrappers */
-#secondary .widget_text,
-#secondary .widget_custom_html {
-  margin-bottom: 10px;            /* theme default is larger; keep it neat */
-}
-
-/* Gutenberg/Block widgets fallback (if used for the banner) */
-#secondary .widget_block .wp-block-image,
-#secondary .widget_block p {
-  margin-bottom: 0 !important;
-}
-#secondary .widget_block {
-  margin-bottom: 10px;
-}
