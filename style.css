@@ -314,56 +314,34 @@
 /* =========================
    7. Mobile
    ========================= */
+/* ===== TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
 @media (max-width: 840px) {
-  body[class*="taxonomy-actor"] .tmw-actor-hero,
-  body[class*="taxonomy-actor"] .entry-header,
-  body[class*="taxonomy-actor"] .post-thumbnail,
-  body[class*="taxonomy-actor"] .hero,
-  body[class*="taxonomy-actor"] article > *:first-child,
-  body[class*="taxonomy-model"] .tmw-model-hero,
-  body[class*="taxonomy-model"] .entry-header,
-  body[class*="taxonomy-model"] .post-thumbnail,
-  body[class*="taxonomy-model"] .hero,
-  body[class*="taxonomy-model"] article > *:first-child {
+  /* Use device-viewport units to avoid address-bar jumps and
+     keep mobile height closer to desktop without being too tall */
+  :root {
+    --tmw-hero-mobile-h: clamp(200px, 28dvh, 350px);
+    /* keep your existing --tmw-hero-vpos if defined elsewhere */
+  }
+
+  /* Keep the hero wrapper at a stable height */
+  .tmw-banner-container,
+  .tmw-model-hero,
+  .tmw-banner-frame,
+  .entry-header .tmw-banner-container {
     height: var(--tmw-hero-mobile-h) !important;
     min-height: var(--tmw-hero-mobile-h) !important;
     max-height: var(--tmw-hero-mobile-h) !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border-radius: 14px !important;
-    background-size: cover !important;
-    background-position: center var(--tmw-hero-vpos) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
-  body[class*="taxonomy-actor"] .tmw-actor-hero img,
-  body[class*="taxonomy-actor"] .entry-header img,
-  body[class*="taxonomy-actor"] .post-thumbnail img,
-  body[class*="taxonomy-actor"] .hero img,
-  body[class*="taxonomy-actor"] article > *:first-child img,
-  body[class*="taxonomy-actor"] picture img,
-  body[class*="taxonomy-model"] .tmw-model-hero img,
-  body[class*="taxonomy-model"] .entry-header img,
-  body[class*="taxonomy-model"] .post-thumbnail img,
-  body[class*="taxonomy-model"] .hero img,
-  body[class*="taxonomy-model"] article > *:first-child img,
-  body[class*="taxonomy-model"] picture img {
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    object-fit: cover !important;
-    object-position: center var(--tmw-hero-vpos) !important;
-    aspect-ratio: auto !important;
-    border-radius: 14px !important;
-  }
-
-  body.single-model .tmw-model-banner-frame,
-  body.single-model .tmw-banner-frame,
-  body.single-model .tmw-model-hero {
-    max-width: 100% !important;
-    border-radius: 12px;
+  /* Restore model-specific focal offset on mobile to match desktop */
+  .tmw-banner-frame img {
+    object-fit: cover;
+    object-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
   }
 }
+/* ===== /TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
 
 /* =========================
    8. Utilities
