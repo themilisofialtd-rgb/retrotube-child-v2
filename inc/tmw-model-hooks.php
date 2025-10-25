@@ -74,9 +74,9 @@ function tmw_bind_models_taxonomy(): void {
         return;
     }
 
-    $targets = ['post', 'video'];
+    $targets = ['post'];
     $detected = tmw_detect_livejasmin_post_type();
-    if ($detected) {
+    if ($detected && 'video' !== $detected) {
         $targets[] = $detected;
     }
 
@@ -93,9 +93,11 @@ function tmw_bind_models_taxonomy(): void {
 
 add_action('init', 'tmw_bind_models_taxonomy', 30);
 add_action('registered_post_type', function ($post_type) {
-    if (in_array($post_type, ['post', 'video'], true)) {
-        tmw_bind_models_taxonomy();
+    if ($post_type === 'video') {
+        return;
     }
+
+    tmw_bind_models_taxonomy();
 }, 30, 1);
 add_action('registered_taxonomy', function ($taxonomy) {
     if ('models' === $taxonomy) {
@@ -132,8 +134,14 @@ if (!function_exists('tmw_detect_livejasmin_post_type')) {
             }
         }
 
-        if (taxonomy_exists('models') && !is_object_in_taxonomy($detected, 'models')) {
-            register_taxonomy_for_object_type('models', $detected);
+        if ($detected && taxonomy_exists('models') && !is_object_in_taxonomy($detected, 'models')) {
+            if ('video' === $detected) {
+                if (function_exists('tmw_bind_models_to_video_once')) {
+                    tmw_bind_models_to_video_once();
+                }
+            } else {
+                register_taxonomy_for_object_type('models', $detected);
+            }
         }
 
         return $detected;
@@ -150,7 +158,7 @@ if (!function_exists('tmw_get_videos_for_model')) {
         $taxonomy = 'models';
         $post_type = tmw_detect_livejasmin_post_type();
 
-        if (taxonomy_exists($taxonomy) && !is_object_in_taxonomy($post_type, $taxonomy)) {
+        if ('video' !== $post_type && taxonomy_exists($taxonomy) && !is_object_in_taxonomy($post_type, $taxonomy)) {
             register_taxonomy_for_object_type($taxonomy, $post_type);
         }
 
