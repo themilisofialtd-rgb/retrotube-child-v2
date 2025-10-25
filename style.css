@@ -685,62 +685,33 @@ a.tag-link {
   margin: 0 0 12px !important;
   /* do NOT set text-align on parent containers */
 }
-/* ============================================================
-   v3.4.2 — Icon before “Videos” in main/top menu
-   Uses Font Awesome (theme already loads FA via <i class="fa ...">).
-   ============================================================ */
-nav, .main-navigation, #site-navigation {} /* anchor scope helper */
 
-.main-navigation .menu > li > a[href$="/videos/"]::before,
-.main-navigation .menu > li > a[href$="/videos"]::before,
-#site-navigation .menu > li > a[href$="/videos/"]::before,
-#site-navigation .menu > li > a[href$="/videos"]::before {
-  content: "\f008";                 /* Font Awesome: fa-film (use \f03d for fa-video-camera, \f04b for fa-play) */
-  font-family: "FontAwesome";       /* FA4 family name used across the theme */
-  font-style: normal;
-  font-weight: normal;
-  display: inline-block;
-  margin-right: .4em;
-  line-height: 1;
-  speak: none;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: inherit;                   /* follow menu link color */
-}
-
-/* keep icon when the item is active/current */
-.main-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
-.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
-#site-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
-#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before {
-  content: "\f008";
-}
-
-/* v3.4.4 — Videos nav icon via CSS (no PHP) */
-:root { --tmw-videos-icon: "\f03d"; } /* FA “video camera” (FA4/FA5 compatible) */
-
-/* Target common header nav containers (theme uses one of these). */
+/* === v3.4.5 — Videos menu: white video-camera icon (CSS-only) === */
 #site-navigation .menu > li > a[href$="/videos/"]::before,
 #site-navigation .menu > li > a[href$="/videos"]::before,
 .main-navigation .menu > li > a[href$="/videos/"]::before,
 .main-navigation .menu > li > a[href$="/videos"]::before {
-  content: var(--tmw-videos-icon);
-  font-family: "Font Awesome 5 Free","FontAwesome"; /* FA5 then FA4 fallback */
-  font-weight: 900;                                   /* needed for FA5 solid */
+  content: "\f03d";                              /* FA video camera (FA4/FA5) */
+  font-family: "FontAwesome","Font Awesome 5 Free"; /* FA4 first, FA5 fallback */
+  font-weight: 900;                              /* required when FA5 is used */
   display: inline-block;
   margin-right: .35em;
   line-height: 1;
-  speak: none;
+  color: #fff !important;                        /* match other header icons */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Keep icon visible on active/hovered state */
+/* Keep icon visible/white on active/current states */
 #site-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
 #site-navigation .menu > li.current-menu-item > a[href$="/videos"]::before,
+#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
+#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos"]::before,
 .main-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
-.main-navigation .menu > li.current-menu-item > a[href$="/videos"]::before {
-  opacity: 1;
+.main-navigation .menu > li.current-menu-item > a[href$="/videos"]::before,
+.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
+.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos"]::before {
+  content: "\f03d";
+  color: #fff !important;
 }
 
