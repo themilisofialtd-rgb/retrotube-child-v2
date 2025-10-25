@@ -7,7 +7,7 @@
 
 /* v3.5.5 — Flipbox CTA offset variables */
 :root {
-  --tmw-flip-cta-top-desktop: 24px;
+  --tmw-flip-cta-top-desktop: 14px;
   --tmw-flip-cta-top-mobile: 14px;
 }
 
