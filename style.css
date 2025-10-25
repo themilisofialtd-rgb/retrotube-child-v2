@@ -666,22 +666,22 @@ a.tag-link {
     margin: 0 6px 6px 0 !important;
   }
 }
-/* ============================================================
-   v3.3.7 — Center "FEATURED MODELS" heading (wrapper-based)
-   Works regardless of shortcode HTML; only affects single-model.
-   ============================================================ */
-body.single-model .tmwfm-slot{
-  text-align: center !important;            /* allow inline-block centering on children */
-}
 
-/* Title element printed by the shortcode/theme */
-body.single-model .tmwfm-slot .tmwfm-heading{
+/* ============================================================
+   v3.3.9 — FEATURED MODELS: center the ribbon itself, nothing else
+   Works site-wide. Does NOT change container alignment or children.
+   ============================================================ */
+:is(.tmwfm-heading, .tmw-featured-slot .section-title){
+  /* neutralize theme floats/widths */
   float: none !important;
   clear: both !important;
-  display: inline-block !important;         /* shrink to content width */
   width: auto !important;
-  margin: 0 auto 12px !important;           /* center the ribbon */
-  text-align: center !important;
+  /* make the ribbon shrink-to-fit and center the element itself */
+  display: inline-block !important;
   position: relative !important;
-  left: auto !important; right: auto !important; top: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  /* spacing kept local to the ribbon */
+  margin: 0 0 12px !important;
+  /* do NOT set text-align on parent containers */
 }
