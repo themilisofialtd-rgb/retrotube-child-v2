@@ -15,6 +15,14 @@
   --tmw-hero-vpos: 50%;
 }
 
+/* Header / Navigation helpers */
+#site-navigation .menu > li > a > i,
+.main-navigation .menu > li > a > i {
+  margin-right: .5em;
+  color: #fff;
+  line-height: 1;
+}
+
 /* =========================
    2. Hero / Banner
    ========================= */
@@ -686,32 +694,4 @@ a.tag-link {
   /* do NOT set text-align on parent containers */
 }
 
-/* === v3.4.5 — Videos menu: white video-camera icon (CSS-only) === */
-#site-navigation .menu > li > a[href$="/videos/"]::before,
-#site-navigation .menu > li > a[href$="/videos"]::before,
-.main-navigation .menu > li > a[href$="/videos/"]::before,
-.main-navigation .menu > li > a[href$="/videos"]::before {
-  content: "\f03d";                              /* FA video camera (FA4/FA5) */
-  font-family: "FontAwesome","Font Awesome 5 Free"; /* FA4 first, FA5 fallback */
-  font-weight: 900;                              /* required when FA5 is used */
-  display: inline-block;
-  margin-right: .35em;
-  line-height: 1;
-  color: #fff !important;                        /* match other header icons */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Keep icon visible/white on active/current states */
-#site-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
-#site-navigation .menu > li.current-menu-item > a[href$="/videos"]::before,
-#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
-#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos"]::before,
-.main-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
-.main-navigation .menu > li.current-menu-item > a[href$="/videos"]::before,
-.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
-.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos"]::before {
-  content: "\f03d";
-  color: #fff !important;
-}
 
