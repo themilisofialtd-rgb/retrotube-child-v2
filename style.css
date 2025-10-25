@@ -667,17 +667,37 @@ a.tag-link {
   }
 }
 /* ============================================================
-   v3.3.4 — Center "FEATURED MODELS" heading (single model only)
+   v3.3.6 — Center "FEATURED MODELS" heading (single model only)
+   Robust centering: kill floats, shrink-to-content, center,
+   and provide a fallback translate if some float slips in.
+   This block replaces any previous v3.3.4 centering rules.
    ============================================================ */
-body.single-model .tmw-featured-slot { 
-  text-align: center !important;            /* allow inline-block centering */
+
+body.single-model .tmw-featured-slot {
+  text-align: center !important; /* allow inline-block centering */
 }
 
+/* Match both heading variants used across templates */
 body.single-model .tmw-featured-slot .section-title,
 body.single-model .model-flipbox .tmwfm-heading {
-  float: none !important;                   /* undo theme float-left */
-  display: inline-block !important;         /* shrink to content */
-  width: auto !important;                   /* prevent full-width bars */
-  margin: 0 auto 12px !important;           /* center horizontally */
-  text-align: center !important;
+  float: none !important;           /* undo theme float-left */
+  clear: both !important;           /* escape floated siblings */
+  display: inline-block !important; /* shrink to content */
+  width: auto !important;           /* avoid full-width bars */
+  margin: 0 auto 12px !important;   /* center horizontally */
+  text-align: center !important;    /* center the text itself */
+  /* last-resort centering if some script re-floats it */
+  position: relative; left: 50%; transform: translateX(-50%);
+}
+
+/* Admin audit highlight when ?tmw_fm_audit=1 is used */
+body.single-model [data-tmw-fm="heading"] {
+  outline: 2px dashed #4fc3f7 !important;
+  outline-offset: 2px;
+}
+
+/* Cleanup: neutralize any older v3.3.4 rules if still present */
+body.single-model .tmw-featured-slot .section-title,
+body.single-model .model-flipbox .tmwfm-heading {
+  right: auto !important; /* ensure no conflicting positions remain */
 }
