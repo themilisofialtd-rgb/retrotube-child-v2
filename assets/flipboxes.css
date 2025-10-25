@@ -7,7 +7,7 @@
 
 /* v3.5.6 — Flipbox CTA bottom offsets */
 :root {
-  --tmw-flip-cta-bottom-desktop: 24px; /* tweak if you want it tighter/looser */
+  --tmw-flip-cta-bottom-desktop: -24px; /* tweak if you want it tighter/looser */
   --tmw-flip-cta-bottom-mobile: 16px;
 }
 
