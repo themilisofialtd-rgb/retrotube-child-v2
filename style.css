@@ -666,3 +666,18 @@ a.tag-link {
     margin: 0 6px 6px 0 !important;
   }
 }
+/* ============================================================
+   v3.3.4 — Center "FEATURED MODELS" heading (single model only)
+   ============================================================ */
+body.single-model .tmw-featured-slot { 
+  text-align: center !important;            /* allow inline-block centering */
+}
+
+body.single-model .tmw-featured-slot .section-title,
+body.single-model .model-flipbox .tmwfm-heading {
+  float: none !important;                   /* undo theme float-left */
+  display: inline-block !important;         /* shrink to content */
+  width: auto !important;                   /* prevent full-width bars */
+  margin: 0 auto 12px !important;           /* center horizontally */
+  text-align: center !important;
+}
