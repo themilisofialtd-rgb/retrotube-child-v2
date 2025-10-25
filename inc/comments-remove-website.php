@@ -11,6 +11,19 @@ add_filter('comment_form_default_fields', function (array $fields) {
     if (isset($fields['url'])) {
         unset($fields['url']);
     }
+
+    // Replace the cookies-consent label to drop the word "website".
+    // Rebuild the field to preserve the user's existing consent state.
+    $commenter = function_exists('wp_get_current_commenter') ? wp_get_current_commenter() : array();
+    $consent   = empty($commenter['comment_author_email']) ? '' : ' checked="checked"';
+    $label     = __('Save my name and email in this browser for the next time I comment.', 'retrotube-child-v2');
+    $fields['cookies'] =
+        '<p class="comment-form-cookies-consent">' .
+        '<input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes"' .
+        $consent . ' /> ' .
+        '<label for="wp-comment-cookies-consent">' . esc_html($label) . '</label>' .
+        '</p>';
+
     return $fields;
 }, 999);
 
