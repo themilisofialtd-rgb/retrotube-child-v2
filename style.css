@@ -445,6 +445,7 @@ body.tmw-no-embed .entry-content:before {
   align-items: center;
   gap: 6px;
 }
+
 /* Hide accidental numeric post IDs printed under thumbnails */
 article[id^="post-"]::before {
   display: none !important;
@@ -457,14 +458,14 @@ article[id^="post-"]::before {
 .single-model .tmw-model-video-item .video-meta,
 .single-model .tmw-model-video-item span,
 .single-model .tmw-model-video-item .entry-meta {
-    display: none !important;
+  display: none !important;
 }
 
 /* === v2.7.8-video-thumb-gap-fix === */
 /* Tighten space between video thumbnail and title on model pages */
 .single-model .tmw-model-video-item .video-title {
-    margin-top: 3px !important;   /* reduce vertical space */
-    line-height: 1.2em;
+  margin-top: 3px !important;
+  line-height: 1.2em;
 }
 
 /* [TMW-MODEL-TAGS-AUDIT] Synced with video tag style (v3.3.1) */
@@ -555,111 +556,125 @@ article[id^="post-"]::before {
 
 /* === SINGLE MODEL VISUAL SYNC (RetroTube identical) === */
 .single-model .title-block {
-    background: #282828;
-    border-left-width: 6px;
-    border-left-style: solid;
-    margin: 1.25em 0 1.25em;
-    padding: 0.5em 0.75em 0;
-    box-shadow: 0 8px 17px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.19);
+  background: #282828;
+  border-left-width: 6px;
+  border-left-style: solid;
+  margin: 1.25em 0 1.25em;
+  padding: 0.5em 0.75em 0;
+  box-shadow: 0 8px 17px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.19);
 }
 
 .single-model .title-block h1.entry-title {
-    margin: 0;
-    padding: 0 0 0.5em;
-    font-size: 1.45em;
-    border-bottom: 1px solid #151515;
-    font-weight: normal;
-    color: #eee;
+  margin: 0;
+  padding: 0 0 0.5em;
+  font-size: 1.45em;
+  border-bottom: 1px solid #151515;
+  font-weight: normal;
+  color: #eee;
 }
 
 .single-model .entry-content {
-    margin-top: 1em;
-    padding: 0 1em;
-    color: #ccc;
+  margin-top: 1em;
+  padding: 0 1em;
+  color: #ccc;
 }
 
 .single-model .rating-bar {
-    background-color: #333 !important;
-    border: 1px solid #333;
-    height: 1.5em;
-    text-align: center;
-    font-size: 75%;
-    color: #fff;
+  background-color: #333 !important;
+  border: 1px solid #333;
+  height: 1.5em;
+  text-align: center;
+  font-size: 75%;
+  color: #fff;
 }
 
 .single-model .rating-bar-meter {
-    height: 1.3em;
-    transition: width 0.3s ease-in-out;
-    box-shadow: inset 0 0 2px #000;
+  height: 1.3em;
+  transition: width 0.3s ease-in-out;
+  box-shadow: inset 0 0 2px #000;
 }
 
 .single-model .videos-featuring,
 .single-model .related-model-videos {
-    margin-top: 1.5em;
-    padding-top: 0.5em;
-    border-top: 3px solid #333;
+  margin-top: 1.5em;
+  padding-top: 0.5em;
+  border-top: 3px solid #333;
 }
 
 .single-model .thumb-block .entry-header {
-    height: 3.5em;
-    overflow: hidden;
-    text-align: center;
-    font-size: 0.875em;
-    padding: 0.5em 0 0;
-    color: #ddd;
+  height: 3.5em;
+  overflow: hidden;
+  text-align: center;
+  font-size: 0.875em;
+  padding: 0.5em 0 0;
+  color: #ddd;
 }
 
 /* identical margins & layout with .single-video */
 .single-model #content {
-    margin-top: 1em;
+  margin-top: 1em;
 }
+
 /* === TMW v3.0.8 — Apply RetroTube .label Style to .tag-link (Model Pages) === */
 .tags .tags-list .tag-link,
 a.tag-link {
-    font-size: .9em;
-    line-height: 1.5;
-    padding: .5em 1em;
-    margin: 0 .6em .6em 0;
+  font-size: .9em;
+  line-height: 1.5;
+  padding: .5em 1em;
+  margin: 0 .6em .6em 0;
 }
 
 @media only screen and (max-width: 767.98px) {
-    .tags .tags-list .tag-link {
-        margin: 0 1em 1em 0 !important;
-        padding: .5em 1em !important;
-        font-size: .9em !important;
-    }
+  .tags .tags-list .tag-link {
+    margin: 0 1em 1em 0 !important;
+    padding: .5em 1em !important;
+    font-size: .9em !important;
+  }
 }
 
 /* ============================================================
-   [TMW-MODEL-TAGS-AUDIT] v2.8.1 — final pixel-parity overrides
-   Append-only: placed at file end to override earlier styles.
+   v2.8.2 — Model tag chip size parity (append-only, light)
+   Normalizes the model tag context so em-based chips match video size
    ============================================================ */
 
-/* 1) Remove extra block spacing the video layout doesn't have */
+.single-model .tmw-model-tags {
+  /* Match the computed font context used on video .tags (≈14px, 1.5) */
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Ensure chip vertical rhythm equals video chips */
+.single-model .tmw-model-tags a,
+.single-model .tmw-model-tags a.label {
+  line-height: 1.5;
+}
+
+/* Keep state variants from changing color/spacing on a single chip */
+.single-model .tmw-model-tags a,
+.single-model .tmw-model-tags a:visited {
+  background-color: #db011a;
+  border-color: #db011a;
+  color: #fff;
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
+}
+
+/* Align wrapper spacing with video .tags block */
 .single-model .tmw-model-tags.post-tags.entry-tags {
-  padding: 0 !important;
-  margin: 0 0 12px 0 !important; /* align with typical .tags spacing */
+  padding: 0;
+  margin: 0 0 12px 0;
 }
 
-/* 2) Hide the model-only header line (“Tags:” + icon) */
-.single-model .tmw-model-tags .tag-title {
-  display: none !important;
-}
+/* Match silhouette to video chips (no header line / no inner icon) */
+.single-model .tmw-model-tags .tag-title { display: none; }
+.single-model .tmw-model-tags a.label i { display: none; margin: 0; padding: 0; }
 
-/* 3) Remove the per-chip icon so text aligns exactly like videos */
-.single-model .tmw-model-tags a.label i {
-  display: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* 4) Mobile: keep parity with the video chip downsizing */
+/* Mobile parity (mirrors video downsizing) */
 @media (max-width: 600px) {
   .single-model .tmw-model-tags a,
   .single-model .tmw-model-tags a.label {
-    font-size: .9em !important;
-    padding: .5em 1em !important;
-    margin: 0 1em 1em 0 !important;
-    border-radius: 3px !important;
+    font-size: .9em;
+    padding: .5em 1em;
+    margin: 0 1em 1em 0;
+    border-radius: 3px;
   }
 }
