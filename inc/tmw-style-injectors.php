@@ -151,3 +151,7 @@ add_action('wp_head', function(){
   if (!is_home() && !is_archive()) return;
   echo '<script>document.addEventListener("DOMContentLoaded",function(){var i=document.querySelector(".video-grid img, .tmw-grid img");if(i){i.setAttribute("fetchpriority","high");i.setAttribute("decoding","async");i.removeAttribute("loading");}});</script>';
 });
+
+if (file_exists(get_stylesheet_directory() . '/inc/tmw-mobile-hero-parity.php')) {
+    require_once get_stylesheet_directory() . '/inc/tmw-mobile-hero-parity.php';
+}
