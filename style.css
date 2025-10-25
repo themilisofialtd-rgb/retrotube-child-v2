@@ -314,16 +314,20 @@
 /* =========================
    7. Mobile
    ========================= */
-/* ===== TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
+/* ===== TMW HERO/BANNER — Mobile Fix v3.6.1 (no size widening) ===== */
 @media (max-width: 840px) {
-  /* Use device-viewport units to avoid address-bar jumps and
-     keep mobile height closer to desktop without being too tall */
+  /* Fallback first: keep your original clamp but with vh */
   :root {
-    --tmw-hero-mobile-h: clamp(200px, 28dvh, 350px);
-    /* keep your existing --tmw-hero-vpos if defined elsewhere */
+    --tmw-hero-mobile-h: clamp(140px, 22vh, 200px);
+  }
+  /* If supported, prefer svh to avoid address-bar jumps (same 22, same bounds) */
+  @supports (height: 1svh) {
+    :root {
+      --tmw-hero-mobile-h: clamp(140px, 22svh, 200px);
+    }
   }
 
-  /* Keep the hero wrapper at a stable height */
+  /* Keep hero wrappers within the original 140–200 window */
   .tmw-banner-container,
   .tmw-model-hero,
   .tmw-banner-frame,
