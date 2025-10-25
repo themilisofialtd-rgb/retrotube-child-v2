@@ -685,3 +685,34 @@ a.tag-link {
   margin: 0 0 12px !important;
   /* do NOT set text-align on parent containers */
 }
+/* ============================================================
+   v3.4.2 — Icon before “Videos” in main/top menu
+   Uses Font Awesome (theme already loads FA via <i class="fa ...">).
+   ============================================================ */
+nav, .main-navigation, #site-navigation {} /* anchor scope helper */
+
+.main-navigation .menu > li > a[href$="/videos/"]::before,
+.main-navigation .menu > li > a[href$="/videos"]::before,
+#site-navigation .menu > li > a[href$="/videos/"]::before,
+#site-navigation .menu > li > a[href$="/videos"]::before {
+  content: "\f008";                 /* Font Awesome: fa-film (use \f03d for fa-video-camera, \f04b for fa-play) */
+  font-family: "FontAwesome";       /* FA4 family name used across the theme */
+  font-style: normal;
+  font-weight: normal;
+  display: inline-block;
+  margin-right: .4em;
+  line-height: 1;
+  speak: none;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: inherit;                   /* follow menu link color */
+}
+
+/* keep icon when the item is active/current */
+.main-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
+.main-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before,
+#site-navigation .menu > li.current-menu-item > a[href$="/videos/"]::before,
+#site-navigation .menu > li.current-menu-ancestor > a[href$="/videos/"]::before {
+  content: "\f008";
+}
