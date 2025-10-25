@@ -5,6 +5,12 @@
 /* Theme accent (red) */
 .tmw-grid{ --tmw-accent:#db001a; }
 
+/* v3.5.5 — Flipbox CTA offset variables */
+:root {
+  --tmw-flip-cta-top-desktop: 24px;
+  --tmw-flip-cta-top-mobile: 14px;
+}
+
 /* ---------- GRID ---------- */
 .tmw-grid{
   display:grid;
@@ -103,8 +109,10 @@
 
 /* BACK: centered “View profile” in red */
 .tmw-view{
-  position:absolute; left:50%; bottom:12px;
-  transform:translateX(-50%);
+  position:absolute; left:50%;
+  top:var(--tmw-flip-cta-top-desktop);
+  bottom:auto;
+  transform:translate(-50%,0);
   padding:5px 10px; border-radius:8px;
   font-weight:800; font-size:.90rem;
   color:var(--tmw-accent); background:rgba(0,0,0,.55);
@@ -288,6 +296,7 @@
     text-overflow: ellipsis;
     max-width: 92%;
     cursor: pointer;
+    top: var(--tmw-flip-cta-top-mobile);
   }
   /* Scale arrows if present on the back label (harmless if none) */
   .tmw-view::after{
