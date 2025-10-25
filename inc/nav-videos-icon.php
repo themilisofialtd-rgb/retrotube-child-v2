@@ -3,17 +3,18 @@
 if (!defined('ABSPATH')) { exit; }
 
 /**
- * Inject an inline icon for the “Videos” top-nav item in the header/primary menu.
- *
- * Why:
- * - Inline <i> icons match how other items render and are immune to ::before resets.
- * - Robust URL check (last segment == 'videos'), tolerates language prefixes and slashes.
- * - Skips items that already have an icon to avoid duplicates.
+ * Inject an inline icon for the “Videos” top-nav item.
+ * Changes:
+ * - No restriction by theme_location (works with any slug).
+ * - Top-level items only (depth === 0) so footer/secondary menus stay untouched.
+ * - Icon injected *inside* the <a> tag.
+ * - Skips items that already contain an icon.
+ * - Matches /videos (and /xx/videos/) by last path segment.
+ * - Includes FA4 + FA5 classes for maximum compatibility.
  */
 add_filter('walker_nav_menu_start_el', function ($item_output, $item, $depth, $args) {
-    // Only affect the main/header menu. Adjust/add keys here if your location slug differs.
-    $allowed_locations = array('primary', 'main', 'menu-1', 'header', 'top');
-    if (empty($args->theme_location) || !in_array($args->theme_location, $allowed_locations, true)) {
+    // Header menus are usually top-level items; ignore submenus.
+    if ($depth !== 0) {
         return $item_output;
     }
 
@@ -25,17 +26,11 @@ add_filter('walker_nav_menu_start_el', function ($item_output, $item, $depth, $a
     // Robust detector: is this URL the "Videos" page?
     $is_videos = static function ($url): bool {
         if (!$url) return false;
-
-        // Normalize absolute URLs to site-relative.
         $home = trailingslashit(home_url('/'));
         $url  = preg_replace('#^' . preg_quote($home, '#') . '#i', '/', $url);
-
-        // Strip query/fragment, decode, and trim slashes.
-        $url   = strtok($url, '?#');
-        $path  = trim(urldecode((string) $url), '/');
+        $url  = strtok($url, '?#');
+        $path = trim(urldecode((string) $url), '/');
         if ($path === '') return false;
-
-        // Match by last path segment (so /en/videos/ and /videos both match).
         $segments = explode('/', $path);
         $last     = strtolower(end($segments));
         return ($last === 'videos');
@@ -45,14 +40,17 @@ add_filter('walker_nav_menu_start_el', function ($item_output, $item, $depth, $a
         return $item_output;
     }
 
-    // Use FA4 class for best compatibility with existing menu icons (FA5 sites often ship FA4 shim).
-    $icon_html = '<i class="fa fa-video-camera" aria-hidden="true"></i> ';
-
-    // Insert icon immediately after the opening <a ...>
-    $pos = stripos($item_output, '>');
-    if ($pos === false) {
+    // Find the opening <a ...> and inject right after its '>'.
+    $a_open = stripos($item_output, '<a ');
+    if ($a_open === false) {
+        return $item_output; // unexpected markup; fail safe
+    }
+    $a_gt = strpos($item_output, '>', $a_open);
+    if ($a_gt === false) {
         return $item_output; // unexpected markup; fail safe
     }
 
-    return substr($item_output, 0, $pos + 1) . $icon_html . substr($item_output, $pos + 1);
+    // Both FA4 and FA5 classes; whichever stack is present will render.
+    $icon_html = '<i class="fa fa-video-camera fas fa-video" aria-hidden="true" role="img"></i> ';
+    return substr($item_output, 0, $a_gt + 1) . $icon_html . substr($item_output, $a_gt + 1);
 }, 10, 4);
