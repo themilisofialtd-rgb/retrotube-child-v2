@@ -667,37 +667,21 @@ a.tag-link {
   }
 }
 /* ============================================================
-   v3.3.6 — Center "FEATURED MODELS" heading (single model only)
-   Robust centering: kill floats, shrink-to-content, center,
-   and provide a fallback translate if some float slips in.
-   This block replaces any previous v3.3.4 centering rules.
+   v3.3.7 — Center "FEATURED MODELS" heading (wrapper-based)
+   Works regardless of shortcode HTML; only affects single-model.
    ============================================================ */
-
-body.single-model .tmw-featured-slot {
-  text-align: center !important; /* allow inline-block centering */
+body.single-model .tmwfm-slot{
+  text-align: center !important;            /* allow inline-block centering on children */
 }
 
-/* Match both heading variants used across templates */
-body.single-model .tmw-featured-slot .section-title,
-body.single-model .model-flipbox .tmwfm-heading {
-  float: none !important;           /* undo theme float-left */
-  clear: both !important;           /* escape floated siblings */
-  display: inline-block !important; /* shrink to content */
-  width: auto !important;           /* avoid full-width bars */
-  margin: 0 auto 12px !important;   /* center horizontally */
-  text-align: center !important;    /* center the text itself */
-  /* last-resort centering if some script re-floats it */
-  position: relative; left: 50%; transform: translateX(-50%);
-}
-
-/* Admin audit highlight when ?tmw_fm_audit=1 is used */
-body.single-model [data-tmw-fm="heading"] {
-  outline: 2px dashed #4fc3f7 !important;
-  outline-offset: 2px;
-}
-
-/* Cleanup: neutralize any older v3.3.4 rules if still present */
-body.single-model .tmw-featured-slot .section-title,
-body.single-model .model-flipbox .tmwfm-heading {
-  right: auto !important; /* ensure no conflicting positions remain */
+/* Title element printed by the shortcode/theme */
+body.single-model .tmwfm-slot .tmwfm-heading{
+  float: none !important;
+  clear: both !important;
+  display: inline-block !important;         /* shrink to content width */
+  width: auto !important;
+  margin: 0 auto 12px !important;           /* center the ribbon */
+  text-align: center !important;
+  position: relative !important;
+  left: auto !important; right: auto !important; top: auto !important;
 }
