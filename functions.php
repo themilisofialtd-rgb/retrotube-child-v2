@@ -23,3 +23,9 @@ require_once get_stylesheet_directory() . '/inc/tmw-style-injectors.php';
 require_once get_stylesheet_directory() . '/inc/tmw-model-hooks.php';
 require_once get_stylesheet_directory() . '/inc/tmw-video-hooks.php';
 require_once get_stylesheet_directory() . '/inc/tmw-admin-tools.php';
+
+/**
+ * Videos nav icon (inline, robust against ::before resets)
+ * - Injects a real <i> for the Videos menu item in header/primary menu.
+ */
+require_once get_stylesheet_directory() . '/inc/nav-videos-icon.php';
