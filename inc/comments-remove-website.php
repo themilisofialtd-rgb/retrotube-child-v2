@@ -12,18 +12,6 @@ add_filter('comment_form_default_fields', function (array $fields) {
         unset($fields['url']);
     }
 
-    // Replace the cookies-consent label to drop the word "website".
-    // Rebuild the field to preserve the user's existing consent state.
-    $commenter = function_exists('wp_get_current_commenter') ? wp_get_current_commenter() : array();
-    $consent   = empty($commenter['comment_author_email']) ? '' : ' checked="checked"';
-    $label     = __('Save my name and email in this browser for the next time I comment.', 'retrotube-child-v2');
-    $fields['cookies'] =
-        '<p class="comment-form-cookies-consent">' .
-        '<input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes"' .
-        $consent . ' /> ' .
-        '<label for="wp-comment-cookies-consent">' . esc_html($label) . '</label>' .
-        '</p>';
-
     return $fields;
 }, 999);
 
@@ -38,3 +26,17 @@ add_filter('preprocess_comment', function (array $commentdata) {
 
 // 4) Scrub on output (front end/admin lists).
 add_filter('get_comment_author_url', '__return_empty_string', 10);
+
+// 5) Force the cookies-consent label to drop "website".
+add_filter('comment_form_field_cookies', function ($field) {
+    // Preserve current consent state like core does.
+    $commenter = function_exists('wp_get_current_commenter') ? wp_get_current_commenter() : array();
+    $consent   = empty($commenter['comment_author_email']) ? '' : ' checked="checked"';
+    $label     = __('Save my name and email in this browser for the next time I comment.', 'retrotube-child-v2');
+
+    return '<p class="comment-form-cookies-consent">'
+         . '<input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes"'
+         . $consent . ' /> '
+         . '<label for="wp-comment-cookies-consent">' . esc_html($label) . '</label>'
+         . '</p>';
+}, 999);
