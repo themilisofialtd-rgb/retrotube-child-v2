@@ -92,7 +92,7 @@ if ( has_post_thumbnail() && wp_get_attachment_url( get_post_thumbnail_id() ) ) 
 				$terms = wp_get_post_terms( get_the_ID(), 'actors' ); // fallback
 			}
 			if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-				echo '<span class="video-meta-item video-meta-model"><i class="fa fa-star"></i> Model: ';
+                                echo '<span class="video-meta-item video-meta-model"><i class="fa fa-star"></i> Model:&nbsp;';
 				$links = array();
                                 foreach ( $terms as $term ) {
                                         $model_link = function_exists( 'tmw_get_model_link_for_term' ) ? tmw_get_model_link_for_term( $term ) : '';
@@ -109,10 +109,10 @@ if ( has_post_thumbnail() && wp_get_attachment_url( get_post_thumbnail_id() ) ) 
 			}
 
 			// ✅ Author always links
-			echo '<span class="video-meta-item video-meta-author"><i class="fa fa-user"></i> From: <a href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>';
+                        echo '<span class="video-meta-item video-meta-author"><i class="fa fa-user"></i> From:&nbsp;<a href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>';
 
 			// ✅ Date
-			echo '<span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> Date: ' . esc_html( get_the_date() ) . '</span>';
+                        echo '<span class="video-meta-item video-meta-date"><i class="fa fa-calendar"></i> Date:&nbsp;' . esc_html( get_the_date() ) . '</span>';
 			?>
 		</div>
 		<!-- 🔹 End Meta Info -->
