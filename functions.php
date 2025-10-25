@@ -27,6 +27,13 @@ require_once get_stylesheet_directory() . '/inc/tmw-admin-tools.php';
 // Remove "Website" (URL) field from comment forms on Video/Model singles
 require_once get_stylesheet_directory() . '/inc/comments-remove-website.php';
 
+// v3.5.4 — Flip CTA offset loaded sentinel.
+add_action('wp_head', function () {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('[TMW-FLIP-CTA] v3.5.4 style.css CTA offset rules active');
+    }
+}, 1);
+
 /**
  * Videos nav icon (inline, robust against ::before resets)
  * - Injects a real <i> for the Videos menu item in header/primary menu.
