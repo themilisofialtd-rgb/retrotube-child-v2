@@ -5,10 +5,10 @@
 /* Theme accent (red) */
 .tmw-grid{ --tmw-accent:#db001a; }
 
-/* v3.5.6 — Flipbox CTA bottom offsets */
-:root {
-  --tmw-flip-cta-bottom-desktop: -24px; /* tweak if you want it tighter/looser */
-  --tmw-flip-cta-bottom-mobile: 16px;
+/* v3.5.7 — Flipbox CTA bottom offsets */
+:root{
+  --tmw-flip-cta-bottom-desktop:-24px;
+  --tmw-flip-cta-bottom-mobile:16px;
 }
 
 /* ---------- GRID ---------- */
@@ -68,11 +68,6 @@
   transform:rotateY(180deg);
   pointer-events:none;
 }
-.tmw-flip-back a.tmw-view{
-  position:relative;
-  z-index:10;
-  pointer-events:auto;
-}
 
 .tmw-flip:hover .tmw-flip-inner,
 .tmw-flip:focus-visible .tmw-flip-inner{
@@ -109,9 +104,10 @@
 
 /* BACK: centered “View profile” in red */
 .tmw-view{
-  position:absolute; left:50%;
-  bottom:var(--tmw-flip-cta-bottom-desktop);
+  position:absolute;
+  left:50%;
   top:auto;
+  bottom:var(--tmw-flip-cta-bottom-desktop);
   transform:translateX(-50%);
   padding:5px 10px; border-radius:8px;
   font-weight:800; font-size:.90rem;
@@ -121,25 +117,9 @@
   overflow:hidden;
   text-overflow:ellipsis;
   max-width:calc(100% - 24px);
+  pointer-events:auto;
+  z-index:10;
 }
-
-/* Optional: slightly smaller on very small screens */
-@media (max-width:480px){
-  .tmw-name, .tmw-view{ font-size:.85rem; }
-  .tmw-name::after{ font-size:.95rem; }
-}
-
-/* ---------- BANNER BETWEEN ROWS ---------- */
-.tmw-banner-wrap{
-  grid-column:1 / -1;
-  display:flex; justify-content:center; align-items:center;
-  min-height:45px; margin:6px 0 2px;
-}
-.tmw-banner img{
-  width:364px; height:45px; max-width:100%;
-  display:block; border-radius:8px; box-shadow:0 4px 18px rgba(0,0,0,.3);
-}
-.tmw-banner-empty{ min-height:45px; }
 
 /* ---------- PAGINATION ---------- */
 .tmw-pagination{
@@ -178,21 +158,6 @@
   .tmw-layout{ grid-template-columns:1fr; }
 }
 
-/* ===== Model biography (actors taxonomy) ===== */
-.tmw-actor{display:block}
-.tmw-actor-photo{max-width:420px;margin:0 0 12px}
-.tmw-actor-photo img{
-  width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;
-  border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.35)
-}
-.tmw-actor-bio{color:#ddd;margin:8px 0 6px}
-.tmw-actor-bio p{margin:0 0 10px}
-
-.tmw-actor-social{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
-.tmw-social{
-  display:inline-block;padding:6px 10px;border-radius:8px;
-  background:rgba(0,0,0,.55);color:var(--tmw-accent);text-decoration:none;font-weight:700
-}
 /* ===== Attention animations for back label ===== */
 /* Subtle pulse on the label */
 .tmw-flip-back .tmw-view{
@@ -217,10 +182,6 @@
   50%     { transform: translateX(2px); opacity: .92; }
 }
 
-/* Respect users who prefer less motion */
-@media (prefers-reduced-motion: reduce){
-  .tmw-flip-back .tmw-view{ animation: none !important; }
-}
 /* ===== Attention animations for FRONT label (actor name) ===== */
 .tmw-flip-front .tmw-name{
   /* keep existing centering styles; add animation */
@@ -235,91 +196,40 @@
   display: inline-block;
 }
 
-/* Respect users who prefer less motion */
-@media (prefers-reduced-motion: reduce){
+@media (prefers-reduced-motion:reduce){
+  .tmw-flip-back .tmw-view,
   .tmw-flip-front .tmw-name,
-.tmw-flip-front .tmw-name::after{ animation: none !important; }
+  .tmw-flip-front .tmw-name::after{
+    animation:none;
+  }
 }
 
-/* Landscape hero on model biography */
-.tmw-actor-hero{ margin:0 0 12px; }
-.tmw-actor-hero-img{
-  width:100%; height:auto;
-  aspect-ratio:16/9; object-fit:cover;
-  border-radius:16px; box-shadow:0 6px 22px rgba(0,0,0,.35);
-  display:block;
-}
-
-/* Model biography: horizontal hero banner (1200×350, ~3.43:1) */
-.tmw-actor-hero{ margin:0 0 14px; }
-.tmw-actor-hero-img{
-  width:100%; height:auto; display:block;
-  aspect-ratio: 24 / 7;      /* matches 1200×350 */
-  object-fit: cover;
-  border-radius: 16px;
-  box-shadow: 0 6px 22px rgba(0,0,0,.35);
-}
-
-/* ===== Model biography: hero + bio + live link ===== */
-.tmw-actor-hero{ margin:0 0 14px; }
-.tmw-actor-hero-img{
-  width:100%; height:auto; display:block;
-  aspect-ratio: 24 / 7;        /* 1200×350 */
-  object-fit: cover;
-  border-radius: 16px;
-  box-shadow: 0 6px 22px rgba(0,0,0,.35);
-}
-
-.tmw-bio{ margin: 10px 0 8px; }
-.tmw-bio-empty{ opacity:.7; }
-
-.tmw-live { margin: 8px 0 16px; }
-.tmw-live-btn{
-  display:inline-block; padding:10px 14px; border-radius:999px;
-  background:#db001a; color:#fff; text-decoration:none; font-weight:700;
-  box-shadow:0 4px 14px rgba(219,0,26,.35);
-}
-.tmw-live-btn:hover{ filter:brightness(1.08); }
-
-/* Promo row under bio */
-.tmw-promos{ margin-top: 10px; }
-
-/* ===== Mobile-only: 2× larger action button on flipbox back ===== */
-@media (max-width: 768px), (pointer: coarse){
+@media (max-width:768px), (pointer:coarse){
   .tmw-view{
-    font-size: 1.80rem;       /* ~2× typical .90rem base */
-    line-height: 1;
-    padding: 10px 16px;       /* ~2× padding for balance */
-    border-radius: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 92%;
-    cursor: pointer;
-    bottom: var(--tmw-flip-cta-bottom-mobile);
-    top: auto;
+    bottom:var(--tmw-flip-cta-bottom-mobile);
+    font-size:1.80rem;
+    line-height:1;
+    padding:10px 16px;
+    border-radius:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:92%;
+    cursor:pointer;
   }
-  /* Scale arrows if present on the back label (harmless if none) */
-  .tmw-view::after{
-    font-size: 1.80rem;
-    line-height: 1;
-  }
-}
-/* ===== Mobile-only: 2× larger FRONT label on flipboxes ===== */
-@media (max-width: 768px), (pointer: coarse){
   .tmw-name{
-    font-size: 1.80rem;       /* ~2× your typical .90rem base */
-    line-height: 1;
-    padding: 10px 16px;       /* ~2× padding for balance */
-    border-radius: 12px;
-    white-space: nowrap;      /* one line only */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 92%;           /* avoid spilling on narrow cards */
+    font-size:1.80rem;
+    line-height:1;
+    padding:10px 16px;
+    border-radius:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:92%;
   }
   .tmw-name::after{
-    font-size: 1.80rem;       /* scale arrows too */
-    line-height: 1;
+    font-size:1.80rem;
+    line-height:1;
   }
 }
 
