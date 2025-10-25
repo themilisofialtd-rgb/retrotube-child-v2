@@ -7,8 +7,8 @@
 
 /* v3.5.7 — Flipbox CTA bottom offsets */
 :root{
-  --tmw-flip-cta-bottom-desktop:0px;
-  --tmw-flip-cta-bottom-mobile:0px;
+  --tmw-flip-cta-bottom-desktop:5px;
+  --tmw-flip-cta-bottom-mobile:5px;
 }
 
 /* ---------- GRID ---------- */
