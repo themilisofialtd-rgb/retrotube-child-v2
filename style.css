@@ -629,3 +629,37 @@ a.tag-link {
         font-size: .9em !important;
     }
 }
+
+/* ============================================================
+   [TMW-MODEL-TAGS-AUDIT] v2.8.1 — final pixel-parity overrides
+   Append-only: placed at file end to override earlier styles.
+   ============================================================ */
+
+/* 1) Remove extra block spacing the video layout doesn't have */
+.single-model .tmw-model-tags.post-tags.entry-tags {
+  padding: 0 !important;
+  margin: 0 0 12px 0 !important; /* align with typical .tags spacing */
+}
+
+/* 2) Hide the model-only header line (“Tags:” + icon) */
+.single-model .tmw-model-tags .tag-title {
+  display: none !important;
+}
+
+/* 3) Remove the per-chip icon so text aligns exactly like videos */
+.single-model .tmw-model-tags a.label i {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 4) Mobile: keep parity with the video chip downsizing */
+@media (max-width: 600px) {
+  .single-model .tmw-model-tags a,
+  .single-model .tmw-model-tags a.label {
+    font-size: .9em !important;
+    padding: .5em 1em !important;
+    margin: 0 1em 1em 0 !important;
+    border-radius: 3px !important;
+  }
+}
