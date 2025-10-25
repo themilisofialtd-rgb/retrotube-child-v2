@@ -1,37 +1,27 @@
 <?php
-// Exit if accessed directly
 if (!defined('ABSPATH')) { exit; }
 
 /**
- * Remove the "Website" (URL) field from comment forms on Video and Model singles.
- * Keeps Name and Email as-is.
- * Hardened against plugins that try to re-add the URL field.
+ * Remove the "Website" (URL) field from ALL WordPress comment forms,
+ * and scrub any submitted/displayed author URL for defense-in-depth.
  */
-function tmw_is_video_or_model_context(): bool {
-    if (is_admin()) { return false; }
-    // Works both during template render and AJAX preloading
-    $post = get_post();
-    if (!$post) { return false; }
-    $pt = get_post_type($post);
-    return in_array($pt, array('video', 'model'), true);
-}
 
-/** Primary removal: drop 'url' from the default fields array */
+// 1) Remove from the default fields (affects non-logged-in comment form).
 add_filter('comment_form_default_fields', function (array $fields) {
-    if (!tmw_is_video_or_model_context()) {
-        return $fields;
-    }
     if (isset($fields['url'])) {
         unset($fields['url']);
     }
     return $fields;
 }, 999);
 
-/** Hardening: even if some plugin re-injects it, neutralize the URL field output */
-add_filter('comment_form_field_url', function ($field) {
-    if (!tmw_is_video_or_model_context()) {
-        return $field;
-    }
-    return ''; // delete at source
-}, 999);
+// 2) If any plugin tries to render it explicitly, neutralize the field.
+add_filter('comment_form_field_url', '__return_empty_string', 999);
 
+// 3) Scrub incoming data, in case a cached page or plugin still posts a URL.
+add_filter('preprocess_comment', function (array $commentdata) {
+    $commentdata['comment_author_url'] = '';
+    return $commentdata;
+}, 10);
+
+// 4) Scrub on output (front end/admin lists).
+add_filter('get_comment_author_url', '__return_empty_string', 10);
