@@ -1,6 +1,6 @@
 /* Theme Name: Retrotube Child (Flipbox Edition) v2
  Template: retrotube
- Version: 1.1.6
+ Version: 1.1.7
  Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
  Author: Top Models Webcam
 */
@@ -487,68 +487,79 @@ article[id^="post-"]::before {
   font-size: 14px;
 }
 
+/* ============================================================
+   TAG CHIPS — unify video + model (1:1)
+   ============================================================ */
 .single-video .video-tags a,
 .single-video .tags a,
+.single-model .tmw-model-tags a,
 .single-model .tmw-model-tags a.label,
 .single-model .tags a,
 .tmw-model-tags a,
 .tmw-model-tags a.label,
 .single-model a.tag-cloud-link,
 .tags .tags-list .tag-link {
+  /* base fill + subtle top gradient like video */
   background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
-  background-color: #db011a;
-  border: 1px solid #db011a;
+  background-color: #db011a !important;   /* video uses !important => mirror */
+  border: 1px solid #db011a !important;   /* ensure identical border */
   color: #fff;
-  padding: 0.5em 1em;
-  font-size: 0.9em;
-  margin: 0 .6em .6em 0;
   display: inline-block;
   text-align: center;
   text-decoration: none;
+
+  /* 1:1 sizing from video dump */
+  font-size: .9em;
+  line-height: 1.5;
+  padding: .5em 1em;
+  margin: 0 .6em .6em 0;
+
+  /* minor rounding + shadow match */
   border-radius: 3px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-  transition: all 0.25s ease-in-out;
+  box-shadow: 0 1px 6px rgba(0,0,0,.12);
+
+  transition: all .25s ease-in-out;
 }
 
 .single-video .video-tags a:hover,
 .single-video .tags a:hover,
+.single-model .tmw-model-tags a:hover,
 .single-model .tmw-model-tags a.label:hover,
 .single-model .tags a:hover,
 .tmw-model-tags a:hover,
 .tmw-model-tags a.label:hover,
 .single-model a.tag-cloud-link:hover,
 .tags .tags-list .tag-link:hover {
-  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
-  background-color: #db011a;
-  border-color: #db011a;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,.25) 0%, rgba(0,0,0,.15) 100%);
+  background-color: #db011a !important;
+  border-color: #db011a !important;
   color: #fff;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 6px rgba(0,0,0,.25);
   text-decoration: none;
 }
 
-.single-model .tmw-model-tags a.label i {
-  margin-right: 5px;
+/* Optional: icon spacing inside tag chips */
+.single-model .tmw-model-tags a i.fa,
+.single-model .tmw-model-tags a.label i,
+.tags .tags-list .tag-link i.fa {
+  margin-right: .3em;
 }
 
-.tmw-model-tags.no-tags {
-  opacity: 0.7;
-  font-size: 13px;
-  color: #999;
-  font-style: italic;
-}
-
+/* Keep mobile identical — no drift */
 @media (max-width: 600px) {
   .single-video .video-tags a,
   .single-video .tags a,
+  .single-model .tmw-model-tags a,
   .single-model .tmw-model-tags a.label,
   .single-model .tags a,
   .tmw-model-tags a,
   .tmw-model-tags a.label,
   .single-model a.tag-cloud-link,
   .tags .tags-list .tag-link {
-    margin: 0 1em 1em 0;
-    padding: 0.5em 1em;
-    font-size: 0.9em;
+    font-size: .9em;
+    line-height: 1.5;
+    padding: .5em 1em;
+    margin: 0 .6em .6em 0;
   }
 }
 
@@ -622,47 +633,16 @@ a.tag-link {
     margin: 0 .6em .6em 0;
 }
 
+/* Keep mobile aligned with video */
 @media only screen and (max-width: 767.98px) {
     .tags .tags-list .tag-link {
-        margin: 0 1em 1em 0 !important;
-        padding: .5em 1em !important;
         font-size: .9em !important;
+        line-height: 1.5 !important;
+        padding: .5em 1em !important;
+        margin: 0 .6em .6em 0 !important;
     }
 }
 
 /* ============================================================
-   v2.8.6 — Model tags: smaller text + tighter left/right (icons kept)
+   NOTE: Removed v2.8.6 "smaller model tags" override to keep 1:1
    ============================================================ */
-.single-model .tmw-model-tags a,
-.single-model .tmw-model-tags a.label {
-  font-size: 0.85em !important;  /* smaller letters on model page */
-  line-height: 1.28 !important;  /* shorter pill height */
-  padding: 2px 6px !important;   /* top/bottom, left/right = tighter */
-  margin: 0 6px 6px 0 !important;
-  border-radius: 3px;
-}
-
-.single-model .tmw-model-tags a.label i,
-.single-model .tmw-model-tags a i.fa {
-  font-size: 0.85em !important;  /* scale icon with text */
-  margin-right: 5px;
-  line-height: 1;
-  vertical-align: -1px;
-}
-
-/* keep overall block spacing aligned with video .tags */
-.single-model .tmw-model-tags.post-tags.entry-tags {
-  padding: 0;
-  margin: 0 0 12px 0;
-}
-
-/* mobile: keep the tighter spacing */
-@media (max-width: 600px) {
-  .single-model .tmw-model-tags a,
-  .single-model .tmw-model-tags a.label {
-    font-size: 0.85em !important;
-    line-height: 1.28 !important;
-    padding: 2px 6px !important;
-    margin: 0 6px 6px 0 !important;
-  }
-}
