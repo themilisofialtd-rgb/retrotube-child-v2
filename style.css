@@ -631,15 +631,13 @@ a.tag-link {
 }
 
 /* ============================================================
-   v2.8.3 — Model tag spacing parity (icons kept)
-   Tightens model chips without affecting video chips.
+   v2.8.4 — Model tag spacing (minimum padding, icons kept)
    ============================================================ */
 .single-model .tmw-model-tags a,
 .single-model .tmw-model-tags a.label {
-  /* tighter vertical + horizontal spacing to match video feel */
-  line-height: 1.4;
-  padding: 4px 10px;      /* was 0.5em 1em */
-  margin: 0 8px 8px 0;    /* standard chip gap */
+  line-height: 1.33;   /* compact height */
+  padding: 2px 8px;    /* MIN padding: top/bottom, left/right */
+  margin: 0 6px 6px 0; /* compact gap between pills */
   border-radius: 3px;
 }
 
@@ -659,12 +657,12 @@ a.tag-link {
   margin: 0 0 12px 0;
 }
 
-/* mobile: retain the tighter spacing on models too */
+/* mobile: keep the tighter spacing */
 @media (max-width: 600px) {
   .single-model .tmw-model-tags a,
   .single-model .tmw-model-tags a.label {
-    line-height: 1.4;
-    padding: 4px 10px;
-    margin: 0 8px 8px 0;
+    line-height: 1.33;
+    padding: 2px 8px;
+    margin: 0 6px 6px 0;
   }
 }
