@@ -1,6 +1,6 @@
 /* Theme Name: Retrotube Child (Flipbox Edition) v2
  Template: retrotube
- Version: 1.1.6
+ Version: 1.1.7
  Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
  Author: Top Models Webcam
 */
@@ -347,32 +347,47 @@
 }
 /* ===== /TMW HERO/BANNER — Mobile Fix v3.6.1 ===== */
 
-/* ===== TMW HERO/BANNER — Mobile Parity v3.6.4 (desktop untouched) ===== */
+/* ===== TMW HERO/BANNER — Mobile Parity v3.6.5 (desktop untouched) ===== */
 @media (max-width: 840px) {
-  /* Apply per-model offset to <img> banners on mobile (mirror desktop) */
+  /* IMG & PICTURE paths (mirror desktop formula; high specificity; mobile only) */
   .single-model .entry-header .tmw-banner-frame > img,
-  .single-model .tmw-banner-frame > img {
+  .single-model .entry-header .tmw-banner-frame picture > img,
+  .single-model .tmw-banner-frame > img,
+  .single-model .tmw-banner-frame picture > img,
+  .single-model .tmw-model-hero > img,
+  .single-model .tmw-model-hero picture > img,
+  .single-model .entry-header .wp-post-image,
+  .single-model .tmw-banner-frame .wp-post-image {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     object-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
   }
 
-  /* Apply the same offset to background-image banners on mobile */
+  /* BACKGROUND paths on the frame/hero/containers and common overlay pseudos */
   .single-model .entry-header .tmw-banner-frame,
-  .single-model .tmw-banner-frame {
-    background-size: cover;
-    background-position: 50% calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
+  .single-model .tmw-banner-frame,
+  .single-model .tmw-model-hero,
+  .single-model .tmw-banner-container,
+  .single-model .tmw-banner-frame::before,
+  .single-model .tmw-model-hero::before {
+    background-size: cover !important;
+    background-position-x: 50% !important;
+    background-position-y: calc(var(--tmw-hero-vpos, 50%) + var(--offset-y, 0px)) !important;
   }
 
-  /* Fallback for engines that mis-handle object-position on mobile */
+  /* Fallback for engines that mis-handle object-position (keeps desktop untouched) */
   @supports not (object-position: 0 0) {
-    .single-model .tmw-banner-frame > img {
-      /* Frame must be overflow:hidden in existing CSS */
+    .single-model .tmw-banner-frame > img,
+    .single-model .tmw-banner-frame picture > img,
+    .single-model .tmw-model-hero > img,
+    .single-model .tmw-model-hero picture > img {
       transform: translateY(var(--offset-y, 0px));
       will-change: transform;
     }
   }
 }
-/* ===== /TMW HERO/BANNER — Mobile Parity v3.6.4 ===== */
+/* ===== /TMW HERO/BANNER — Mobile Parity v3.6.5 ===== */
 
 /* =========================
    8. Utilities
