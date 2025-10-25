@@ -639,7 +639,7 @@ a.tag-link {
   line-height: 1.28 !important;  /* shorter pill height */
   padding: 2px 6px !important;   /* top/bottom, left/right = tighter */
   margin: 0 6px 6px 0 !important;
-  border-radius: 3px;
+  border-radius: 1px;
 }
 
 .single-model .tmw-model-tags a.label i,
