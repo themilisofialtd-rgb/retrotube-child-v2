@@ -1,0 +1,631 @@
+/* Theme Name: Retrotube Child (Flipbox Edition) v2
+ Template: retrotube
+ Version: 1.1.6
+ Description: Child theme for WP-Script Retrotube with Models/Actors hero (1200x350), 20-line bio clamp, plugin-driven featured flipboxes, sidebar layout, banner slot, and custom Model/Actor profile.
+ Author: Top Models Webcam
+*/
+
+/* =========================
+   1. Variables
+   ========================= */
+:root {
+  --offset-x: 50%;
+  --offset-y: 0px;
+  --tmw-hero-mobile-h: clamp(140px, 22vh, 200px);
+  --tmw-hero-vpos: 50%;
+}
+
+/* =========================
+   2. Hero / Banner
+   ========================= */
+.tmw-actor-hero,
+.tmw-model-hero {
+  margin: 0 0 18px;
+  position: relative;
+}
+
+.tmw-model-hero {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tmw-banner-container,
+.tmw-banner-frame {
+  position: relative;
+  width: 100%;
+  max-width: 1035px;
+  aspect-ratio: 1035 / 350;
+  overflow: hidden;
+  background: #000;
+  margin: 0 auto 25px auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+}
+
+.tmw-banner-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% calc(50% + var(--offset-y, 0px));
+  display: block;
+  transform: none;
+}
+
+.tmw-banner-frame .no-banner-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+#tmw-banner-preview,
+#tmwBannerPreview {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+#tmw-banner-preview .ph,
+#tmwBannerPreview .ph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 13px;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.tmw-actor-hero .tmw-actor-name,
+.tmw-model-hero .tmw-model-name {
+  margin: 10px 0 0;
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+/* =========================
+   3. Bio
+   ========================= */
+.tmw-bio {
+  margin: 14px 0 22px;
+}
+
+.tmw-bio-clamp {
+  --tmw-lines: 20;
+}
+
+.tmw-bio-clamp.is-clamped .tmw-bio-clamp-inner {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--tmw-lines);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tmw-bio-toggle.button {
+  margin-top: 10px;
+  border-color: #db011a !important;
+  background-color: #db011a !important;
+  color: #fff !important;
+}
+
+.tmw-bio .tags,
+.tmw-bio .tagcloud,
+.tmw-bio a.tag-cloud-link {
+  display: none !important;
+}
+
+/* =========================
+   4. Live / Socials
+   ========================= */
+.tmw-live {
+  margin: 14px 0;
+}
+
+.tmw-live-btn {
+  display: inline-block;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: #db011a;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.tmw-actor-social {
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tmw-actor-social .tmw-social {
+  display: inline-block;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: #f2f2f2;
+  color: #333;
+  text-decoration: none;
+}
+
+/* =========================
+   5. Flipboxes
+   ========================= */
+.tmw-featured-slot {
+  margin-top: 28px;
+}
+
+.tmw-featured-slot .section-title {
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+
+.tmw-trigger {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.tmw-grid .tmw-flip,
+.tmwfm-grid .tmw-flip {
+  position: relative;
+  display: block;
+  perspective: 1000px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.tmw-grid .tmw-flip::before,
+.tmwfm-grid .tmw-flip::before {
+  content: "";
+  display: block;
+  padding-top: 150%;
+}
+
+.tmw-grid .tmw-flip .tmw-flip-inner,
+.tmwfm-grid .tmw-flip .tmw-flip-inner,
+.tmw-grid .tmw-flip .tmw-flip-front,
+.tmwfm-grid .tmw-flip .tmw-flip-front,
+.tmw-grid .tmw-flip .tmw-flip-back,
+.tmwfm-grid .tmw-flip .tmw-flip-back {
+  position: absolute;
+  inset: 0;
+}
+
+.tmw-grid .tmw-flip-front,
+.tmwfm-grid .tmw-flip-front,
+.tmw-grid .tmw-flip-back,
+.tmwfm-grid .tmw-flip-back {
+  background-size: var(--tmw-bgsize, cover);
+  background-position: var(--tmw-bgpos, 50% 50%);
+  background-repeat: no-repeat;
+  border-radius: 12px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.tmw-grid .tmw-flip-inner,
+.tmwfm-grid .tmw-flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.55s ease;
+}
+
+.tmw-grid .tmw-flip-front,
+.tmwfm-grid .tmw-flip-front {
+  transform: rotateY(0deg);
+}
+
+.tmw-grid .tmw-flip-back,
+.tmwfm-grid .tmw-flip-back {
+  transform: rotateY(180deg);
+}
+
+.tmw-grid .tmw-flip:hover .tmw-flip-inner,
+.tmw-grid .tmw-flip:focus .tmw-flip-inner,
+.tmwfm-grid .tmw-flip:hover .tmw-flip-inner,
+.tmwfm-grid .tmw-flip:focus .tmw-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.model-flipbox {
+  margin: 40px 0;
+}
+
+.model-flipbox .tmwfm-heading {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tmwfm-heading i.fa-random {
+  margin-right: 6px;
+  color: #db011a;
+  font-size: inherit;
+}
+
+.model-flipbox .tmwfm-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .model-flipbox .tmwfm-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* =========================
+   6. Video meta
+   ========================= */
+.video-meta-inline {
+  margin: 10px 0 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ccc;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.video-meta-inline .video-meta-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.video-meta-inline i {
+  margin-right: 6px;
+  color: #db011a;
+}
+
+@media (max-width: 767px) {
+  .video-meta-inline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .video-meta-inline .video-meta-item {
+    width: 100%;
+  }
+}
+
+/* =========================
+   7. Mobile
+   ========================= */
+@media (max-width: 840px) {
+  body[class*="taxonomy-actor"] .tmw-actor-hero,
+  body[class*="taxonomy-actor"] .entry-header,
+  body[class*="taxonomy-actor"] .post-thumbnail,
+  body[class*="taxonomy-actor"] .hero,
+  body[class*="taxonomy-actor"] article > *:first-child,
+  body[class*="taxonomy-model"] .tmw-model-hero,
+  body[class*="taxonomy-model"] .entry-header,
+  body[class*="taxonomy-model"] .post-thumbnail,
+  body[class*="taxonomy-model"] .hero,
+  body[class*="taxonomy-model"] article > *:first-child {
+    height: var(--tmw-hero-mobile-h) !important;
+    min-height: var(--tmw-hero-mobile-h) !important;
+    max-height: var(--tmw-hero-mobile-h) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 14px !important;
+    background-size: cover !important;
+    background-position: center var(--tmw-hero-vpos) !important;
+  }
+
+  body[class*="taxonomy-actor"] .tmw-actor-hero img,
+  body[class*="taxonomy-actor"] .entry-header img,
+  body[class*="taxonomy-actor"] .post-thumbnail img,
+  body[class*="taxonomy-actor"] .hero img,
+  body[class*="taxonomy-actor"] article > *:first-child img,
+  body[class*="taxonomy-actor"] picture img,
+  body[class*="taxonomy-model"] .tmw-model-hero img,
+  body[class*="taxonomy-model"] .entry-header img,
+  body[class*="taxonomy-model"] .post-thumbnail img,
+  body[class*="taxonomy-model"] .hero img,
+  body[class*="taxonomy-model"] article > *:first-child img,
+  body[class*="taxonomy-model"] picture img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    object-position: center var(--tmw-hero-vpos) !important;
+    aspect-ratio: auto !important;
+    border-radius: 14px !important;
+  }
+
+  body.single-model .tmw-model-banner-frame,
+  body.single-model .tmw-banner-frame,
+  body.single-model .tmw-model-hero {
+    max-width: 100% !important;
+    border-radius: 12px;
+  }
+}
+
+/* =========================
+   8. Utilities
+   ========================= */
+#video-about #video-models,
+#video-about #video-author,
+#video-about #video-date,
+#video-about #video-actors {
+  display: none !important;
+}
+
+body.tmw-no-embed .player,
+.entry-content .player,
+.post__text .player,
+.video__desc .player {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.tmw-no-embed .post__about,
+body.tmw-no-embed .about,
+body.tmw-no-embed .video__desc,
+body.tmw-no-embed .post__text,
+body.tmw-no-embed .entry-content,
+body.tmw-no-embed .rt-entry-content,
+body.tmw-no-embed .post-desc {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  min-height: 0 !important;
+}
+
+body.tmw-no-embed .post__about:before,
+body.tmw-no-embed .about:before,
+body.tmw-no-embed .video__desc:before,
+body.tmw-no-embed .entry-content:before {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 1024px) {
+  #tmw-banner-preview,
+  #tmwBannerPreview,
+  .tmw-banner-preview,
+  .tmw-model-banner-frame,
+  .tmw-banner-frame {
+    max-width: 100%;
+  }
+}
+
+/* === Remove legacy model rating/view visuals === */
+.single-model #rating-col,
+.single-model .rating-col,
+.single-model .rating-bar,
+.single-model .rating-bar-meter,
+.single-model .rating-result,
+.single-model #video-views,
+.single-model .video-views {
+  display: none !important;
+}
+
+/* === Keep Like/Dislike with model name === */
+.single-model .tmw-model-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.single-model .tmw-model-header .model-name {
+  margin: 0;
+  font-size: 1.6rem;
+  line-height: 1.3;
+}
+
+.single-model .tmw-model-header .tmw-model-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.single-model .tmw-model-header .tmw-model-actions #video-rate,
+.single-model .tmw-model-header .tmw-model-actions .like,
+.single-model .tmw-model-header .tmw-model-actions .dislike {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Hide accidental numeric post IDs printed under thumbnails */
+article[id^="post-"]::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* === v2.7.7-remove-video-id === */
+/* Hide numeric post IDs on model video items (model pages only) */
+.single-model .tmw-model-video-item .post-id,
+.single-model .tmw-model-video-item .video-meta,
+.single-model .tmw-model-video-item span,
+.single-model .tmw-model-video-item .entry-meta {
+    display: none !important;
+}
+
+/* === v2.7.8-video-thumb-gap-fix === */
+/* Tighten space between video thumbnail and title on model pages */
+.single-model .tmw-model-video-item .video-title {
+    margin-top: 3px !important;   /* reduce vertical space */
+    line-height: 1.2em;
+}
+
+/* [TMW-MODEL-TAGS-AUDIT] Synced with video tag style (v3.3.1) */
+.tmw-model-tags.post-tags.entry-tags {
+  margin-top: 15px;
+  padding: 12px 0;
+  display: block;
+}
+
+.tmw-model-tags .tag-title {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  color: #fff;
+  margin-right: 6px;
+  gap: 5px;
+}
+
+.tmw-model-tags .tag-title i.fa-tags {
+  color: #db011a;
+  font-size: 14px;
+}
+
+.single-video .video-tags a,
+.single-video .tags a,
+.single-model .tmw-model-tags a.label,
+.single-model .tags a,
+.tmw-model-tags a,
+.tmw-model-tags a.label,
+.single-model a.tag-cloud-link,
+.tags .tags-list .tag-link {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%);
+  background-color: #db011a;
+  border: 1px solid #db011a;
+  color: #fff;
+  padding: 0.5em 1em;
+  font-size: 0.9em;
+  margin: 0 .6em .6em 0;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 3px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+  transition: all 0.25s ease-in-out;
+}
+
+.single-video .video-tags a:hover,
+.single-video .tags a:hover,
+.single-model .tmw-model-tags a.label:hover,
+.single-model .tags a:hover,
+.tmw-model-tags a:hover,
+.tmw-model-tags a.label:hover,
+.single-model a.tag-cloud-link:hover,
+.tags .tags-list .tag-link:hover {
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.25) 0%, rgba(0, 0, 0, 0.15) 100%);
+  background-color: #db011a;
+  border-color: #db011a;
+  color: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+}
+
+.single-model .tmw-model-tags a.label i {
+  margin-right: 5px;
+}
+
+.tmw-model-tags.no-tags {
+  opacity: 0.7;
+  font-size: 13px;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .single-video .video-tags a,
+  .single-video .tags a,
+  .single-model .tmw-model-tags a.label,
+  .single-model .tags a,
+  .tmw-model-tags a,
+  .tmw-model-tags a.label,
+  .single-model a.tag-cloud-link,
+  .tags .tags-list .tag-link {
+    margin: 0 1em 1em 0;
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+  }
+}
+
+/* === SINGLE MODEL VISUAL SYNC (RetroTube identical) === */
+.single-model .title-block {
+    background: #282828;
+    border-left-width: 6px;
+    border-left-style: solid;
+    margin: 1.25em 0 1.25em;
+    padding: 0.5em 0.75em 0;
+    box-shadow: 0 8px 17px rgba(0, 0, 0, 0.2), 0 6px 6px rgba(0, 0, 0, 0.19);
+}
+
+.single-model .title-block h1.entry-title {
+    margin: 0;
+    padding: 0 0 0.5em;
+    font-size: 1.45em;
+    border-bottom: 1px solid #151515;
+    font-weight: normal;
+    color: #eee;
+}
+
+.single-model .entry-content {
+    margin-top: 1em;
+    padding: 0 1em;
+    color: #ccc;
+}
+
+.single-model .rating-bar {
+    background-color: #333 !important;
+    border: 1px solid #333;
+    height: 1.5em;
+    text-align: center;
+    font-size: 75%;
+    color: #fff;
+}
+
+.single-model .rating-bar-meter {
+    height: 1.3em;
+    transition: width 0.3s ease-in-out;
+    box-shadow: inset 0 0 2px #000;
+}
+
+.single-model .videos-featuring,
+.single-model .related-model-videos {
+    margin-top: 1.5em;
+    padding-top: 0.5em;
+    border-top: 3px solid #333;
+}
+
+.single-model .thumb-block .entry-header {
+    height: 3.5em;
+    overflow: hidden;
+    text-align: center;
+    font-size: 0.875em;
+    padding: 0.5em 0 0;
+    color: #ddd;
+}
+
+/* identical margins & layout with .single-video */
+.single-model #content {
+    margin-top: 1em;
+}
+/* === TMW v3.0.8 — Apply RetroTube .label Style to .tag-link (Model Pages) === */
+.tags .tags-list .tag-link,
+a.tag-link {
+    font-size: .9em;
+    line-height: 1.5;
+    padding: .5em 1em;
+    margin: 0 .6em .6em 0;
+}
+
+@media only screen and (max-width: 767.98px) {
+    .tags .tags-list .tag-link {
+        margin: 0 1em 1em 0 !important;
+        padding: .5em 1em !important;
+        font-size: .9em !important;
+    }
+}
