@@ -17,9 +17,7 @@ if (!defined('TMW_ACCOUNT_URL')) {
     define('TMW_ACCOUNT_URL', home_url('/'));
 }
 
-function tmw_account_url() {
-    return apply_filters('tmw/account_url', TMW_ACCOUNT_URL);
-}
+// DO NOT redeclare tmw_account_url(); it is provided by tmw-auth-redirects.php
 
 function tmw_lostpass_url() : string {
     // Include redirect_to so the wp-login "Log in" link knows where to go after auth
@@ -78,9 +76,17 @@ add_action('wp_footer', function () {
  * Rewrite the password reset email so the link opens our site and auto-opens the modal
  * with the real rp URL in a query param (encoded).
  */
-add_filter('retrieve_password_message', function ($message, $key, $user_login, $user_data) {
-    $rp = network_site_url('wp-login.php?action=rp&key=' . rawurlencode($key) . '&login=' . rawurlencode($user_login), 'login');
-    $front = add_query_arg('tmw_reset', rawurlencode($rp), home_url('/')); // e.g. https://site/?tmw_reset=<encoded rp>
+add_filter('retrieve_password_message', function ($message, $key, $user_login) {
+    // If another filter already injected our front-door link, leave it alone.
+    if (strpos($message, 'tmw_reset=') !== false) {
+        return $message;
+    }
+
+    $rp = network_site_url(
+        'wp-login.php?action=rp&key=' . rawurlencode($key) . '&login=' . rawurlencode($user_login),
+        'login'
+    );
+    $front = add_query_arg('tmw_reset', rawurlencode($rp), home_url('/'));
 
     $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
     $lines = array();
@@ -93,4 +99,4 @@ add_filter('retrieve_password_message', function ($message, $key, $user_login, $
     $lines[] = '';
     $lines[] = __('If you did not request a password reset, please ignore this email.');
     return implode("\r\n", $lines);
-}, 10, 4);
+}, 9, 3);
