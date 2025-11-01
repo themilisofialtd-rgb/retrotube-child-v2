@@ -25,9 +25,17 @@ if (file_exists($tmw_ajax_auth)) {
     require_once $tmw_ajax_auth;
 }
 
-/** TMW Lost Password — FIX (routes popup → core, stops loader) */
-$tmw_lp_fix = get_stylesheet_directory() . '/inc/tmw-lostpass-fix.php';
-if (file_exists($tmw_lp_fix)) { require_once $tmw_lp_fix; }
+// === Lost Password (child) — keep existing behavior; add audit (no behavior change) ===
+if (file_exists(__DIR__ . '/inc/tmw-lostpass-fix.php')) {
+    require_once __DIR__ . '/inc/tmw-lostpass-fix.php';
+}
+if (file_exists(__DIR__ . '/inc/tmw-lostpass-override.php')) {
+    require_once __DIR__ . '/inc/tmw-lostpass-override.php';
+}
+// Audit is safe/log-only and 2/4-arg compatible — keep it loaded last.
+if (file_exists(__DIR__ . '/inc/tmw-lostpass-audit.php')) {
+    require_once __DIR__ . '/inc/tmw-lostpass-audit.php';
+}
 
 // TEMP: disable email activation module
 // if (file_exists(get_stylesheet_directory() . '/inc/tmw-email-activation.php')) {
@@ -69,10 +77,3 @@ if (file_exists($gap_audit)) { require_once $gap_audit; }
 $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
 
-// === TMW Lost Password — AUDIT ONLY (no behavior change) ===
-$tmw_lostpass_audit = get_stylesheet_directory() . '/inc/tmw-lostpass-audit.php';
-if (file_exists($tmw_lostpass_audit)) { require_once $tmw_lostpass_audit; }
-
-// Lost-password override (child only) — disabled for audit
-// $tmw_lostpass = get_stylesheet_directory() . '/inc/tmw-lostpass-override.php';
-// if (file_exists($tmw_lostpass)) { require_once $tmw_lostpass; }
