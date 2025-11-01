@@ -75,8 +75,12 @@ add_action('wp_enqueue_scripts', function () {
         'tmw-lostpass-bridge',
         get_stylesheet_directory_uri() . '/js/tmw-lostpass-bridge.js',
         ['jquery'],
-        '1.3.0',
+        '1.4.0',
         true
     );
-    wp_localize_script('tmw-lostpass-bridge', 'tmwLostPass', ['ajax_url' => admin_url('admin-ajax.php')]);
+    wp_localize_script('tmw-lostpass-bridge', 'tmwLostPass', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'action'   => 'tmw_lostpass_bp',
+        'nonce'    => wp_create_nonce('tmw_lostpass_bp_nonce'),
+    ]);
 }, 20);

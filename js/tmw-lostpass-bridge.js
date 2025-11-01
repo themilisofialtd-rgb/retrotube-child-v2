@@ -6,16 +6,25 @@
     var $btn  = $form.find('button[type="submit"]');
     var user  = $.trim($form.find('input[name="user_login"], input[name="user_or_email"], input[name="wpst_user_or_email"], input[type="email"]').val());
 
+    $form.find('.tmw-reset-msg').remove();
+
     $btn.prop('disabled', true).text('Loading...');
 
     var ajaxUrl = (window.ajaxurl || (window.tmwLostPass && tmwLostPass.ajax_url)) || '/wp-admin/admin-ajax.php';
 
-    $.post(ajaxUrl, { action: 'wpst_reset_password', wpst_user_or_email: user })
+    $.post(ajaxUrl, {
+      action: (window.tmwLostPass && tmwLostPass.action) || 'tmw_lostpass_bp',
+      user_login: user,
+      tmw_lostpass_bp_nonce: window.tmwLostPass ? tmwLostPass.nonce : ''
+    })
       .done(function (resp) {
         $btn.prop('disabled', false).text('Get new password');
         try {
-          if (resp && (resp.success || resp.loggedin) && resp.message) {
-            $form.replaceWith(resp.message);
+          var payload = resp && resp.data ? resp.data : resp;
+          if (resp && (resp.success || resp.loggedin) && payload && payload.message) {
+            $form.replaceWith(payload.message);
+          } else if (payload && payload.message) {
+            $form.prepend('<div class="tmw-reset-msg">' + payload.message + '</div>');
           } else {
             $form.prepend('<div class="tmw-reset-msg"><p class="alert alert-danger">Unexpected response. Please try again.</p></div>');
           }
