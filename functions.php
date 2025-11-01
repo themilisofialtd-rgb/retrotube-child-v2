@@ -72,5 +72,12 @@ require_once get_stylesheet_directory() . '/inc/tmw-lostpass-proxy.php';
 require_once get_stylesheet_directory() . '/inc/tmw-auth-redirects.php';
 require_once get_stylesheet_directory() . '/inc/tmw-login-style.php';
 
-// KEEP ONLY if it’s strictly SMTP deliverability; otherwise guard its filters inside the file
+// Legacy lost-pass AJAX (loop culprit) — DISABLED
+// require_once get_stylesheet_directory() . '/inc/tmw-lostpass-bulletproof.php';
+
+// Mail deliverability helper — keep ONLY if SMTP/headers (no email-body rewrite).
+// If it rewrites retrieve_password_message, the new cleanup module will guard it.
 require_once get_stylesheet_directory() . '/inc/tmw-mail-fix.php';
+
+// Ensure any lingering legacy hooks/scripts are fully disabled
+require_once get_stylesheet_directory() . '/inc/tmw-auth-legacy-off.php';
