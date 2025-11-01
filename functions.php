@@ -64,3 +64,26 @@ if (file_exists($gap_audit)) { require_once $gap_audit; }
 // Load FULL audit for header→H1 gap (report only, admin + flag)
 $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
+
+// Lost Password (child-only) — core-powered reset via AJAX
+$tmw_lp = TMW_CHILD_PATH . '/inc/tmw-lostpass.php';
+if (file_exists($tmw_lp)) { require_once $tmw_lp; }
+
+add_action('wp_enqueue_scripts', function () {
+    // Enqueue only on front-end
+    wp_enqueue_script(
+        'tmw-lostpass',
+        TMW_CHILD_URL . '/js/tmw-lostpass.js',
+        ['jquery'],
+        TMW_CHILD_VERSION,
+        true
+    );
+    wp_add_inline_script(
+        'tmw-lostpass',
+        'window.tmwAuth = ' . wp_json_encode([
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('tmw_auth'),
+        ]) . ';',
+        'before'
+    );
+}, 20);
