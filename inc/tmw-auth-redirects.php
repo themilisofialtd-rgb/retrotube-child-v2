@@ -9,8 +9,10 @@ if (!defined('TMW_ACCOUNT_URL')) {
     define('TMW_ACCOUNT_URL', home_url('/'));
 }
 
-function tmw_account_url() {
-    return apply_filters('tmw/account_url', TMW_ACCOUNT_URL);
+if (!function_exists('tmw_account_url')) {
+    function tmw_account_url() {
+        return apply_filters('tmw/account_url', TMW_ACCOUNT_URL);
+    }
 }
 
 // After successful login, send non-admins to account/front-end URL regardless of redirect_to.
