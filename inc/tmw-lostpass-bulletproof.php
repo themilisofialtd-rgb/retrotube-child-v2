@@ -45,62 +45,115 @@ function tmw_lostpass_bp_handle()
     nocache_headers();
 
     $raw = isset($_POST) ? wp_unslash($_POST) : [];
-    $candidates = ['user_login', 'user_login_or_email', 'login', 'user_email', 'email', 'username'];
-    $user_login = '';
+    $candidates = ['wpst_user_or_email', 'user_or_email', 'user_login', 'email', 'username'];
+    $identifier = '';
+    $source = '';
+    $is_email = false;
 
-    foreach ($candidates as $k) {
-        if (!empty($raw[$k])) {
-            $user_login = sanitize_text_field($raw[$k]);
-            break;
+    foreach ($candidates as $key) {
+        if (empty($raw[$key])) {
+            continue;
         }
+
+        $value = trim((string) $raw[$key]);
+        if ($value === '') {
+            continue;
+        }
+
+        $candidate_is_email = is_email($value);
+
+        if ($candidate_is_email || $key === 'email') {
+            $sanitized = sanitize_email($value);
+            $candidate_is_email = $sanitized !== '';
+        } else {
+            $sanitized = sanitize_user($value, true);
+        }
+
+        if ($sanitized === '') {
+            continue;
+        }
+
+        $identifier = $sanitized;
+        $source = $key;
+        $is_email = $candidate_is_email;
+        break;
     }
 
-    if ($user_login === '') {
-        tmw_lp_log('ERR missing credential');
-        tmw_lostpass_bp_json(
-            false,
-            '<p class="alert alert-danger">' . esc_html__('Missing username or email.', 'wpst') . '</p>',
-            'missing_username_or_email'
-        );
+    tmw_lp_log('request', [
+        'source' => $source ?: 'none',
+        'type'   => $identifier === '' ? 'missing' : ($is_email ? 'email' : 'user_login'),
+        'length' => $identifier === '' ? 0 : strlen($identifier),
+    ]);
+
+    if ($identifier === '') {
+        tmw_lp_log('missing');
+        tmw_lostpass_bp_json([
+            'ok'      => false,
+            'code'    => 'missing',
+            'message' => __('Enter a valid username or email.', 'wpst'),
+        ]);
     }
 
-    $r = retrieve_password($user_login);
+    $result = retrieve_password($identifier);
 
-    if (is_wp_error($r)) {
-        tmw_lp_log('ERR core retrieve_password', ['code' => $r->get_error_code()]);
-        tmw_lostpass_bp_json(
-            false,
-            '<p class="alert alert-danger">' . esc_html($r->get_error_message()) . '</p>',
-            $r->get_error_code() ?: 'password_reset_error'
-        );
+    if (is_wp_error($result)) {
+        $code = $result->get_error_code() ?: 'password_reset_error';
+        tmw_lp_log('core_error:' . $code, [
+            'type' => $is_email ? 'email' : 'user_login',
+        ]);
+
+        $message = wp_strip_all_tags($result->get_error_message());
+        if ($message === '') {
+            $message = __('We were unable to process your request. Please try again.', 'wpst');
+        }
+
+        tmw_lostpass_bp_json([
+            'ok'      => false,
+            'code'    => $code,
+            'message' => $message,
+        ]);
     }
 
-    tmw_lp_log('OK email sent', ['user_login' => $user_login]);
-    tmw_lostpass_bp_json(
-        true,
-        '<p class="alert alert-success">' . esc_html__('Password Reset. Please check your email.', 'wpst') . '</p>',
-        'password_reset_email_sent'
-    );
+    tmw_lp_log('core_ok', [
+        'type' => $is_email ? 'email' : 'user_login',
+    ]);
+    tmw_lp_log('mail_sent', [
+        'type' => $is_email ? 'email' : 'user_login',
+    ]);
+
+    tmw_lostpass_bp_json([
+        'ok'      => true,
+        'code'    => 'mail_sent',
+        'message' => __('Password Reset. Please check your email.', 'wpst'),
+    ]);
 }
 
 /**
  * Emit JSON that both WP and RetroTube-style scripts accept.
  * Also duplicates message under common legacy keys to be future-proof.
  */
-function tmw_lostpass_bp_json($ok, $message, $code = '')
+function tmw_lostpass_bp_json($result)
 {
-    $payload = [
-        'message'  => $message,
-        'status'   => $ok ? 'ok' : 'error',
-        'event'    => 'lostpassword',
-        'code'     => $code,
-        'msg'      => $message,
-        'html'     => $message,
-        'redirect' => '',
-        'reload'   => false,
-        'refresh'  => false,
-        'loggedin' => false,
-    ];
+    $ok = !empty($result['ok']);
+    $message = isset($result['message']) ? (string) $result['message'] : '';
+    $code = isset($result['code']) ? (string) $result['code'] : '';
+
+    $payload = array_merge(
+        [
+            'ok'       => $ok,
+            'code'     => $code,
+            'message'  => $message,
+            'status'   => $ok ? 'ok' : 'error',
+            'event'    => 'lostpassword',
+            'msg'      => $message,
+            'html'     => $message === '' ? '' : '<p class="alert alert-' . ($ok ? 'success' : 'danger') . '">' . esc_html($message) . '</p>',
+            'redirect' => '',
+            'reload'   => false,
+            'refresh'  => false,
+            'loggedin' => false,
+        ],
+        $result
+    );
 
     if ($ok) {
         wp_send_json_success($payload);
