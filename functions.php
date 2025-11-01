@@ -25,6 +25,10 @@ if (file_exists($tmw_ajax_auth)) {
     require_once $tmw_ajax_auth;
 }
 
+/** TMW Lost Password — FIX (routes popup → core, stops loader) */
+$tmw_lp_fix = get_stylesheet_directory() . '/inc/tmw-lostpass-fix.php';
+if (file_exists($tmw_lp_fix)) { require_once $tmw_lp_fix; }
+
 // TEMP: disable email activation module
 // if (file_exists(get_stylesheet_directory() . '/inc/tmw-email-activation.php')) {
 //     require_once get_stylesheet_directory() . '/inc/tmw-email-activation.php';

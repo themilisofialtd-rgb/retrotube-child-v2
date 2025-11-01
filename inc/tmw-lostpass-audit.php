@@ -52,9 +52,17 @@ function tmw_lostpass_audit_log_request() {
 }
 
 // --- 2) Prove core retrieve_password() ran (fires when building the message)
-add_filter('retrieve_password_message', function ($message, $key, $user_login, $user_data) {
+add_filter('retrieve_password_message', function (...$args) {
+    $message    = $args[0] ?? '';
+    $key        = $args[1] ?? '';
+    $user_login = $args[2] ?? '';
+    $user_data  = $args[3] ?? null;
+    $uid        = (is_object($user_data) && isset($user_data->ID)) ? $user_data->ID : 'n/a';
+
     error_log('[TMW-LOSTPASS-AUDIT] core:retrieve_password user_login=' . $user_login .
-              ' user_id=' . (is_object($user_data) ? $user_data->ID : 'n/a'));
+              ' key=' . substr((string) $key, 0, 6) .
+              ' uid=' . $uid);
+
     return $message;
 }, 10, 4);
 
