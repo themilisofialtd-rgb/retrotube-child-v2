@@ -1,40 +1,91 @@
+/* global jQuery */
 (function ($) {
-  $(document).on('submit', '#wpst-reset-password, form[action*="lostpassword"]', function (e) {
+  'use strict';
+
+  // Expect a form inside the modal with a single input for user/email.
+  // Adjust selectors if your template differs.
+  var $modal = $('#wpst-reset-modal, .wpst-reset-modal, #wpst-reset, #tmw-reset-modal').first();
+  var $form  = $modal.find('form').first();
+  var $input = $form.find('input[type="text"], input[name="wpst_user_or_email"], input[name="user_login"], input[name="user_email"]').first();
+  var $btn   = $form.find('button[type="submit"], .btn[type="submit"]').first();
+  var $msg   = $form.find('.tmw-lostpass-msg');
+
+  if ($msg.length === 0) {
+    $msg = $('<div class="tmw-lostpass-msg" style="margin-top:10px;"></div>').appendTo($form);
+  }
+
+  function setLoading(isLoading) {
+    if (isLoading) {
+      $btn.prop('disabled', true);
+      $btn.data('orig', $btn.text());
+      $btn.text('Loading…');
+    } else {
+      $btn.prop('disabled', false);
+      if ($btn.data('orig')) $btn.text($btn.data('orig'));
+    }
+  }
+
+  function renderMessage(html) {
+    $msg.html(html || '');
+  }
+
+  $form.on('submit', function (e) {
     e.preventDefault();
 
-    var $form = $(this);
-    var $btn  = $form.find('button[type="submit"]');
-    var user  = $.trim($form.find('input[name="user_login"], input[name="user_or_email"], input[name="wpst_user_or_email"], input[type="email"]').val());
+    var value = ($input.val() || '').trim();
+    if (!value) {
+      renderMessage('<p class="alert alert-danger">Please enter your username or email.</p>');
+      return;
+    }
 
-    $form.find('.tmw-reset-msg').remove();
+    var nonce = $form.find('input[name="tmw_lostpass_bp_nonce"]').val() || $form.data('nonce') || '';
+    var data = {
+      action: 'wpst_lostpassword',          // child handler hook
+      tmw_lostpass_bp_nonce: nonce,
+      // send all variants so PHP can pick any
+      wpst_user_or_email: value,
+      user_login: value,
+      user_email: value,
+      email: value,
+      login: value
+    };
 
-    $btn.prop('disabled', true).text('Loading...');
+    setLoading(true);
+    renderMessage('');
 
-    var ajaxUrl = (window.ajaxurl || (window.tmwLostPass && tmwLostPass.ajax_url)) || '/wp-admin/admin-ajax.php';
-
-    $.post(ajaxUrl, {
-      action: (window.tmwLostPass && tmwLostPass.action) || 'tmw_lostpass_bp',
-      user_login: user,
-      tmw_lostpass_bp_nonce: window.tmwLostPass ? tmwLostPass.nonce : ''
-    })
-      .done(function (resp) {
-        $btn.prop('disabled', false).text('Get new password');
+    $.post(window.ajaxurl || '/wp-admin/admin-ajax.php', data)
+      .done(function (res) {
+        // Normalize result
+        var ok = false, message = '';
         try {
-          var payload = resp && resp.data ? resp.data : resp;
-          if (resp && (resp.success || resp.loggedin) && payload && payload.message) {
-            $form.replaceWith(payload.message);
-          } else if (payload && payload.message) {
-            $form.prepend('<div class="tmw-reset-msg">' + payload.message + '</div>');
-          } else {
-            $form.prepend('<div class="tmw-reset-msg"><p class="alert alert-danger">Unexpected response. Please try again.</p></div>');
+          if (typeof res === 'string') {
+            // If server echoed JSON string, try parse
+            res = JSON.parse(res);
           }
-        } catch (err) {
-          $form.prepend('<div class="tmw-reset-msg"><p class="alert alert-danger">Error. Please try again.</p></div>');
+        } catch (err) { /* ignore */ }
+
+        if (res && typeof res === 'object') {
+          ok = !!(res.ok || res.success);
+          message = res.message || '';
         }
+
+        if (!message) {
+          message = ok
+            ? '<p class="alert alert-success">Password Reset. Please check your email.</p>'
+            : '<p class="alert alert-danger">Something went wrong. Please try again.</p>';
+        }
+
+        renderMessage(message);
+
+        // Optional: you could auto-close the modal after success.
+        // if (ok) setTimeout(function(){ $modal.find('.close, .mfp-close').trigger('click'); }, 1200);
       })
       .fail(function () {
-        $btn.prop('disabled', false).text('Get new password');
-        $form.prepend('<div class="tmw-reset-msg"><p class="alert alert-danger">Network error. Please try again.</p></div>');
+        renderMessage('<p class="alert alert-danger">Network error. Please try again.</p>');
+      })
+      .always(function () {
+        setLoading(false);
       });
   });
+
 })(jQuery);
