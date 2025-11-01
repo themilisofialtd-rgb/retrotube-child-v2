@@ -67,6 +67,11 @@ if (file_exists($tmw_full)) { require_once $tmw_full; }
 
 
 // === Lost Password — BULLETPROOF single source of truth ===
+// === Auth popup + redirects (modular) ===
+require_once get_stylesheet_directory() . '/inc/tmw-lostpass-proxy.php';
+require_once get_stylesheet_directory() . '/inc/tmw-auth-redirects.php';
+require_once get_stylesheet_directory() . '/inc/tmw-login-style.php';
+
 require_once get_stylesheet_directory() . '/inc/tmw-lostpass-bulletproof.php';
 require_once get_stylesheet_directory() . '/inc/tmw-mail-fix.php';
 
