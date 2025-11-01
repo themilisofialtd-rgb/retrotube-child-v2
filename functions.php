@@ -77,3 +77,6 @@ if (file_exists($gap_audit)) { require_once $gap_audit; }
 $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
 
+
+// === TMW Lost Password — AUDIT ONLY (no behavior change) ===
+require_once get_stylesheet_directory() . '/inc/tmw-lostpass-audit.php';
