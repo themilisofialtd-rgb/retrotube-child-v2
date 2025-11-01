@@ -66,13 +66,9 @@ $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
 
 
-// === Lost Password (child) — FIX + Mail alignment (minimal includes) ===
-require_once get_stylesheet_directory() . '/inc/tmw-lostpass-fix.php';
+// === Lost Password — BULLETPROOF single source of truth ===
+require_once get_stylesheet_directory() . '/inc/tmw-lostpass-bulletproof.php';
 require_once get_stylesheet_directory() . '/inc/tmw-mail-fix.php';
-
-if (file_exists(__DIR__ . '/inc/tmw-lostpass-audit.php')) {
-    require_once __DIR__ . '/inc/tmw-lostpass-audit.php';
-}
 
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_script(
