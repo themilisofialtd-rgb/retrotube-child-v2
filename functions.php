@@ -25,18 +25,6 @@ if (file_exists($tmw_ajax_auth)) {
     require_once $tmw_ajax_auth;
 }
 
-// === Lost Password (child) — keep existing behavior; add audit (no behavior change) ===
-if (file_exists(__DIR__ . '/inc/tmw-lostpass-fix.php')) {
-    require_once __DIR__ . '/inc/tmw-lostpass-fix.php';
-}
-if (file_exists(__DIR__ . '/inc/tmw-lostpass-override.php')) {
-    require_once __DIR__ . '/inc/tmw-lostpass-override.php';
-}
-// Audit is safe/log-only and 2/4-arg compatible — keep it loaded last.
-if (file_exists(__DIR__ . '/inc/tmw-lostpass-audit.php')) {
-    require_once __DIR__ . '/inc/tmw-lostpass-audit.php';
-}
-
 // TEMP: disable email activation module
 // if (file_exists(get_stylesheet_directory() . '/inc/tmw-email-activation.php')) {
 //     require_once get_stylesheet_directory() . '/inc/tmw-email-activation.php';
@@ -78,5 +66,21 @@ $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
 
 
-// === TMW Lost Password — AUDIT ONLY (no behavior change) ===
-require_once get_stylesheet_directory() . '/inc/tmw-lostpass-audit.php';
+// === Lost Password (child) — FIX + Mail alignment (minimal includes) ===
+require_once get_stylesheet_directory() . '/inc/tmw-lostpass-fix.php';
+require_once get_stylesheet_directory() . '/inc/tmw-mail-fix.php';
+
+if (file_exists(__DIR__ . '/inc/tmw-lostpass-audit.php')) {
+    require_once __DIR__ . '/inc/tmw-lostpass-audit.php';
+}
+
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_script(
+        'tmw-lostpass-bridge',
+        get_stylesheet_directory_uri() . '/js/tmw-lostpass-bridge.js',
+        ['jquery'],
+        '1.3.0',
+        true
+    );
+    wp_localize_script('tmw-lostpass-bridge', 'tmwLostPass', ['ajax_url' => admin_url('admin-ajax.php')]);
+}, 20);
