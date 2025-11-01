@@ -65,20 +65,6 @@ if (file_exists($gap_audit)) { require_once $gap_audit; }
 $tmw_full = get_stylesheet_directory() . '/inc/audit-header-gap-full.php';
 if (file_exists($tmw_full)) { require_once $tmw_full; }
 
-// === Lost Password Bridge (routes popup → core) ===
-$tmw_lostpass = get_stylesheet_directory() . '/inc/tmw-lostpass-bridge.php';
+// Lost-password override (child only)
+$tmw_lostpass = get_stylesheet_directory() . '/inc/tmw-lostpass-override.php';
 if (file_exists($tmw_lostpass)) { require_once $tmw_lostpass; }
-
-add_action('wp_enqueue_scripts', function () {
-    $handle = 'tmw-lostpass-bridge';
-    wp_register_script(
-        $handle,
-        get_stylesheet_directory_uri() . '/js/tmw-lostpass-bridge.js',
-        array('jquery'),
-        defined('TMW_CHILD_VERSION') ? TMW_CHILD_VERSION : '1.0.0',
-        true
-    );
-    // Provide ajaxurl on the front-end.
-    wp_localize_script($handle, 'tmwLostpass', array('ajaxurl' => admin_url('admin-ajax.php')));
-    wp_enqueue_script($handle);
-}, 50);
