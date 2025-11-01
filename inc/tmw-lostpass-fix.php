@@ -4,13 +4,15 @@ if (!defined('ABSPATH')) { exit; }
  * TMW Lost Password FIX — RetroTube popup → WP core retrieve_password().
  * Supports parent actions and stops the "Loading..." loop by returning JSON.
  */
-define('TMW_LP_FIX_VERSION', '1.1.0');
+define('TMW_LP_FIX_VERSION', '1.2.0');
 
 // Hook both observed and legacy actions.
 add_action('wp_ajax_nopriv_wpst_reset_password', 'tmw_lostpass_handle');
 add_action('wp_ajax_wpst_reset_password', 'tmw_lostpass_handle');
 add_action('wp_ajax_nopriv_wpst_lostpassword', 'tmw_lostpass_handle');
 add_action('wp_ajax_wpst_lostpassword', 'tmw_lostpass_handle');
+add_action('wp_ajax_nopriv_lostpassword', 'tmw_lostpass_handle');
+add_action('wp_ajax_lostpassword', 'tmw_lostpass_handle');
 
 /**
  * Handle RetroTube lost password AJAX requests.
@@ -19,7 +21,7 @@ function tmw_lostpass_handle() {
     $action = current_action();
 
     $val = '';
-    foreach (['wpst_user_or_email', 'user_login', 'username', 'email', 'user_email', 'login'] as $k) {
+    foreach (['wpst_user_or_email', 'user_login', 'username', 'email', 'user_email', 'login', 'user_forgotten'] as $k) {
         if (!empty($_POST[$k])) {
             $val = sanitize_text_field(wp_unslash($_POST[$k]));
             break;
@@ -39,6 +41,7 @@ function tmw_lostpass_handle() {
 
     // Core expects this field populated.
     $_POST['user_login'] = $val;
+    $_REQUEST['user_login'] = $val;
 
     $result = retrieve_password();
 
