@@ -24,18 +24,8 @@ if (!function_exists('tmw_lp_log')) {
  * Register earliest handlers for all variants the popup might use.
  * wp_send_json_* calls wp_die(), so once we answer, nothing else runs.
  */
-add_action('init', function () {
-    foreach ([
-        'wp_ajax_nopriv_wpst_reset_password',
-        'wp_ajax_wpst_reset_password',
-        'wp_ajax_nopriv_wpst_lostpassword',
-        'wp_ajax_wpst_lostpassword',
-        'wp_ajax_nopriv_lostpassword',
-        'wp_ajax_lostpassword',
-    ] as $hook) {
-        add_action($hook, 'tmw_lostpass_bp_handle', 0);
-    }
-}, 1);
+add_action('wp_ajax_nopriv_tmw_lostpass_bp', 'tmw_lostpass_bp_handle', 0);
+add_action('wp_ajax_tmw_lostpass_bp', 'tmw_lostpass_bp_handle', 0);
 
 /**
  * Main handler — sanitize input, call core, return universal JSON.
@@ -45,6 +35,16 @@ function tmw_lostpass_bp_handle()
     nocache_headers();
 
     $raw = isset($_POST) ? wp_unslash($_POST) : [];
+
+    $nonce = isset($raw['tmw_lostpass_bp_nonce']) ? $raw['tmw_lostpass_bp_nonce'] : '';
+    if (!is_string($nonce) || !wp_verify_nonce($nonce, 'tmw_lostpass_bp_nonce')) {
+        tmw_lp_log('ERR invalid nonce');
+        tmw_lostpass_bp_json(
+            false,
+            '<p class="alert alert-danger">' . esc_html__('Security check failed. Please refresh and try again.', 'wpst') . '</p>',
+            'invalid_nonce'
+        );
+    }
     $candidates = ['user_login', 'user_login_or_email', 'login', 'user_email', 'email', 'username'];
     $user_login = '';
 
@@ -111,7 +111,7 @@ function tmw_lostpass_bp_json($ok, $message, $code = '')
 
 /**
  * Tiny UI adapter: if any script fails to resolve the spinner,
- * catch the ajaxSuccess for wpst_reset_password and update the modal.
+ * catch the ajaxSuccess for tmw_lostpass_bp and update the modal.
  */
 add_action('wp_enqueue_scripts', function () {
     $script = <<<'JS'
@@ -134,9 +134,7 @@ add_action('wp_enqueue_scripts', function () {
 
         $(document).on('ajaxSuccess', function(e, xhr, settings){
             if (!settings || !settings.url) return;
-            if (settings.url.indexOf('action=wpst_reset_password') !== -1 ||
-                settings.url.indexOf('action=wpst_lostpassword')  !== -1 ||
-                settings.url.indexOf('action=lostpassword')        !== -1) {
+            if (settings.url.indexOf('action=tmw_lostpass_bp') !== -1) {
                 try { handleLostPassResponse(JSON.parse(xhr.responseText)); }
                 catch(_) { handleLostPassResponse({}); }
             }
