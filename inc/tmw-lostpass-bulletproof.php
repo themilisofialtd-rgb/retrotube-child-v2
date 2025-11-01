@@ -3,21 +3,9 @@
  * TMW Lost Password — BULLETPROOF adapter
  * - Owns RetroTube's popup endpoint and calls WP core retrieve_password()
  * - Emits JSON compatible with multiple legacy handlers to avoid UI loops
- * - Ships a tiny UI adapter to kill the "Loading..." spinner and print the message
  */
 if (!defined('ABSPATH')) {
     exit;
-}
-
-if (!function_exists('tmw_lp_log')) {
-    function tmw_lp_log($msg, array $ctx = [])
-    {
-        $s = '[TMW-LOSTPASS-BP] ' . $msg;
-        if ($ctx) {
-            $s .= ' ' . wp_json_encode($ctx);
-        }
-        error_log($s);
-    }
 }
 
 /**
@@ -36,111 +24,103 @@ function tmw_lostpass_bp_handle()
 
     $raw = isset($_POST) ? wp_unslash($_POST) : [];
 
+    // Accept all front-end variants the popup might send.
+    $candidates = [
+        'wpst_user_or_email',   // popup uses this (primary)
+        'user_or_email',        // legacy
+        'user_login_or_email',  // legacy
+        'user_login',
+        'user_email',
+        'email',
+        'login',
+        'username',
+    ];
+
+    // Nonce (expect from JS); fail closed with a clear message.
     $nonce = isset($raw['tmw_lostpass_bp_nonce']) ? $raw['tmw_lostpass_bp_nonce'] : '';
     if (!is_string($nonce) || !wp_verify_nonce($nonce, 'tmw_lostpass_bp_nonce')) {
-        tmw_lp_log('ERR invalid nonce');
-        tmw_lostpass_bp_json(
+        return tmw_lostpass_bp_json(
             false,
             '<p class="alert alert-danger">' . esc_html__('Security check failed. Please refresh and try again.', 'wpst') . '</p>',
             'invalid_nonce'
         );
     }
-    $candidates = ['user_login', 'user_login_or_email', 'login', 'user_email', 'email', 'username'];
-    $user_login = '';
 
-    foreach ($candidates as $k) {
-        if (!empty($raw[$k])) {
-            $user_login = sanitize_text_field($raw[$k]);
+    // Extract identifier
+    $identifier = '';
+    $source     = '';
+    foreach ($candidates as $key) {
+        if (!empty($raw[$key])) {
+            $identifier = trim((string) $raw[$key]);
+            $source     = $key;
             break;
         }
     }
 
-    if ($user_login === '') {
-        tmw_lp_log('ERR missing credential');
-        tmw_lostpass_bp_json(
+    if ($identifier === '') {
+        error_log('[TMW-LOSTPASS] ERR msg="Missing username or email."');
+        return tmw_lostpass_bp_json(
             false,
             '<p class="alert alert-danger">' . esc_html__('Missing username or email.', 'wpst') . '</p>',
-            'missing_username_or_email'
+            'missing_identifier'
         );
     }
 
-    $r = retrieve_password($user_login);
+    // Call WP core
+    add_filter('allow_password_reset', function ($allow, $uid) {
+        error_log('[TMW-LOSTPASS-AUDIT] filter:allow_password_reset user_id=' . intval($uid) . ' allow=' . var_export($allow, true));
+        return $allow;
+    }, 10, 2);
 
-    if (is_wp_error($r)) {
-        tmw_lp_log('ERR core retrieve_password', ['code' => $r->get_error_code()]);
-        tmw_lostpass_bp_json(
+    $is_email = is_email($identifier);
+    $login    = $identifier;
+
+    // If email was provided, translate to user_login for retrieve_password() compatibility
+    if ($is_email) {
+        $user = get_user_by('email', $identifier);
+        if ($user && $user instanceof WP_User) {
+            $login = $user->user_login;
+        }
+    }
+
+    $result = retrieve_password($login);
+
+    if ($result instanceof WP_Error) {
+        error_log('[TMW-LOSTPASS] core:retrieve_password error code=' . $result->get_error_code() . ' src=' . $source);
+        $msg = $result->get_error_message();
+        if (!$msg) {
+            $msg = __('Password reset is not allowed for this user', 'wpst');
+        }
+        return tmw_lostpass_bp_json(
             false,
-            '<p class="alert alert-danger">' . esc_html($r->get_error_message()) . '</p>',
-            $r->get_error_code() ?: 'password_reset_error'
+            '<p class="alert alert-danger">' . esc_html($msg) . '</p>',
+            $result->get_error_code() ?: 'password_reset_denied'
         );
     }
 
-    tmw_lp_log('OK email sent', ['user_login' => $user_login]);
-    tmw_lostpass_bp_json(
+    // Success
+    error_log(sprintf('[TMW-LOSTPASS] core:retrieve_password ok user_login=%s src=%s', $login, $source));
+
+    return tmw_lostpass_bp_json(
         true,
         '<p class="alert alert-success">' . esc_html__('Password Reset. Please check your email.', 'wpst') . '</p>',
-        'password_reset_email_sent'
+        'ok'
     );
 }
 
 /**
- * Emit JSON that both WP and RetroTube-style scripts accept.
- * Also duplicates message under common legacy keys to be future-proof.
+ * Deterministic JSON envelope for the modal.
  */
-function tmw_lostpass_bp_json($ok, $message, $code = '')
+function tmw_lostpass_bp_json($ok, $message, $code = 'ok')
 {
     $payload = [
-        'message'  => $message,
-        'status'   => $ok ? 'ok' : 'error',
-        'event'    => 'lostpassword',
-        'code'     => $code,
-        'msg'      => $message,
-        'html'     => $message,
-        'redirect' => '',
-        'reload'   => false,
-        'refresh'  => false,
-        'loggedin' => false,
+        'ok'      => (bool) $ok,
+        'message' => (string) $message,
+        'code'    => (string) $code,
     ];
-
-    if ($ok) {
-        wp_send_json_success($payload);
+    // Compatibility keys for any legacy JS that looks for "success"
+    if (!isset($payload['success'])) {
+        $payload['success'] = $payload['ok'];
     }
-
-    wp_send_json_error($payload, 200);
+    wp_send_json($payload);
 }
-
-/**
- * Tiny UI adapter: if any script fails to resolve the spinner,
- * catch the ajaxSuccess for tmw_lostpass_bp and update the modal.
- */
-add_action('wp_enqueue_scripts', function () {
-    $script = <<<'JS'
-    (function($){
-        function handleLostPassResponse(raw){
-            var data = raw && raw.data ? raw.data : raw;
-            var msg  = (data && (data.message || data.msg || data.html)) || '';
-            var $form = $('#wpst-reset-password');
-            if (!$form.length) { return; }
-            var $btn  = $form.find('button[type=submit]');
-            var $status = $form.find('.tmw-ajax-status');
-            if (!$status.length) { $status = $('<div class="tmw-ajax-status" />').prependTo($form); }
-            if (msg) { $status.html(msg); }
-            $btn.removeClass('disabled loading').prop('disabled', false);
-            if ($btn.is('[data-loading-text]')) {
-                $btn.text($btn.data('original-text') || $btn.text());
-            }
-            $('body').trigger('tmw:lostpassword:success');
-        }
-
-        $(document).on('ajaxSuccess', function(e, xhr, settings){
-            if (!settings || !settings.url) return;
-            if (settings.url.indexOf('action=tmw_lostpass_bp') !== -1) {
-                try { handleLostPassResponse(JSON.parse(xhr.responseText)); }
-                catch(_) { handleLostPassResponse({}); }
-            }
-        });
-    })(jQuery);
-    JS;
-
-    wp_add_inline_script('jquery', $script, 'after');
-}, 9999);
