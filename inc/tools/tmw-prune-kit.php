@@ -52,18 +52,33 @@ add_action('template_redirect', function () {
 
 /* ---------- core ---------- */
 
+function tmw_prune_directory_iterator($theme_dir) {
+    $dir = new RecursiveDirectoryIterator($theme_dir, FilesystemIterator::SKIP_DOTS);
+    $filter = new RecursiveCallbackFilterIterator($dir, function ($current) {
+        if ($current->isDir()) {
+            $name = $current->getFilename();
+            if ($name !== '' && $name[0] === '.') {
+                return false;
+            }
+        }
+        return true;
+    });
+
+    return new RecursiveIteratorIterator($filter, RecursiveIteratorIterator::LEAVES_ONLY);
+}
+
 function tmw_prune_build_report() {
     $theme_dir = trailingslashit(get_stylesheet_directory());
     $theme_uri = trailingslashit(get_stylesheet_directory_uri());
 
     // 1) Gather all files
     $all = [];
-    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($theme_dir, FilesystemIterator::SKIP_DOTS));
+    $rii = tmw_prune_directory_iterator($theme_dir);
     foreach ($rii as $file) {
         /** @var SplFileInfo $file */
         $path = str_replace($theme_dir, '', $file->getPathname());
-        // Ignore .trash/ and dotfiles
-        if (strpos($path, '.trash/') === 0 || substr($file->getFilename(), 0, 1) === '.') continue;
+        // Ignore dotfiles
+        if (substr($file->getFilename(), 0, 1) === '.') continue;
         $all[] = $path;
     }
 
@@ -137,7 +152,7 @@ function tmw_prune_static_scan_references($theme_dir) {
     $refs = [];
 
     $php_files = [];
-    $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($theme_dir, FilesystemIterator::SKIP_DOTS));
+    $rii = tmw_prune_directory_iterator($theme_dir);
     foreach ($rii as $file) {
         if (strtolower($file->getExtension()) === 'php') {
             $php_files[] = $file->getPathname();
