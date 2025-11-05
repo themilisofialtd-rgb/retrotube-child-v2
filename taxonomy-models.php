@@ -14,7 +14,7 @@ get_header();
   <h1 class="tmw-title-text">Models</h1>
 </div>
 <div class="tmw-layout">
-  <main id="primary" class="site-main">
+  <main id="primary" class="site-main" data-mobile-guard="true">
     <?php get_template_part('breadcrumb'); ?>
     <h2 class="widget-title">Videos Featuring <?php echo single_term_title('', false); ?></h2>
     <?php

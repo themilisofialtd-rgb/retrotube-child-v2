@@ -8,7 +8,7 @@ get_header();
 ?>
 <main id="primary" class="site-main">
   <div class="tmw-layout container">
-    <section class="tmw-content">
+    <section class="tmw-content" data-mobile-guard="true">
       <header class="entry-header">
         <h1 class="widget-title"><span class="tmw-star">★</span> Models</h1>
       </header>

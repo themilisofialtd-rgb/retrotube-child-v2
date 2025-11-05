@@ -67,6 +67,20 @@ add_action('wp_enqueue_scripts', function () {
 
   wp_enqueue_style('rt-child-flip');
 
+  $guard_path = get_stylesheet_directory() . '/js/tmw-flip-guard.js';
+  $guard_src  = get_stylesheet_directory_uri() . '/js/tmw-flip-guard.js';
+  $guard_ver  = file_exists($guard_path) ? filemtime($guard_path) : null;
+
+  wp_register_script('tmw-flip-guard', $guard_src, [], $guard_ver, true);
+
+  if (
+    is_tax('models') ||
+    is_post_type_archive('models') ||
+    is_page_template('page-models-grid.php')
+  ) {
+    wp_enqueue_script('tmw-flip-guard');
+  }
+
   // Trim unused assets
   wp_dequeue_style('wp-block-library');
   wp_dequeue_style('wp-block-library-theme');
@@ -199,13 +213,18 @@ if (file_exists(get_stylesheet_directory() . '/inc/tmw-mobile-hero-parity.php'))
  * The filters are ignored automatically when Autoptimize is not active.
  */
 add_filter('autoptimize_filter_css_exclude', function ($list) {
-    $extra = ',retrotube-child-style,tmw-mobile-hero-fix,tmw-hero,tmw-banner';
+    // Keep the child stylesheet separate for predictable cascade, and ensure
+    // the late inline hero fix stays untouched for debug toggles.
+    $extra = ',retrotube-child-style,tmw-mobile-hero-fix';
     return is_string($list) ? $list . $extra : $extra;
 });
-add_filter('autoptimize_filter_js_exclude', function ($list) {
-    $extra = ',tmw-offset-fix,tmw-hero';
-    return is_string($list) ? $list . $extra : $extra;
-});
+add_filter('script_loader_tag', function ($tag, $handle, $src) {
+    if ('tmw-flip-guard' === $handle) {
+        $tag = str_replace('<script ', '<script defer ', $tag);
+    }
+
+    return $tag;
+}, 10, 3);
 
 /** Admin enqueues (editor/post type model) */
 add_action('admin_enqueue_scripts', function ($hook) {

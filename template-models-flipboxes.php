@@ -6,7 +6,7 @@
 get_header(); ?>
 <main id="primary" class="site-main">
   <div class="tmw-layout container">
-    <section class="tmw-content">
+    <section class="tmw-content" data-mobile-guard="true">
       <h1 class="section-title">Models</h1>
       <?php
       // Edit banner file at /assets/models-banner.html or pass banner_* via shortcode below.
