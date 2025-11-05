@@ -65,7 +65,16 @@ add_action('wp_enqueue_scripts', function () {
     $flipboxes_ver
   );
 
-  wp_enqueue_style('rt-child-flip');
+  $a11y_style_path = get_stylesheet_directory() . '/css/a11y.css';
+  if (file_exists($a11y_style_path)) {
+    $a11y_style_ver = filemtime($a11y_style_path) ?: $child_version;
+    wp_register_style(
+      'tmw-flip-a11y',
+      get_stylesheet_directory_uri() . '/css/a11y.css',
+      ['retrotube-child-style'],
+      $a11y_style_ver
+    );
+  }
 
   $guard_path = get_stylesheet_directory() . '/js/tmw-flip-guard.js';
   $guard_src  = get_stylesheet_directory_uri() . '/js/tmw-flip-guard.js';
@@ -73,12 +82,33 @@ add_action('wp_enqueue_scripts', function () {
 
   wp_register_script('tmw-flip-guard', $guard_src, [], $guard_ver, true);
 
-  if (
+  $a11y_script_path = get_stylesheet_directory() . '/js/tmw-flip-a11y.js';
+  $a11y_script_src  = get_stylesheet_directory_uri() . '/js/tmw-flip-a11y.js';
+  $a11y_script_ver  = file_exists($a11y_script_path) ? filemtime($a11y_script_path) : null;
+
+  if (file_exists($a11y_script_path)) {
+    wp_register_script('tmw-flip-a11y', $a11y_script_src, [], $a11y_script_ver, true);
+  }
+
+  $is_flip_context = (
     is_tax('models') ||
     is_post_type_archive('models') ||
-    is_page_template('page-models-grid.php')
-  ) {
+    is_page_template('page-models-grid.php') ||
+    is_page_template('template-models-flipboxes.php')
+  );
+
+  if ($is_flip_context) {
+    wp_enqueue_style('rt-child-flip');
+
+    if (wp_style_is('tmw-flip-a11y', 'registered')) {
+      wp_enqueue_style('tmw-flip-a11y');
+    }
+
     wp_enqueue_script('tmw-flip-guard');
+
+    if (wp_script_is('tmw-flip-a11y', 'registered')) {
+      wp_enqueue_script('tmw-flip-a11y');
+    }
   }
 
   // Trim unused assets
@@ -219,8 +249,12 @@ add_filter('autoptimize_filter_css_exclude', function ($list) {
     return is_string($list) ? $list . $extra : $extra;
 });
 add_filter('script_loader_tag', function ($tag, $handle, $src) {
-    if ('tmw-flip-guard' === $handle) {
-        $tag = str_replace('<script ', '<script defer ', $tag);
+    $defer_handles = ['tmw-flip-guard', 'tmw-flip-a11y'];
+
+    if (in_array($handle, $defer_handles, true)) {
+        if (strpos($tag, ' defer ') === false && strpos($tag, ' defer>') === false) {
+            $tag = str_replace('<script ', '<script defer ', $tag);
+        }
     }
 
     return $tag;
