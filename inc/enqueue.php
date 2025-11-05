@@ -26,6 +26,32 @@ if (!function_exists('tmw_child_style_version')) {
 /* ======================================================================
  * STYLES + LIGHTWEIGHT OPTIMIZATIONS
  * ====================================================================== */
+function tmw_child_has_flipbox_shortcode(): bool {
+  if (is_admin()) {
+    return false;
+  }
+
+  global $post;
+
+  if (!($post instanceof WP_Post)) {
+    return false;
+  }
+
+  $content = $post->post_content ?? '';
+
+  if ($content === '') {
+    return false;
+  }
+
+  foreach (['models_flipboxes', 'featured_models'] as $shortcode) {
+    if (has_shortcode($content, $shortcode) || strpos($content, '[' . $shortcode) !== false) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 add_action('wp_enqueue_scripts', function () {
   $parent_version = wp_get_theme(get_template())->get('Version');
   $child_version  = tmw_child_style_version();
@@ -96,6 +122,10 @@ add_action('wp_enqueue_scripts', function () {
     is_page_template('page-models-grid.php') ||
     is_page_template('template-models-flipboxes.php')
   );
+
+  if (!$is_flip_context && tmw_child_has_flipbox_shortcode()) {
+    $is_flip_context = true;
+  }
 
   if ($is_flip_context) {
     wp_enqueue_style('rt-child-flip');
