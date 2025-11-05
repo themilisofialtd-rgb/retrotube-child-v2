@@ -74,7 +74,7 @@ function tmw_send_activation_email($user_id){
     $headers = apply_filters('tmw_activation_mail_headers', array('Content-Type: text/plain; charset=UTF-8'));
     $sent = wp_mail($user->user_email, $subj, $msg, $headers);
 
-    if (function_exists('error_log')) {
+    if (function_exists('error_log') && defined('TMW_DEBUG') && TMW_DEBUG) {
         error_log('[TMW-ACT-SEND] uid='.$user_id.' email='.sanitize_email($user->user_email).' sent='.($sent?'1':'0'));
     }
 
@@ -116,7 +116,7 @@ function tmw_handle_activation(){
     delete_user_meta($uid, 'tmw_activation_hash');
     delete_user_meta($uid, 'tmw_activation_ts');
 
-    if (function_exists('error_log')) error_log('[TMW-ACT-OK] uid='.$uid);
+    if (function_exists('error_log') && defined('TMW_DEBUG') && TMW_DEBUG) error_log('[TMW-ACT-OK] uid='.$uid);
 
     // Auto-login & redirect or show message
     if (TMW_ACTIVATION_AUTLOGIN) {
@@ -130,7 +130,7 @@ function tmw_handle_activation(){
 }
 
 function tmw_activation_exit($message, $success){
-    if (function_exists('error_log')) error_log('[TMW-ACT-FAIL] '.sanitize_text_field($message));
+    if (function_exists('error_log') && defined('TMW_DEBUG') && TMW_DEBUG) error_log('[TMW-ACT-FAIL] '.sanitize_text_field($message));
     // Render a minimal message (avoids JSON & is shareable link)
     wp_die(
         esc_html($message),
@@ -159,7 +159,7 @@ function tmw_resend_activation(){
     }
 
     $ok = tmw_send_activation_email($user->ID);
-    if (function_exists('error_log')) error_log('[TMW-ACT-RESEND] uid='.$user->ID.' ok='.($ok?'1':'0'));
+    if (function_exists('error_log') && defined('TMW_DEBUG') && TMW_DEBUG) error_log('[TMW-ACT-RESEND] uid='.$user->ID.' ok='.($ok?'1':'0'));
 
     if ($ok) wp_send_json_success(array('message' => __('We’ve sent a new activation email.', 'retrotube')));
     wp_send_json_error(array('message' => __('Could not send activation email. Please try again later.', 'retrotube')));

@@ -1,6 +1,10 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
+if (!defined('TMW_DEBUG') || !TMW_DEBUG) {
+    return;
+}
+
 /**
  * TMW Register Flow Audit (Audit-Only)
  * Logs front/back signals for signup without changing behavior.

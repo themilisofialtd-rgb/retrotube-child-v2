@@ -4,6 +4,10 @@ if (!defined('ABSPATH')) { exit; }
 // General shortcodes will be migrated here in Phase 2.
 
 add_action('init', function () {
+    if (!defined('TMW_DEBUG') || !TMW_DEBUG) {
+        return;
+    }
+
     if (!shortcode_exists('tmw_slot_machine')) {
         error_log('[TMW-SLOT-AUDIT] shortcode tmw_slot_machine not registered on init');
         return;

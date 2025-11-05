@@ -1,6 +1,10 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
+if (!defined('TMW_DEBUG') || !TMW_DEBUG) {
+    return;
+}
+
 final class TMW_TML_Bridge {
     const TAG = '[TMW-TML]';
 

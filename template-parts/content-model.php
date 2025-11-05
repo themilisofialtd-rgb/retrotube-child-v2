@@ -1,8 +1,11 @@
 <?php
 $model_id   = get_the_ID();
 $model_name = get_the_title();
+$tmw_debug_enabled = defined('TMW_DEBUG') && TMW_DEBUG;
 
-error_log('[TMW-MODEL-AUDIT] template-parts/content-model.php loaded for ' . $model_name);
+if ($tmw_debug_enabled) {
+        error_log('[TMW-MODEL-AUDIT] template-parts/content-model.php loaded for ' . $model_name);
+}
 
 $banner_url      = tmw_resolve_model_banner_url( $model_id );
 
@@ -88,10 +91,12 @@ if ( empty( $cta_label ) ) {
                                 $__exists = shortcode_exists('tmw_slot_machine') ? 'yes' : 'no';
                                 $__out    = do_shortcode('[tmw_slot_machine]');
                                 $__len    = strlen( trim( wp_strip_all_tags( $__out ) ) );
-                                error_log(
-                                        '[TMW-SLOT-AUDIT] under #video-about model="' . get_the_title() . '" ' .
-                                        'post_type=' . get_post_type() . ' shortcode_exists=' . $__exists . ' output_len=' . $__len
-                                );
+                                if ($tmw_debug_enabled) {
+                                        error_log(
+                                                '[TMW-SLOT-AUDIT] under #video-about model="' . get_the_title() . '" ' .
+                                                'post_type=' . get_post_type() . ' shortcode_exists=' . $__exists . ' output_len=' . $__len
+                                        );
+                                }
                                 ?>
                                 <div class="tmw-slot-banner" style="margin:15px 0 20px;text-align:center;">
                                         <?php if ($__len === 0): ?>
@@ -113,19 +118,27 @@ if ( empty( $cta_label ) ) {
                         <?php
                         $model_slug = get_post_field('post_name', get_the_ID());
                         if (!is_string($model_slug) || $model_slug === '') {
-                                error_log('[TMW-MODEL-AUDIT] Unable to determine model slug in content-model.php');
+                                if ($tmw_debug_enabled) {
+                                        error_log('[TMW-MODEL-AUDIT] Unable to determine model slug in content-model.php');
+                                }
                         } elseif (function_exists('tmw_get_videos_for_model')) {
                                 $videos = tmw_get_videos_for_model($model_slug);
                                 if (!is_array($videos)) {
                                         $video_count = 0;
-                                        error_log('[TMW-MODEL-AUDIT] Unexpected result from tmw_get_videos_for_model for ' . $model_slug);
+                                        if ($tmw_debug_enabled) {
+                                                error_log('[TMW-MODEL-AUDIT] Unexpected result from tmw_get_videos_for_model for ' . $model_slug);
+                                        }
                                 } else {
                                         $video_count = count($videos);
                                 }
                                 set_query_var('tmw_model_videos', $videos);
-                                error_log('[TMW-MODEL-AUDIT] ' . $model_slug . ' video count: ' . $video_count);
+                                if ($tmw_debug_enabled) {
+                                        error_log('[TMW-MODEL-AUDIT] ' . $model_slug . ' video count: ' . $video_count);
+                                }
                         } else {
-                                error_log('[TMW-MODEL-AUDIT] tmw_get_videos_for_model unavailable in content-model.php');
+                                if ($tmw_debug_enabled) {
+                                        error_log('[TMW-MODEL-AUDIT] tmw_get_videos_for_model unavailable in content-model.php');
+                                }
                         }
 
                         $tmw_model_tags_count = get_query_var('tmw_model_tags_count', null);

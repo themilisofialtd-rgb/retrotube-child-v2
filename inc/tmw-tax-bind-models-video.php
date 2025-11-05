@@ -19,11 +19,11 @@ function tmw_bind_models_to_video_once() {
 
     if (!$bound) {
         register_taxonomy_for_object_type('models', 'video');
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if (defined('TMW_DEBUG') && TMW_DEBUG) {
             error_log('[TMW FIX v1.6.0] models bound to video post type (idempotent)');
         }
     } else {
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if (defined('TMW_DEBUG') && TMW_DEBUG) {
             error_log('[TMW FIX v1.6.0] models already bound to video');
         }
     }
@@ -53,7 +53,7 @@ add_action('wp_loaded', function () {
     if (!post_type_exists('video')) { return; }
     $tax = get_taxonomy('models');
     $bound = is_object($tax) && in_array('video', (array) $tax->object_type, true);
-    if (!$bound && defined('WP_DEBUG') && WP_DEBUG) {
+    if (!$bound && defined('TMW_DEBUG') && TMW_DEBUG) {
         error_log('[TMW-TAX-AUDIT-UI] Final check: models not bound to video after wp_loaded — investigate CPT registration.');
     }
 }, 1000);

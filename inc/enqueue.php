@@ -154,7 +154,7 @@ add_action('wp_head', function(){
 });
 
 add_action('wp_enqueue_scripts', function () {
-  if (is_admin()) {
+  if (!defined('TMW_DEBUG') || !TMW_DEBUG || is_admin()) {
     return;
   }
 

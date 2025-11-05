@@ -3,7 +3,9 @@
  * Single post template override for Retrotube Child theme.
  */
 
-error_log('[TMW-MODEL-AUDIT] single.php loaded for ' . get_the_title());
+if (defined('TMW_DEBUG') && TMW_DEBUG) {
+    error_log('[TMW-MODEL-AUDIT] single.php loaded for ' . get_the_title());
+}
 
 $parent_template = '';
 $parent_dir      = trailingslashit(get_template_directory());
