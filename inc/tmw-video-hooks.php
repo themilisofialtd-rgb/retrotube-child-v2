@@ -136,25 +136,49 @@ if (!function_exists('tmw_render_flipbox_card')) {
     $base_link = tmw_get_model_link_for_term($term);
     $link      = apply_filters('tmw_model_flipbox_link', $base_link, $term);
     $cta_link  = $link ?: $base_link;
-    $name = $term->name;
+    $name      = $term->name;
+
+    $card_attrs = [];
+    if (function_exists('tmw_flipbox_a11y_attrs')) {
+        $card_attrs = tmw_flipbox_a11y_attrs([
+            'aria_label' => $name,
+            'tabindex'   => 0,
+        ]);
+    }
+
+    if ($cta_link) {
+        $card_attrs[] = 'data-href="' . esc_url($cta_link) . '"';
+    }
+
+    $card_attr_html = '';
+    if (!empty($card_attrs)) {
+        $card_attr_html = ' ' . implode(' ', array_map('trim', $card_attrs));
+    }
+
+    $sr_label = function_exists('tmw_sr_text')
+        ? tmw_sr_text(sprintf(__('Open %s profile', 'retrotube-child'), $name))
+        : '';
 
     ob_start(); ?>
-    <div class="tmw-flip"<?php if ($cta_link) : ?> data-href="<?php echo esc_url($cta_link); ?>"<?php endif; ?>>
+    <div class="tmw-flip"<?php echo $card_attr_html; ?>>
       <div class="tmw-flip-inner">
         <div class="tmw-flip-front" style="<?php echo esc_attr($front_style); ?>">
+          <?php if (!empty($front_url)) : ?>
+            <img class="tmw-sr-only" src="<?php echo esc_url($front_url); ?>" alt="<?php echo esc_attr($name); ?>" />
+          <?php endif; ?>
           <span class="tmw-name"><?php echo esc_html($name); ?></span>
         </div>
         <div class="tmw-flip-back" style="<?php echo esc_attr($back_style); ?>">
           <?php if ($cta_link) : ?>
-            <a href="<?php echo esc_url($cta_link); ?>" data-href="<?php echo esc_url($cta_link); ?>" class="tmw-view" style="display:inline-block; text-decoration:none; color:inherit;">View profile &raquo;&raquo;&raquo;</a>
+            <a href="<?php echo esc_url($cta_link); ?>" data-href="<?php echo esc_url($cta_link); ?>" class="tmw-view" style="display:inline-block; text-decoration:none; color:inherit;"><?php echo $sr_label; ?>View profile &raquo;&raquo;&raquo;</a>
           <?php else : ?>
-            <span class="tmw-view">View profile &raquo;&raquo;&raquo;</span>
+            <span class="tmw-view"><?php echo $sr_label; ?>View profile &raquo;&raquo;&raquo;</span>
           <?php endif; ?>
         </div>
       </div>
     </div>
     <?php
-    return (string)ob_get_clean();
+    return (string) ob_get_clean();
   }
 }
 
@@ -226,6 +250,35 @@ if (!function_exists('tmw_featured_models_shortcode')) {
       wp_enqueue_style('rt-child-flip');
     }
 
+    if (!wp_style_is('tmw-flip-a11y', 'registered')) {
+      $a11y_style_path = get_stylesheet_directory() . '/css/a11y.css';
+      if (file_exists($a11y_style_path)) {
+        $a11y_style_ver = filemtime($a11y_style_path) ?: tmw_child_style_version();
+        wp_register_style(
+          'tmw-flip-a11y',
+          get_stylesheet_directory_uri() . '/css/a11y.css',
+          ['retrotube-child-style'],
+          $a11y_style_ver
+        );
+      }
+    }
+
+    if (wp_style_is('tmw-flip-a11y', 'registered')) {
+      wp_enqueue_style('tmw-flip-a11y');
+    }
+
+    if (!wp_script_is('tmw-flip-a11y', 'registered')) {
+      $a11y_script_path = get_stylesheet_directory() . '/js/tmw-flip-a11y.js';
+      if (file_exists($a11y_script_path)) {
+        $a11y_script_ver = filemtime($a11y_script_path) ?: null;
+        wp_register_script('tmw-flip-a11y', get_stylesheet_directory_uri() . '/js/tmw-flip-a11y.js', [], $a11y_script_ver, true);
+      }
+    }
+
+    if (wp_script_is('tmw-flip-a11y', 'registered')) {
+      wp_enqueue_script('tmw-flip-a11y');
+    }
+
     $s   = tmw_featured_settings();
     $atts = shortcode_atts([
       'count'  => 4,
@@ -282,6 +335,51 @@ function tmw_models_flipboxes_cb($atts){
     wp_enqueue_script('tmw-flip-guard');
   }
 
+  if (!wp_style_is('rt-child-flip', 'enqueued')) {
+    if (!wp_style_is('rt-child-flip', 'registered')) {
+      $flipboxes_path = get_stylesheet_directory() . '/assets/flipboxes.css';
+      $flipboxes_ver  = file_exists($flipboxes_path) ? filemtime($flipboxes_path) : tmw_child_style_version();
+
+      wp_register_style(
+        'rt-child-flip',
+        get_stylesheet_directory_uri() . '/assets/flipboxes.css',
+        ['retrotube-child-style'],
+        $flipboxes_ver
+      );
+    }
+
+    wp_enqueue_style('rt-child-flip');
+  }
+
+  if (!wp_style_is('tmw-flip-a11y', 'registered')) {
+    $a11y_style_path = get_stylesheet_directory() . '/css/a11y.css';
+    if (file_exists($a11y_style_path)) {
+      $a11y_style_ver = filemtime($a11y_style_path) ?: tmw_child_style_version();
+      wp_register_style(
+        'tmw-flip-a11y',
+        get_stylesheet_directory_uri() . '/css/a11y.css',
+        ['retrotube-child-style'],
+        $a11y_style_ver
+      );
+    }
+  }
+
+  if (wp_style_is('tmw-flip-a11y', 'registered')) {
+    wp_enqueue_style('tmw-flip-a11y');
+  }
+
+  if (!wp_script_is('tmw-flip-a11y', 'registered')) {
+    $a11y_script_path = get_stylesheet_directory() . '/js/tmw-flip-a11y.js';
+    if (file_exists($a11y_script_path)) {
+      $a11y_script_ver = filemtime($a11y_script_path) ?: null;
+      wp_register_script('tmw-flip-a11y', get_stylesheet_directory_uri() . '/js/tmw-flip-a11y.js', [], $a11y_script_ver, true);
+    }
+  }
+
+  if (wp_script_is('tmw-flip-a11y', 'registered')) {
+    wp_enqueue_script('tmw-flip-a11y');
+  }
+
   $a = shortcode_atts([
     'per_page'       => 16,
     'cols'           => 4,
@@ -319,6 +417,8 @@ function tmw_models_flipboxes_cb($atts){
   printf('<div class="tmw-grid tmw-cols-%d">', (int)$a['cols']);
 
   tmw_debug_log('[TMW-FLIPBOX] Sponsored slot removed between flipbox 8 and 9.');
+
+  $schema_items = [];
 
   foreach ($terms as $term){
     $base_link = tmw_get_model_link_for_term($term);
@@ -363,18 +463,52 @@ function tmw_models_flipboxes_cb($atts){
     $front_style = (function_exists('tmw_bg_style') ? tmw_bg_style($front_url) : 'background-image:url('.esc_url($front_url).');') . ($ov['css_front'] ?? '');
     $back_style  = (function_exists('tmw_bg_style') ? tmw_bg_style($back_url)  : 'background-image:url('.esc_url($back_url ).');') . ($ov['css_back']  ?? '');
 
-    echo '<div class="tmw-flip"'.($cta_link ? ' data-href="'.esc_url($cta_link).'"' : '').'>';
-    echo   '<div class="tmw-flip-inner">';
-    echo     '<div class="tmw-flip-front" style="'.esc_attr($front_style).'"><span class="tmw-name">'.esc_html($term->name).'</span></div>';
-    echo     '<div class="tmw-flip-back"  style="'.esc_attr($back_style) .'">';
+    $card_attrs = [];
+    if (function_exists('tmw_flipbox_a11y_attrs')) {
+      $card_attrs = tmw_flipbox_a11y_attrs([
+        'aria_label' => $term->name,
+        'tabindex'   => 0,
+      ]);
+    }
+
     if ($cta_link) {
-      echo '<a href="'.esc_url($cta_link).'" data-href="'.esc_url($cta_link).'" class="tmw-view" style="display:inline-block; text-decoration:none; color:inherit;">View profile &raquo;&raquo;&raquo;</a>';
+      $card_attrs[] = 'data-href="' . esc_url($cta_link) . '"';
+    }
+
+    $card_attr_html = '';
+    if (!empty($card_attrs)) {
+      $card_attr_html = ' ' . implode(' ', array_map('trim', $card_attrs));
+    }
+
+    $sr_label = function_exists('tmw_sr_text')
+      ? tmw_sr_text(sprintf(__('Open %s profile', 'retrotube-child'), $term->name))
+      : '';
+
+    echo '<div class="tmw-flip"' . $card_attr_html . '>';
+    echo   '<div class="tmw-flip-inner">';
+    echo     '<div class="tmw-flip-front" style="' . esc_attr($front_style) . '">';
+    if (!empty($front_url)) {
+      echo '<img class="tmw-sr-only" src="' . esc_url($front_url) . '" alt="' . esc_attr($term->name) . '" />';
+    }
+    echo       '<span class="tmw-name">' . esc_html($term->name) . '</span>';
+    echo     '</div>';
+    echo     '<div class="tmw-flip-back"  style="' . esc_attr($back_style) . '">';
+    if ($cta_link) {
+      echo '<a href="' . esc_url($cta_link) . '" data-href="' . esc_url($cta_link) . '" class="tmw-view" style="display:inline-block; text-decoration:none; color:inherit;">' . $sr_label . 'View profile &raquo;&raquo;&raquo;</a>';
     } else {
-      echo '<span class="tmw-view">View profile &raquo;&raquo;&raquo;</span>';
+      echo '<span class="tmw-view">' . $sr_label . 'View profile &raquo;&raquo;&raquo;</span>';
     }
     echo     '</div>';
     echo   '</div>';
     echo '</div>';
+
+    $schema_url = esc_url_raw($cta_link ?: $base_link);
+    if ($schema_url !== '') {
+      $schema_items[$schema_url] = [
+        'url'  => $schema_url,
+        'name' => wp_strip_all_tags($term->name),
+      ];
+    }
   }
   echo '</div>';
 
@@ -397,7 +531,15 @@ function tmw_models_flipboxes_cb($atts){
     }
   }
 
-  return ob_get_clean();
+  $output = ob_get_clean();
+
+  if (!empty($schema_items) && function_exists('tmw_schema_itemlist')) {
+    ob_start();
+    tmw_schema_itemlist(array_values($schema_items));
+    $output .= ob_get_clean();
+  }
+
+  return $output;
 }
 add_shortcode('models_flipboxes', 'tmw_models_flipboxes_cb');      // new
 add_shortcode('actors_flipboxes', 'tmw_models_flipboxes_cb');      // alias / back-compat

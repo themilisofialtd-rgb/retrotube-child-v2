@@ -24,12 +24,16 @@ require_once __DIR__ . '/setup.php';
 require_once __DIR__ . '/enqueue.php';
 
 /** Front-end features */
+require_once __DIR__ . '/frontend/accessibility.php';
 require_once __DIR__ . '/frontend/model-banner.php';
 require_once __DIR__ . '/frontend/flipboxes.php';
 require_once __DIR__ . '/frontend/comments.php';
 require_once __DIR__ . '/frontend/taxonomies.php';
 require_once __DIR__ . '/frontend/shortcodes.php';
 require_once __DIR__ . '/frontend/template-tags.php';
+
+/** SEO helpers */
+require_once __DIR__ . '/seo/schema.php';
 
 /** Admin-only */
 if (is_admin()) {
