@@ -7,7 +7,7 @@ get_header();
 ?>
 <div class="tmw-title"><span class="tmw-star">★</span>Models</div>
 <div class="tmw-layout">
-  <main id="primary" class="site-main">
+  <main id="primary" class="site-main" data-mobile-guard="true">
     <?php
       echo tmw_models_flipboxes_cb([
         'per_page'        => 12,

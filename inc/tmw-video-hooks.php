@@ -278,6 +278,10 @@ add_filter('pre_do_shortcode_tag', function($return, $tag, $attr){
  * MODELS GRID – shortcode [models_flipboxes]  (+ alias [actors_flipboxes])
  * ====================================================================== */
 function tmw_models_flipboxes_cb($atts){
+  if (wp_script_is('tmw-flip-guard', 'registered')) {
+    wp_enqueue_script('tmw-flip-guard');
+  }
+
   $a = shortcode_atts([
     'per_page'       => 16,
     'cols'           => 4,
