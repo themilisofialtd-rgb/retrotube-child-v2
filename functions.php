@@ -41,8 +41,10 @@ define('TMW_CHILD_URL',  get_stylesheet_directory_uri());
 // Single include: all logic is now in /inc/bootstrap.php
 require_once TMW_CHILD_PATH . '/inc/bootstrap.php';
 
-// Theme My Login link bridge.
-require_once __DIR__ . '/inc/tmw-tml-bridge.php';
+// Theme My Login link bridge (debug-only loader).
+if (defined('TMW_DEBUG') && TMW_DEBUG && file_exists(__DIR__ . '/inc/tmw-tml-bridge.php')) {
+    require_once __DIR__ . '/inc/tmw-tml-bridge.php';
+}
 
 // Ensure legacy experiments don't affect the default reset email contents.
 remove_all_filters('retrieve_password_message');
@@ -51,8 +53,10 @@ remove_all_filters('retrieve_password_message');
 require_once __DIR__ . '/inc/tmw-reset-mail-url.php';
 
 // === TMW Register Audit (audit-only) ===
-if (!defined('TMW_REG_AUDIT')) { define('TMW_REG_AUDIT', true); }
-if (TMW_REG_AUDIT && file_exists(get_stylesheet_directory() . '/inc/tmw-register-audit.php')) {
+if (!defined('TMW_REG_AUDIT')) {
+    define('TMW_REG_AUDIT', defined('TMW_DEBUG') && TMW_DEBUG);
+}
+if (TMW_REG_AUDIT && defined('TMW_DEBUG') && TMW_DEBUG && file_exists(get_stylesheet_directory() . '/inc/tmw-register-audit.php')) {
     require_once get_stylesheet_directory() . '/inc/tmw-register-audit.php';
 }
 
@@ -61,8 +65,8 @@ if (TMW_REG_AUDIT && file_exists(get_stylesheet_directory() . '/inc/tmw-register
 //     require_once get_stylesheet_directory() . '/inc/tmw-email-activation.php';
 // }
 
-// === TMW Mail Transport (SMTP + logging) ===
-if (file_exists(get_stylesheet_directory() . '/inc/tmw-mail-transport.php')) {
+// === TMW Mail Transport (SMTP + logging, debug-gated) ===
+if (defined('TMW_DEBUG') && TMW_DEBUG && file_exists(get_stylesheet_directory() . '/inc/tmw-mail-transport.php')) {
     require_once get_stylesheet_directory() . '/inc/tmw-mail-transport.php';
 }
 

@@ -39,7 +39,7 @@ if (is_admin()) {
 
 /** Debug toggle (harmless log pings) */
 add_action('init', function () {
-    if (defined('WP_DEBUG') && WP_DEBUG) {
+    if (defined('TMW_DEBUG') && TMW_DEBUG) {
         error_log('[TMW-V410] bootstrap loaded');
     }
 }, 1);

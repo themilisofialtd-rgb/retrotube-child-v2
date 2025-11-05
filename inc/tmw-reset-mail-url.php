@@ -40,8 +40,10 @@ add_filter('retrieve_password_message', function ($message, $key, $user_login, $
         $message .= "\r\n\r\n" . sprintf(__('To reset your password, visit the following address: %s', 'default'), $normalized);
     }
 
-    // Optional trace
-    error_log('[TMW-RP-LINK] normalized reset URL sent: ' . $normalized);
+    if (defined('TMW_DEBUG') && TMW_DEBUG) {
+        // Optional trace
+        error_log('[TMW-RP-LINK] normalized reset URL sent: ' . $normalized);
+    }
     return $message;
 }, 99, 4);
 

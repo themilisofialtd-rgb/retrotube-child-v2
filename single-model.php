@@ -4,7 +4,11 @@
  * Description: Displays single model banner and related videos.
  */
 
-error_log('[TMW-MODEL] single-model.php loaded for ' . get_the_title());
+$tmw_debug_enabled = defined('TMW_DEBUG') && TMW_DEBUG;
+
+if ($tmw_debug_enabled) {
+  error_log('[TMW-MODEL] single-model.php loaded for ' . get_the_title());
+}
 
 // Keep tags area visible (audit mode) so we can verify.
 $tmw_tags_audit_css = '.tmw-model-tags{display:block!important;visibility:visible!important;opacity:1!important}'
@@ -28,7 +32,9 @@ get_header(); ?>
         if ( function_exists( 'tmw_get_videos_for_model' ) ) {
           $videos = tmw_get_videos_for_model( $model_slug, -1 );
           $video_count = is_array( $videos ) ? count( $videos ) : 0;
-          error_log( '[TMW-MODEL] Found ' . $video_count . ' videos for model: ' . get_the_title() );
+          if ( $tmw_debug_enabled ) {
+            error_log( '[TMW-MODEL] Found ' . $video_count . ' videos for model: ' . get_the_title() );
+          }
 
           if ( ! empty( $videos ) ) {
             foreach ( $videos as $video_post ) {
@@ -43,7 +49,9 @@ get_header(); ?>
         }
 
         $tag_count = count( $video_tags );
-        error_log( '[TMW-MODEL] Found ' . $tag_count . ' tags for model: ' . get_the_title() );
+        if ( $tmw_debug_enabled ) {
+          error_log( '[TMW-MODEL] Found ' . $tag_count . ' tags for model: ' . get_the_title() );
+        }
 
         if ( $tag_count > 0 ) {
           uasort( $video_tags, static function( $a, $b ) {
@@ -53,7 +61,9 @@ get_header(); ?>
 
         set_query_var( 'tmw_model_tags_data', array_values( $video_tags ) );
         set_query_var( 'tmw_model_tags_count', $tag_count );
-        error_log( '[TMW-MODEL-TAGS-AUDIT] Model tags fully synchronized with video tags (v3.3.1).' );
+        if ( $tmw_debug_enabled ) {
+          error_log( '[TMW-MODEL-TAGS-AUDIT] Model tags fully synchronized with video tags (v3.3.1).' );
+        }
 
         // Render the model content template.
         get_template_part( 'template-parts/content', 'model' );

@@ -4,7 +4,9 @@
  * Displays the flipbox grid, matching the Models Grid page layout.
  */
 
-error_log('[TMW-MODEL-AUDIT] taxonomy-models.php loaded for ' . single_term_title('', false));
+if (defined('TMW_DEBUG') && TMW_DEBUG) {
+  error_log('[TMW-MODEL-AUDIT] taxonomy-models.php loaded for ' . single_term_title('', false));
+}
 get_header();
 ?>
 <div class="tmw-title">

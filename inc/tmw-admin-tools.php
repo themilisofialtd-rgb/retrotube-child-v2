@@ -252,50 +252,6 @@ if (!function_exists('tmw_render_banner_position_box')) {
   }
 }
 
-add_action('admin_enqueue_scripts', function ($hook) {
-  if ('post.php' !== $hook) {
-    return;
-  }
-
-  $post_id = isset($_GET['post']) ? absint($_GET['post']) : 0;
-  if (!$post_id || 'model' !== get_post_type($post_id)) {
-    return;
-  }
-
-  wp_enqueue_style(
-    'retrotube-child-style',
-    get_stylesheet_uri(),
-    [],
-    tmw_child_style_version()
-  );
-
-  $style_path = get_stylesheet_directory() . '/admin/css/admin-banners.css';
-  $version    = file_exists($style_path) ? filemtime($style_path) : null;
-
-  wp_enqueue_style(
-    'tmw-admin-banner-style',
-    get_stylesheet_directory_uri() . '/admin/css/admin-banners.css',
-    [],
-    $version
-  );
-}, 100); // late priority so our overrides beat editor/global admin CSS
-
-add_action('admin_enqueue_scripts', function($hook){
-    global $post;
-    if (in_array($hook, ['post.php', 'post-new.php'], true)
-        && isset($post)
-        && get_post_type($post) === 'model') {
-        $path = get_stylesheet_directory() . '/admin/css/tmw-banner-admin.css';
-        $version = file_exists($path) ? filemtime($path) : null;
-        wp_enqueue_style(
-            'tmw-banner-admin-align',
-            get_stylesheet_directory_uri() . '/admin/css/tmw-banner-admin.css',
-            [],
-            $version
-        );
-    }
-});
-
 add_action('add_meta_boxes', function () {
   add_meta_box('model_banner_position', __('Banner Position (Vertical)', 'retrotube-child'), 'tmw_render_banner_position_box', 'model', 'normal', 'default');
 });
@@ -792,13 +748,3 @@ JS;
   });
 }
 
-// === TMW v3.0.8 — Ensure Child CSS Overrides All Others (Retro Style Tags) ===
-add_action('wp_enqueue_scripts', function () {
-    wp_dequeue_style('retrotube-child-style');
-    wp_enqueue_style(
-        'retrotube-child-style',
-        get_stylesheet_directory_uri() . '/style.css',
-        ['retrotube-style'],
-        filemtime(get_stylesheet_directory() . '/style.css')
-    );
-}, 9999);

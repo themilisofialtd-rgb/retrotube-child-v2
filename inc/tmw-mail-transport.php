@@ -1,6 +1,10 @@
 <?php
 if (!defined('ABSPATH')) exit;
 
+if (!defined('TMW_DEBUG') || !TMW_DEBUG) {
+    return;
+}
+
 /**
  * TMW Mail Transport
  * - Opt-in SMTP via constants

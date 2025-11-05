@@ -1398,22 +1398,6 @@ add_action('admin_enqueue_scripts', function ($hook) {
   $screen = get_current_screen();
   if (!$screen || $screen->taxonomy !== 'models') return;
 
-  wp_enqueue_style(
-    'retrotube-child-style',
-    get_stylesheet_uri(),
-    [],
-    tmw_child_style_version()
-  );
-
-  $style_path = get_stylesheet_directory() . '/admin/css/admin-banners.css';
-  $version    = file_exists($style_path) ? filemtime($style_path) : null;
-  wp_enqueue_style(
-    'tmw-admin-banner-style',
-    get_stylesheet_directory_uri() . '/admin/css/admin-banners.css',
-    [],
-    $version
-  );
-
   add_action('admin_head', function () {
     echo '<style>
       .tmw-term-two-col{display:flex; gap:24px; align-items:flex-start}
