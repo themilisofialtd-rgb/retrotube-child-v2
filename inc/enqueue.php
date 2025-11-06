@@ -81,6 +81,7 @@ add_action('wp_enqueue_scripts', function () {
   $guard_ver  = file_exists($guard_path) ? filemtime($guard_path) : null;
 
   wp_register_script('tmw-flip-guard', $guard_src, [], $guard_ver, true);
+  wp_script_add_data('tmw-flip-guard', 'defer', true);
 
   $a11y_script_path = get_stylesheet_directory() . '/js/tmw-flip-a11y.js';
   $a11y_script_src  = get_stylesheet_directory_uri() . '/js/tmw-flip-a11y.js';
@@ -103,6 +104,8 @@ add_action('wp_enqueue_scripts', function () {
     if (wp_style_is('tmw-flip-a11y', 'registered')) {
       wp_enqueue_style('tmw-flip-a11y');
     }
+
+    wp_dequeue_script('tmw-flipbox-mobile-fix');
 
     wp_enqueue_script('tmw-flip-guard');
 
