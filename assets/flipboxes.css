@@ -46,6 +46,7 @@
   background:#0b0b0b;
   /* aspect ratio for consistent tiles */
   aspect-ratio:2/3;
+  perspective:1000px;
 }
 /* fallback for browsers without aspect-ratio */
 .tmw-flip::before{ content:""; float:left; padding-bottom:150%; /* 3/2 = 1.5 */ }
@@ -56,17 +57,47 @@
   transform-style:preserve-3d;
   transition:transform .6s ease;
 }
+.tmw-face,
+.tmw-front,
+.tmw-back,
 .tmw-flip-front,
 .tmw-flip-back{
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
   backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
+.tmw-face.back,
+.tmw-back,
 .tmw-flip-back{
   transform:rotateY(180deg);
-  pointer-events:none;
+  z-index:2;
+  pointer-events:auto;
+}
+.tmw-face.front,
+.tmw-front,
+.tmw-flip-front{
+  z-index:3;
+}
+
+/* Flip the inner container */
+.tmw-flip.flipped .tmw-flip-inner{
+  transform:rotateY(180deg);
+}
+
+/* After flip, disable front interactions so back buttons receive taps */
+.tmw-flip.flipped .tmw-face.front,
+.tmw-flip.flipped .tmw-front,
+.tmw-flip.flipped .tmw-flip-front{
+  pointer-events:none !important;
+}
+
+/* If a theme wraps the entire card in an anchor, disable it only while flipped */
+.tmw-flip.flipped > a:first-child{
+  pointer-events:none !important;
 }
 
 .tmw-flip:hover .tmw-flip-inner,
