@@ -6,7 +6,7 @@
       a.setAttribute('data-tmw-tml', '1');
       a.removeAttribute('data-toggle');
       a.removeAttribute('data-target');
-      a.classList.remove('open-login','open-register');
+      a.classList.remove('open-login','open-register','open-lostpass','open-reset');
     } catch(e){}
   }
 
@@ -20,6 +20,8 @@
         setHref(a, '/login/');
       } else if (t === 'register' || t === 'sign up' || t === 'signup') {
         setHref(a, '/register/');
+      } else if (t.indexOf('reset') >= 0) {
+        setHref(a, '/resetpass/');
       } else if (t.indexOf('forgot') >= 0 || t.indexOf('lost') >= 0) {
         setHref(a, '/lostpassword/');
       }
