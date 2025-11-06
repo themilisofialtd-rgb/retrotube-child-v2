@@ -27,11 +27,11 @@ if (!function_exists('tmw_child_style_version')) {
  * STYLES + LIGHTWEIGHT OPTIMIZATIONS
  * ====================================================================== */
 function tmw_child_has_flipbox_shortcode(): bool {
-  if (is_admin()) {
+  if (is_admin() || !is_singular()) {
     return false;
   }
 
-  global $post;
+  $post = get_queried_object();
 
   if (!($post instanceof WP_Post)) {
     return false;
